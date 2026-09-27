@@ -82,15 +82,15 @@ assert.equal(toggleProbe.classList.contains("hidden"), false, "forced false must
     });
 
     assert.equal(intervalCount, 1);
-    assert.equal(elements.get("remote-tunnel-badge").textContent, "running");
+    assert.equal(elements.get("remote-tunnel-badge").textContent, "运行中");
 
     const result = await ui.refreshStatus();
 
     assert.equal(result, null);
     assert.equal(clearCount, 0);
     assert.equal(intervalCount, 1);
-    assert.equal(elements.get("remote-tunnel-badge").textContent, "running");
-    assert.match(elements.get("remote-tunnel-status").textContent, /Retrying/);
+    assert.equal(elements.get("remote-tunnel-badge").textContent, "运行中");
+    assert.match(elements.get("remote-tunnel-status").textContent, /正在重试/);
 
     console.log("remote tunnel ui unit tests passed");
 })().catch((error) => {

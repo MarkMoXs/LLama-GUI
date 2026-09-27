@@ -414,6 +414,6 @@ class SseWriter:
         if isinstance(data, str):
             payload = data
         else:
-            payload = json.dumps(data)
+            payload = json.dumps(data, ensure_ascii=False)
         self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
         self.wfile.flush()

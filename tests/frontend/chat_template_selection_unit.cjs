@@ -181,7 +181,7 @@ assert.equal(currentValues().chat_template_custom, undefined, "auto selection cl
 assert.equal(selection.getSelectedChatTemplateDropdownValue(), "", "auto selection maps to the empty Auto value");
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Use the template embedded in the model metadata when available.",
+    "如果可用，将使用模型元数据中内置的模板。",
     "auto selection with no custom file shows the model-metadata fallback"
 );
 assert.deepEqual(assertSingleTemplateFlag("auto"), { templateCount: 0, fileCount: 0 });
@@ -195,7 +195,7 @@ assertPatch(
     "builtin selection must set chat_template and clear chat_template_custom"
 );
 assert.equal(selection.getSelectedChatTemplateDropdownValue(), "chatml");
-assert.equal(selection.getQuickTemplateSummaryText(), "Using preset: ChatML.");
+assert.equal(selection.getQuickTemplateSummaryText(), "使用预设：ChatML。");
 {
     const args = flatLaunchArgs();
     assert.deepEqual(
@@ -218,7 +218,7 @@ assert.equal(currentValues().chat_template, undefined, "bundled selection must n
 assert.equal(selection.getSelectedChatTemplateDropdownValue(), "__alpaca__");
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Using bundled template preset: Alpaca.",
+    "使用捆绑模板预设：Alpaca。",
     "bundled selection summary"
 );
 {
@@ -244,7 +244,7 @@ assertPatch(
 assert.equal(selection.getSelectedChatTemplateDropdownValue(), "phi4", "legacy built-in round trips to the dropdown");
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Using llama.cpp built-in template: phi4",
+    "使用 llama.cpp 内置模板：phi4",
     "legacy built-in summary"
 );
 {
@@ -367,14 +367,14 @@ assert.deepEqual(
 );
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Using bundled template preset: Alpaca.",
+    "使用捆绑模板预设：Alpaca。",
     "a backslash-stored bundled path still resolves to its preset summary"
 );
 
 flagCore.setMultipleFlagValues({ chat_template: undefined, chat_template_custom: "C:\\jinja\\my.jinja" });
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Using custom template file: C:\\jinja\\my.jinja",
+    "使用自定义模板文件：C:\\jinja\\my.jinja",
     "unmatched custom paths show the stored path as typed"
 );
 assert.deepEqual(assertSingleTemplateFlag("custom path"), { templateCount: 0, fileCount: 1 });
@@ -423,7 +423,7 @@ assert.equal(
 );
 assert.equal(
     selection.getQuickTemplateSummaryText(),
-    "Using preset: Granite 3.x.",
+    "使用预设：Granite 3.x。",
     "summary follows the replaced state too"
 );
 

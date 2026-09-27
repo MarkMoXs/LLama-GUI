@@ -52,7 +52,7 @@ function readWithTimeout(data) {
     assert.equal((await readFile(cardFile(pngCard(), "portrait.PNG"))).systemPrompt, legacy.systemPrompt);
     assert.equal((await readFile(cardFile(Buffer.from("\ufeff" + JSON.stringify(character))))).name, character.name);
     assert.equal((await readFile(cardFile({ name: "Quiet", description: "Silent observer" }))).greeting, "");
-    assert.match((await readFile(cardFile({ ...character, description: "{{unsupported}}" }))).notices.join(" "), /macros remain as text/);
+    assert.match((await readFile(cardFile({ ...character, description: "{{unsupported}}" }))).notices.join(" "), /保持为文本/);
     assert.match((await readFile(cardFile({ ...character, name: "$&<img>", first_mes: "{{char}}" }))).greeting, /^\$&<img>$/);
 
     const braces = "{".repeat(900000);
@@ -63,20 +63,20 @@ function readWithTimeout(data) {
     }
 
     for (const field of ["name", "nickname"]) {
-        await assert.rejects(readFile(cardFile({ ...character, [field]: "x".repeat(257) })), /256 characters/);
+        await assert.rejects(readFile(cardFile({ ...character, [field]: "x".repeat(257) })), /个字符或更少/);
     }
     const longName = "x".repeat(256);
     for (const field of ["description", "first_mes"]) {
         const oversized = { name: longName, [field]: "{{char}}".repeat(5000) };
-        await assert.rejects(readFile(cardFile(oversized)), /expanded text limit/);
-        await assert.rejects(readFile(cardFile(pngCard([["chara", JSON.stringify(oversized)]]), "card.png")), /expanded text limit/);
+        await assert.rejects(readFile(cardFile(oversized)), /扩展文本限制/);
+        await assert.rejects(readFile(cardFile(pngCard([["chara", JSON.stringify(oversized)]]), "card.png")), /扩展文本限制/);
     }
     // Both outputs share one budget; neither individually exceeds the limit.
     await assert.rejects(readFile(cardFile({ name: longName,
         description: "<BOT>".repeat(2500), first_mes: "{{ CHAR }}".repeat(2500),
-    })), /expanded text limit/);
-    await assert.rejects(readFile(cardFile({ ...character, nickname: longName, first_mes: "<char>".repeat(5000) })), /expanded text limit/);
-    await assert.rejects(readFile(cardFile({ ...character, system_prompt: "{{original}}".repeat(10000) }), "x".repeat(500000)), /expanded text limit/);
+    })), /扩展文本限制/);
+    await assert.rejects(readFile(cardFile({ ...character, nickname: longName, first_mes: "<char>".repeat(5000) })), /扩展文本限制/);
+    await assert.rejects(readFile(cardFile({ ...character, system_prompt: "{{original}}".repeat(10000) }), "x".repeat(500000)), /扩展文本限制/);
 
     // Allow the exact combined limit, then reject one additional character.
     const boundary = { name: longName, description: "{{char}}".repeat(1000), first_mes: "" };
@@ -84,26 +84,26 @@ function readWithTimeout(data) {
     boundary.first_mes = "x".repeat(1024 * 1024 - prompt.length);
     const atLimit = await readFile(cardFile(boundary));
     assert.equal(atLimit.systemPrompt.length + atLimit.greeting.length, 1024 * 1024);
-    await assert.rejects(readFile(cardFile({ ...boundary, first_mes: boundary.first_mes + "x" })), /expanded text limit/);
+    await assert.rejects(readFile(cardFile({ ...boundary, first_mes: boundary.first_mes + "x" })), /扩展文本限制/);
 
     for (const data of [null, [], {}, { name: "Other JSON" }, { ...character, first_mes: [] }, { spec: "other", data: character }]) {
         await assert.rejects(readFile(cardFile(data)));
     }
-    await assert.rejects(readFile(cardFile(Buffer.from("bad json"))), /invalid JSON/);
-    await assert.rejects(readFile(cardFile(Buffer.from("bad png"), "file.png")), /valid PNG/);
-    await assert.rejects(readFile(cardFile(pngCard([]), "file.png")), /no character card data/);
-    await assert.rejects(readFile(cardFile(pngCard().subarray(0, -5), "file.png")), /truncated/);
+    await assert.rejects(readFile(cardFile(Buffer.from("bad json"))), /无效的 JSON/);
+    await assert.rejects(readFile(cardFile(Buffer.from("bad png"), "file.png")), /有效的 PNG/);
+    await assert.rejects(readFile(cardFile(pngCard([]), "file.png")), /不包含角色卡数据/);
+    await assert.rejects(readFile(cardFile(pngCard().subarray(0, -5), "file.png")), /被截断/);
     const damaged = pngCard();
     damaged[damaged.indexOf("chara") + 6] ^= 1;
-    await assert.rejects(readFile(cardFile(damaged, "file.png")), /data is damaged/);
+    await assert.rejects(readFile(cardFile(damaged, "file.png")), /数据已损坏/);
     const overflowing = pngCard();
     overflowing.writeUInt32BE(0xffffffff, 33);
-    await assert.rejects(readFile(cardFile(overflowing, "file.png")), /truncated/);
+    await assert.rejects(readFile(cardFile(overflowing, "file.png")), /被截断/);
     const noCard = pngCard([]);
     const badEncoding = Buffer.concat([noCard.subarray(0, 33), chunk("tEXt", Buffer.from("chara\0%%%")), noCard.subarray(33)]);
     await assert.rejects(readFile(cardFile(badEncoding, "file.png")), /base64/);
     await assert.rejects(readFile({ name: "big.png", size: 21 * 1024 * 1024 }), /20 MB/);
     await assert.rejects(readFile(cardFile(Buffer.alloc(1024 * 1024 + 1))), /1 MB/);
-    await assert.rejects(readFile(cardFile(character, "card.exe")), /JSON or PNG/);
+    await assert.rejects(readFile(cardFile(character, "card.exe")), /JSON 或 PNG/);
     console.log("character_cards_unit.cjs: all tests passed");
 })().catch(error => { console.error(error); process.exitCode = 1; });

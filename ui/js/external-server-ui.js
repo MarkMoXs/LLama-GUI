@@ -13,7 +13,7 @@
     function requireDependency(name) {
         const value = deps[name];
         if (typeof value !== "function") {
-            throw new Error(`External server dependency missing: ${name}`);
+            throw new Error(`外部服务器依赖缺失：${name}`);
         }
         return value;
     }
@@ -53,7 +53,7 @@
         const isBusy = Boolean(options.busy);
 
         if (badge) {
-            badge.textContent = isBusy ? (options.label || "Connecting") : isConnected ? "Connected" : "Not connected";
+            badge.textContent = isBusy ? (options.label || "Connecting") : isConnected ? "Connected" : "未连接";
             badge.classList.toggle("running", isConnected && !isBusy);
             badge.classList.toggle("working", isBusy);
         }
@@ -64,8 +64,8 @@
             connectBtn.textContent = isBusy
                 ? "Connecting..."
                 : isConnected
-                    ? "Reconnect"
-                    : "Connect";
+                    ? "重新连接"
+                    : "连接";
         }
         if (disconnectBtn) {
             disconnectBtn.classList.toggle("hidden", !isConnected);
@@ -102,7 +102,7 @@
         }
 
         render(getTarget(), { busy: true });
-        setNote("Checking the server...");
+        setNote("正在检查服务器...");
         try {
             const result = await fetchJson("/api/chat/target", {
                 method: "POST",
@@ -128,12 +128,12 @@
 
     async function disconnect() {
         const fetchJson = requireDependency("fetchJson");
-        render(getTarget(), { busy: true, label: "Disconnecting..." });
+        render(getTarget(), { busy: true, label: "正在断开连接..." });
         try {
             await fetchJson("/api/chat/target", { method: "DELETE" });
             const keyInput = byId("external-server-key");
             if (keyInput) keyInput.value = "";
-            setNote("Disconnected.");
+            setNote("已断开连接。");
             render(null);
             await refreshDependentPanels();
         } catch (error) {

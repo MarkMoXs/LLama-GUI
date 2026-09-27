@@ -479,7 +479,7 @@ async function runAbortScenario(action) {
         ]);
         const userBubble = elements.get("chat-messages").querySelectorAll(".chat-message")
             .find(element => element._classes.has("user"));
-        assert.equal(userBubble.querySelector(".chat-response-action").getAttribute("aria-label"), "Edit and resend");
+        assert.equal(userBubble.querySelector(".chat-response-action").getAttribute("aria-label"), "编辑并重新发送");
     }
 
     // H2: switching to a stored conversation mid-stream must not finalize the
@@ -1072,9 +1072,9 @@ async function runAbortScenario(action) {
         assert.ok(!failed.content.includes("failure"), "error text must not become model context");
         await api._testLoadConversation(convo.id);
         const container = elements.get("chat-messages");
-        const retry = container.querySelectorAll(".chat-response-action").find(el => el.textContent === "Retry");
+        const retry = container.querySelectorAll(".chat-response-action").find(el => el.textContent === "重试");
         assert.ok(retry, `${failure} offers Retry after reload`);
-        assert.match(container.querySelector(".chat-response-status").textContent, /Incomplete/);
+        assert.match(container.querySelector(".chat-response-status").textContent, /不完整/);
         elements.get("chat-input").value = "unsent draft";
         mode = "complete";
         await retry._listeners.click[0]();
@@ -1136,7 +1136,7 @@ async function runAbortScenario(action) {
         // its reasoning and sources, without issuing another model request.
         for (let step = 0; step < 2; step++) {
             const previous = elements.get("chat-messages").querySelectorAll(".chat-response-action")
-                .find(el => el.textContent === "Previous answer");
+                .find(el => el.textContent === "上一个回答");
             previous._listeners.click[0]();
         }
         assert.equal(getStoredConversations()[0].messages[1].content, "original answer");
@@ -1188,7 +1188,7 @@ async function runAbortScenario(action) {
         assert.equal(convo.messages[1].status, "failed");
         await api._testLoadConversation(convo.id);
         assert.equal(elements.get("chat-messages").querySelector(".chat-reasoning-body").innerHTML.includes("partial reasoning"), true);
-        assert.match(elements.get("chat-messages").querySelector(".chat-response-status").textContent, /Incomplete/);
+        assert.match(elements.get("chat-messages").querySelector(".chat-response-status").textContent, /不完整/);
     }
 
     // Conversation changes still await regeneration's abort before loading or
@@ -1238,7 +1238,7 @@ async function runAbortScenario(action) {
         });
         ctx.api.refreshSidebarUI();
         assert.equal(pending.length, 0, "empty chat must not call the template/token counter");
-        assert.match(ctx.elements.get("chat-context-label").textContent, /Type a message/);
+        assert.match(ctx.elements.get("chat-context-label").textContent, /输入一条消息以评估上下文/);
         ctx.elements.get("chat-system-prompt").value = "Rules only";
         ctx.elements.get("chat-input").value = "  \n ";
         ctx.api.refreshSidebarUI();
@@ -1261,7 +1261,7 @@ async function runAbortScenario(action) {
         pending.at(-1).done.resolve({ ok: true, json: async () => budget });
         await flush();
         assert.match(ctx.elements.get("chat-context-label").textContent, /4,096/);
-        assert.match(ctx.elements.get("chat-context-label").textContent, /Web results/);
+        assert.match(ctx.elements.get("chat-context-label").textContent, /网页结果/);
         pending[0].done.resolve({ ok: true, json: async () => ({ ...budget, capacity: 123 }) });
         await flush();
         assert.match(ctx.elements.get("chat-context-label").textContent, /4,096/);
@@ -1273,14 +1273,14 @@ async function runAbortScenario(action) {
         ctx.api.updateStatusBadge();
         pending.at(-1).done.resolve({ ok: true, json: async () => budget });
         await flush();
-        assert.match(ctx.elements.get("chat-context-label").textContent, /Start or connect/);
+        assert.match(ctx.elements.get("chat-context-label").textContent, /启动或连接到一个服务器，以便测量上下文大小/);
         assert.equal(ctx.elements.get("chat-context-bar").hidden, true);
         ctx.setStatus({ running: true, active_process_tool: "llama-server" });
         ctx.elements.get("chat-input").value = "";
         const requestCount = pending.length;
         await ctx.api._testClearChat();
         assert.equal(pending.length, requestCount, "clearing chat must not send an empty preview");
-        assert.match(ctx.elements.get("chat-context-label").textContent, /Type a message/);
+        assert.match(ctx.elements.get("chat-context-label").textContent, /输入一条消息以评估上下文/);
     }
 
     // Compaction commits separately from the transcript and follows the same
@@ -1341,12 +1341,12 @@ async function runAbortScenario(action) {
         changeRuntime = true;
         await ctx.api._testCompactConversation();
         assert.equal(ctx.api._testGetState().chatCompactions.length, 0, "a model switch invalidates an otherwise complete summary");
-        assert.match(ctx.elements.get("chat-compaction-status").textContent, /cancelled/);
+        assert.match(ctx.elements.get("chat-compaction-status").textContent, /已取消/);
 
         hang = true;
         const pending = ctx.api._testCompactConversation();
         await pendingStream.promise;
-        assert.equal(ctx.elements.get("btn-chat-compact").textContent, "Cancel compaction");
+        assert.equal(ctx.elements.get("btn-chat-compact").textContent, "取消压缩");
         await ctx.api._testLoadConversation("other-convo");
         await pending;
         assert.equal(ctx.api._testGetState().currentConversationId, "other-convo");
@@ -1454,7 +1454,7 @@ async function runAbortScenario(action) {
     }
 
     // Once a reader scrolls away during generation, later content and
-    // reasoning chunks preserve that new position and leave Jump to latest
+    // reasoning chunks preserve that new position and leave 跳转至最新
     // available after the stream finishes.
     {
         let ctx;
@@ -1486,7 +1486,7 @@ async function runAbortScenario(action) {
         ctx.api.init();
         await ctx.api._testSendMessage("scroll test");
         assert.equal(container.scrollTop, 100, "streaming output must preserve the user's latest away position");
-        assert.equal(ctx.elements.get("btn-chat-jump-latest").hidden, false, "Jump to latest stays visible after away-stream completion");
+        assert.equal(ctx.elements.get("btn-chat-jump-latest").hidden, false, "跳转至最新 在离开底部流式输出完成后仍然可见");
         ctx.elements.get("btn-chat-jump-latest")._listeners.click[0]();
         assert.equal(container.scrollTop, container.scrollHeight);
         assert.equal(ctx.elements.get("btn-chat-jump-latest").hidden, true);
@@ -1759,7 +1759,7 @@ async function runAbortScenario(action) {
         };
         await click();
         assert.equal(confirmations.length, 1);
-        assert.match(confirmations[0][1], /cannot be undone/);
+        assert.match(confirmations[0][1], /无法撤销|This cannot be undone/);
         assert.deepEqual(ctx.getStoredConversations(), saved);
         assert.equal(ctx.api._testGetState().currentConversationId, "alpha");
         assert.equal(ctx.elements.get("chat-system-prompt").value, "Keep prompt");
@@ -1819,7 +1819,7 @@ async function runAbortScenario(action) {
             assert.deepEqual(ctx.getStoredConversations(), beforeRejectedCard);
             assert.equal(ctx.api._testGetState().currentConversationId, quiet.id);
             assert.match(ctx.elements.get("chat-system-prompt").value, /Silent observer/);
-            assert.match(ctx.elements.get("chat-character-status").textContent, /256 characters|expanded text limit/);
+            assert.match(ctx.elements.get("chat-character-status").textContent, /个字符或更少|扩展文本限制/);
         }
 
         const pending = deferred();
@@ -1829,7 +1829,7 @@ async function runAbortScenario(action) {
         pending.resolve(await file.arrayBuffer());
         await importing;
         assert.equal(ctx.elements.get("chat-system-prompt").value, "");
-        assert.match(ctx.elements.get("chat-character-status").textContent, /Chat changed/);
+        assert.match(ctx.elements.get("chat-character-status").textContent, /聊天已更改/);
     }
     {
         const original = { id: "before", title: "Before", messages: [{ role: "user", content: "Keep me" }], systemPrompt: "Original prompt" };
@@ -1837,7 +1837,7 @@ async function runAbortScenario(action) {
         await ctx.api._testLoadConversation(original.id);
         await ctx.api._testImportCharacterCard(cardFile());
         assert.equal(ctx.elements.get("chat-system-prompt").value, "Original prompt");
-        assert.match(ctx.elements.get("chat-character-status").textContent, /Could not save/);
+        assert.match(ctx.elements.get("chat-character-status").textContent, /无法保存/);
         assert.equal(ctx.getStoredConversations().length, 1);
     }
 
@@ -2081,7 +2081,7 @@ async function runAbortScenario(action) {
 
     // A failed durable invalidation blocks destructive history operations.
     {
-        const saved = [{ id: "protected", title: "Protected", messages: [{ role: "user", content: "Do not delete" }] }];
+        const saved = [{ id: "protected", title: "受保护", messages: [{ role: "user", content: "不要删除" }] }];
         const ctx = makeContext({ fetchImpl: makeFetch("complete"), seedConversations: saved });
         await ctx.api._testLoadConversation("protected");
         ctx.api.configureWorkspace({ invalidate: () => false });
@@ -2094,7 +2094,7 @@ async function runAbortScenario(action) {
     // replacement stream restores as a stopped version beside the selected one.
     {
         const confirmation = deferred();
-        const saved = [{ id: "confirm", title: "Confirm", messages: [{ role: "user", content: "Keep" }] }];
+        const saved = [{ id: "confirm", title: "确定", messages: [{ role: "user", content: "Keep" }] }];
         const ctx = makeContext({ fetchImpl: makeFetch("complete"), seedConversations: saved,
             confirmImpl: () => confirmation.promise, extraElementIds: [
                 "btn-chat-send", "btn-chat-stop", "btn-chat-undo", "btn-chat-regenerate", "btn-chat-clear", "btn-delete-all-history",

@@ -5,12 +5,12 @@
     async function stopPythonServer() {
         const status = I.status.getLatestStatus() || await I.status.checkStatus();
         const runningHint = status && status.running
-            ? " Any running llama.cpp process will be stopped first."
+            ? " 正在运行的 llama.cpp 进程将首先被停止。"
             : "";
         const ok = await I.dependencies.confirmAction(
-            "Quit Llama GUI",
-            `Quit Llama GUI? The page will disconnect until you start Llama GUI again.${runningHint}`,
-            "Quit Llama GUI"
+            "退出 Llama GUI",
+            `退出 Llama GUI？页面将断开连接，直到你再次启动 Llama GUI。${runningHint}`,
+            "退出 Llama GUI"
         );
         if (!ok) return;
 
@@ -41,7 +41,7 @@
         const ok = await I.dependencies.confirmAction(
             "Restart Llama GUI",
             `Restart Llama GUI? The page will briefly disconnect.${runningHint}`,
-            "Restart"
+            "重启"
         );
         if (!ok) return;
 
@@ -51,7 +51,7 @@
             restartingMessage: "Restarting Llama GUI...",
             reconnectingMessage: "Llama GUI is restarting. Reconnecting...",
             successMessage: "Llama GUI restarted successfully.",
-            timeoutMessage: "Server did not become ready in time. Try reloading manually.",
+            timeoutMessage: "服务器未及时就绪。请尝试手动重新加载。",
             failurePrefix: "Failed to restart Llama GUI: ",
         });
     }

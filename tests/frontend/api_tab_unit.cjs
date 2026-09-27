@@ -135,7 +135,7 @@ apiTab.configure({
     }),
 });
 apiTab.updateEndpoints();
-assert.match(elements.get("api-status-note").textContent, /temporarily unavailable/);
+assert.match(elements.get("api-status-note").textContent, /接口端点暂时不可用/);
 assert.equal(apiTab.getServerEndpointConfig().baseUrl, "http://127.0.0.3:8222");
 
 apiTab.configure({
@@ -145,7 +145,7 @@ apiTab.configure({
 apiTab.updateEndpoints();
 
 assert.equal(elements.get("api-base-url").textContent, "http://0.0.0.0:9099");
-assert.match(elements.get("api-status-note").textContent, /API key is configured/);
+assert.match(elements.get("api-status-note").textContent, /API key 已配置/);
 
 const endpointText = elements.get("api-endpoints-list").children
     .map((card) => JSON.stringify(card))
@@ -175,11 +175,11 @@ assert.ok(!snippetsText.includes("selected-model.gguf"), "API snippets should pr
 flagValues.api_key = "pending-secret";
 apiTab.configure({ getLatestStatus: () => ({ running: true, active_process_tool: "llama-server", api_auth_configured: false }) });
 apiTab.updateEndpoints();
-assert.match(elements.get("api-status-note").textContent, /No API key configured/);
+assert.match(elements.get("api-status-note").textContent, /API key 未配置/);
 apiTab.configure({ getLatestStatus: () => ({ running: true, active_process_tool: "llama-server", api_auth_configured: true }) });
 flagValues.api_key = "";
 apiTab.updateEndpoints();
-assert.match(elements.get("api-status-note").textContent, /API key is configured/);
+assert.match(elements.get("api-status-note").textContent, /API key 已配置/);
 
 apiTab.configure({
     getLatestStatus: () => ({
@@ -194,8 +194,8 @@ apiTab.configure({
     }),
 });
 apiTab.updateEndpoints();
-assert.match(elements.get("api-status-note").textContent, /Connected to a llama-server started outside this GUI/);
-assert.doesNotMatch(elements.get("api-status-note").textContent, /endpoints are not available/);
+assert.match(elements.get("api-status-note").textContent, /外部启动的 llama-server/);
+assert.doesNotMatch(elements.get("api-status-note").textContent, /接口端点不可用/);
 assert.equal(apiTab.getServerEndpointConfig().baseUrl, "http://127.0.0.4:8333");
 
 flagValues = { host: "localhost", port: 8081, alias: "", api_key: "" };
@@ -246,7 +246,7 @@ const endpoint = elements.get("api-endpoints-list").children[0];
 const endpointCopy = endpoint.children.find(el => el.tagName === "BUTTON");
 endpointCopy.listeners.click();
 assert.equal(copied[0], apiTab.getServerEndpointConfig().baseUrl + "/v1/chat/completions");
-assert.match(endpointCopy.ariaLabel, /Chat Completions URL/);
+assert.match(endpointCopy.ariaLabel, /Chat Completions/);
 const snippetBody = elements.get("api-snippets-list").children[1].children[1];
 snippetBody.children[0].listeners.click();
 assert.match(copied[1], /updated-model/);

@@ -32,10 +32,10 @@
         }
 
         function write(patch) {
-            if (!host || typeof host.setSettings !== "function") throw new Error("Chat host settings writer is unavailable.");
+            if (!host || typeof host.setSettings !== "function") throw new Error("聊天主机设置写入器不可用。");
             try {
                 if (typeof host.isSessionValid === "function" && host.isSessionValid() !== true) {
-                    throw new Error("Chat host is not connected.");
+                    throw new Error("聊天主机未连接");
                 }
             } catch (error) {
                 options.onUnavailable?.(error);

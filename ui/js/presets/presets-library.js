@@ -12,7 +12,7 @@ function getPresetGroupKey(model) {
 
 function getPresetGroupLabel(groupKey) {
     if (groupKey === NO_MODEL_PRESET_GROUP_KEY) {
-        return "No model saved";
+        return "未保存模型";
     }
 
     const parts = String(groupKey).split(/[\\/]+/).filter(Boolean);
@@ -116,7 +116,7 @@ function buildPresetGroups(presets) {
             data: presetData,
             groupKey,
             modelLabel: getPresetGroupLabel(groupKey),
-            toolText: presetData.tool || "Keep current tool",
+            toolText: presetData.tool || "保持当前工具",
             overrideFlagIds,
             overrideCount: overrideFlagIds.length,
             warnings,

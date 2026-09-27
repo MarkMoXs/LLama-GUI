@@ -43,9 +43,9 @@ assert.equal(
     JSON.stringify({ tools: ["web_search"], temperature: 0.7 })
 );
 
-assert.match(parse("--flag 'unterminated").error, /unmatched single quote/);
-assert.match(parse('--flag "unterminated').error, /unmatched double quote/);
-assert.match(parse('--flag "unterminated\\').error, /unfinished escape/);
+assert.match(parse("--flag 'unterminated").error, /未匹配的单引号/);
+assert.match(parse('--flag "unterminated').error, /未匹配的双引号/);
+assert.match(parse('--flag "unterminated\\').error, /未完成的转义/);
 
 console.log("custom launch args parser tests passed");
 

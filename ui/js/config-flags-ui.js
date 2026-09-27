@@ -103,7 +103,7 @@
         resetDialog.addEventListener("close", () => {
             if (resetDialog.returnValue !== "reset") return;
             getFlagCore().applyFlagValues({});
-            dependencies.showToast("Configuration reset to defaults.", "success");
+            dependencies.showToast("配置已重置为默认值。", "success");
         });
 
         document.getElementById("btn-configure-hf-download").addEventListener("click", () => {
@@ -177,20 +177,20 @@
                             fingerprint_data: { tool: request.tool, model: request.launch_settings?.model || "" },
                         }),
                     });
-                    if (!preflight || !preflight.ok) throw new Error(preflight?.error || "Could not validate the pending configuration.");
+                    if (!preflight || !preflight.ok) throw new Error(preflight?.error || "无法验证待应用的配置。");
                     return request;
                 },
                 // Launch the validated snapshot; later edits remain pending.
                 applyTarget: () => {},
             });
             if (!outcome.ok && !outcome.cancelled) {
-                errorMessage.textContent = outcome.error || "Could not restart the server.";
+                errorMessage.textContent = outcome.error || "无法重启服务器。";
                 errorMessage.classList.remove("hidden");
                 if (outcome.status?.running) dependencies.resumeRuntimePolling(outcome.status);
             }
         } catch (error) {
             console.warn("Configure restart failed", error);
-            errorMessage.textContent = "Could not restart the server. Check Monitor for details.";
+            errorMessage.textContent = "无法重启服务器。请查看监视器中的详细信息。";
             errorMessage.classList.remove("hidden");
         } finally {
             refreshComparison();
@@ -288,8 +288,8 @@
             header.type = "button";
             header.className = "accordion-header";
             const countText = visibleFlags.length === group.flags.length
-                ? `${group.flags.length} ${group.flags.length === 1 ? "setting" : "settings"}`
-                : `${visibleFlags.length} of ${group.flags.length} settings`;
+                ? `${group.flags.length} 项设置`
+                : `${visibleFlags.length} / ${group.flags.length} 项设置`;
 
             const arrow = document.createElement("span");
             arrow.className = "arrow";
@@ -361,7 +361,7 @@
         if (visibleGroups === 0) {
             const empty = document.createElement("div");
             empty.className = "flags-empty";
-            empty.textContent = "No configuration options match your search.";
+            empty.textContent = "没有符合搜索条件的配置选项。";
             container.appendChild(empty);
         }
 
@@ -482,14 +482,14 @@
         baseline.className = "flag-baseline hidden";
         const baselineLabel = document.createElement("span");
         baselineLabel.className = "flag-baseline-label";
-        baselineLabel.textContent = "At launch";
+        baselineLabel.textContent = "当前运行";
         const value = document.createElement("span");
         value.className = "flag-baseline-value";
         const reset = document.createElement("button");
         reset.type = "button";
         reset.className = "btn btn-sm flag-revert";
-        reset.textContent = "Use launch value";
-        reset.setAttribute("aria-label", `Use launch value for ${f.label || f.flag}`);
+        reset.textContent = "应用当前运行的值";
+        reset.setAttribute("aria-label", `应用正运行的值作为： ${f.label || f.flag}`);
         reset.addEventListener("click", () => {
             const runtime = getComparisonRuntime();
             const entry = getFlagCore().compareLaunchSettings(runtime).entries.find(entry => entry.flag.id === f.id);
@@ -528,9 +528,9 @@
     function formatComparisonValue(flag, value) {
         const option = value !== null && value !== undefined && (flag.options || []).find(option => String(option.value) === String(value));
         if (option) return option.label;
-        if (value === null || value === undefined || value === "") return "Not set";
-        if (flag.type === "bool") return value === true ? "Enabled" : "Disabled";
-        if (Array.isArray(value)) return value.length ? value.join(", ") : "None";
+        if (value === null || value === undefined || value === "") return "未设置";
+        if (flag.type === "bool") return value === true ? "启用" : "禁用";
+        if (Array.isArray(value)) return value.length ? value.join(", ") : "无";
         return String(value);
     }
 
@@ -547,24 +547,24 @@
         restart.classList.toggle("hidden", !restartVisible);
         restart.disabled = Boolean(state.busy);
         restart.textContent = restarting
-            ? ({ stopping: "Stopping…", starting: "Starting…", loading: "Loading…" }[state.phase] || "Checking…")
-            : "Restart with changes";
+            ? ({ stopping: "停止…", starting: "开始…", loading: "加载…" }[state.phase] || "检查…")
+            : "应用更改并重启";
         document.getElementById("config-restart-help").classList.toggle("hidden", !restartVisible);
         const comparison = getFlagCore().compareLaunchSettings(runtime);
         const entries = new Map(comparison.entries.map(entry => [entry.flag.id, entry]));
-        const phaseNames = { idle: "Stopped", starting: "Starting", loading: "Loading", ready: "Ready", running: "Running", stopping: "Stopping", failed: "Failed" };
-        summary.textContent = external ? "External server" : (phaseNames[state.phase] || "Stopped");
-        if (runtime && state.phase === "failed") summary.textContent = "Process active · action failed";
+        const phaseNames = { idle: "已停止", starting: "开始", loading: "加载", ready: "准备就绪", running: "运行", stopping: "停止", failed: "失败" };
+        summary.textContent = external ? "外部服务器" : (phaseNames[state.phase] || "已停止");
+        if (runtime && state.phase === "failed") summary.textContent = "进程处于活动状态・操作失败";
         const identity = document.getElementById("config-runtime-model");
         identity.textContent = runtime
-            ? [runtime.tool, runtime.alias || runtime.model || "Model unavailable", runtime.host && runtime.port ? `${runtime.host}:${runtime.port}` : ""].filter(Boolean).join(" · ")
-            : external ? "Managed outside this app" : "No local process running";
+            ? [runtime.tool, runtime.alias || runtime.model || "模型不可用", runtime.host && runtime.port ? `${runtime.host}:${runtime.port}` : ""].filter(Boolean).join(" · ")
+            : external ? "由本应用外部托管" : "没有正在运行的本地进程";
         identity.title = identity.textContent;
         document.getElementById("config-runtime-build").textContent = runtime ? [runtime.backend, runtime.version].filter(Boolean).join(" · ") : "";
         const count = comparison.changes.length;
         const changeText = comparison.available
-            ? count ? `${count} ${count === 1 ? "setting changed" : "settings changed"} since launch` : "Settings match launch"
-            : "Comparison unavailable";
+            ? count ? `${count} 项设置 启动以后发生了变更` : "设置与启动参数一致"
+            : "对比数据不可用";
         const changeCount = document.getElementById("config-change-count");
         if (changeCount.textContent !== changeText) changeCount.textContent = changeText;
         const filter = document.getElementById("config-changes-only");
@@ -572,24 +572,24 @@
         if (!comparison.available) changesOnly = false;
         filter.checked = changesOnly;
         document.getElementById("config-comparison-note").textContent = comparison.available
-            ? "Changes apply on your next launch or restart. Sampling changes also apply to new messages in Chat."
+            ? "更改将在下次启动或重启时生效，采样参数的更改也将应用于聊天中的新消息。"
             : runtime && runtime.tool !== getCurrentTool()
-                ? `Select ${runtime.tool} to compare with this process.`
+                ? `选择 ${runtime.tool} 与此进程进行比较`
                 : runtime || external
-                    ? "This process has no recorded GUI launch settings. Its values will not be inferred from your edits."
-                    : "Launch a model to compare edits with its launch settings.";
+                    ? "该进程没有记录的 GUI 启动设置。其数值将无法根据您的修改进行推断。"
+                    : "重启操作，将会使用您当前的设置重新加载至所选模型，并中断当前正在进行的请求。";
         const exclusions = document.getElementById("config-comparison-exclusions");
         const notes = [];
         if (comparison.available) {
-            notes.push("“At launch” shows the settings you chose when starting the server. Automatic values, API keys, and custom launch arguments aren’t compared. Reverting settings keeps your current model selection.");
+            notes.push("「启动时」标签页展示的是你启动服务时选择的设置项，自动生成的数值、API 密钥以及自定义启动参数不会参与对比。执行设置回滚操作后，你当前选中的模型将保持不变。");
             if (runtime.launch_settings.has_custom_args || String(getFlagValues().custom_args || "").trim()) {
-                notes.push("Custom launch arguments can override the settings shown here.");
+                notes.push("自定义启动参数可以覆盖此处显示的设置。");
             }
-            if (comparison.modelChanged) notes.push("You’ve selected a different model.");
+            if (comparison.modelChanged) notes.push("你选择了不同的模型。");
             if ((runtime.launch_settings.flags.custom_env || "") !== (getFlagValues().custom_env || "")) {
-                notes.push("Environment Variables have changed. Relaunch to apply them; the flag comparison and revert controls do not include these variables.");
+                notes.push("环境变量已更改。请重新启动以应用；标志对比和回滚控件不包含这些变量。");
             }
-            if (comparison.modelRootChanged) notes.push("You’ve changed the models folder. Reverting settings keeps your current folder.");
+            if (comparison.modelRootChanged) notes.push("你更改了模型文件夹。回滚设置会保留你当前的文件夹。");
         }
         exclusions.textContent = notes.join(" ");
         document.getElementById("config-comparison-about").classList.toggle("hidden", !notes.length);
@@ -607,7 +607,7 @@
             const baseline = row.querySelector(".flag-baseline");
             if (!baseline) continue;
             baseline.classList.toggle("hidden", !showBaseline);
-            baseline.querySelector(".flag-baseline-value").textContent = entry ? formatComparisonValue(entry.flag, entry.before) : "Unknown";
+            baseline.querySelector(".flag-baseline-value").textContent = entry ? formatComparisonValue(entry.flag, entry.before) : "未知";
             baseline.querySelector(".flag-revert").classList.toggle("hidden", !changed);
         }
         const groups = getGroups();
@@ -615,7 +615,7 @@
             const group = groups[category.dataset.categoryId];
             const changedCount = group ? group.flags.filter(flag => entries.get(flag.id)?.changed).length : 0;
             const categoryCount = category.querySelector(".accordion-header .count");
-            categoryCount.textContent = categoryCount.dataset.settingCount + (changedCount ? ` · ${changedCount} changed` : "");
+            categoryCount.textContent = categoryCount.dataset.settingCount + (changedCount ? ` · ${changedCount} 项已更改` : "");
             category.classList.toggle("hidden", changesOnly && !category.querySelector(".flag-row:not(.hidden)"));
             for (const submenu of category.querySelectorAll(".flag-submenu")) {
                 submenu.classList.toggle("hidden", changesOnly && !submenu.querySelector(".flag-row:not(.hidden)"));
@@ -675,14 +675,14 @@
         if (f.default !== undefined) {
             const flagDefault = document.createElement("span");
             flagDefault.className = "flag-default";
-            flagDefault.textContent = `GUI default: ${String(f.default) || "not set"}`;
+            flagDefault.textContent = `GUI 默认：${String(f.default) || "未设置"}`;
             metadata.appendChild(flagDefault);
         }
 
         if (f.type === "bool" && f.false_flag) {
             const toggleHint = document.createElement("span");
             toggleHint.className = "flag-toggle-hint";
-            toggleHint.textContent = `Off → ${f.false_flag}`;
+            toggleHint.textContent = `关闭 → ${f.false_flag}`;
             metadata.appendChild(toggleHint);
         }
 
@@ -691,8 +691,8 @@
             more.className = "flag-more";
 
             const moreSummary = document.createElement("summary");
-            moreSummary.textContent = "Details";
-            moreSummary.setAttribute("aria-label", `Details about ${f.label || f.flag}`);
+            moreSummary.textContent = "详情";
+            moreSummary.setAttribute("aria-label", `关于 ${f.label || f.flag} 的详情`);
 
             const moreText = document.createElement("div");
             moreText.className = "flag-more-text";
@@ -732,9 +732,9 @@
         });
         const lbl = document.createElement("label");
         lbl.htmlFor = "flag-" + f.id;
-        lbl.textContent = checkbox.indeterminate ? "llama.cpp default" : checkbox.checked ? "Enabled" : "Disabled";
+        lbl.textContent = checkbox.indeterminate ? "llama.cpp 默认" : checkbox.checked ? "启用" : "禁用";
         checkbox.addEventListener("change", () => {
-            lbl.textContent = checkbox.checked ? "Enabled" : "Disabled";
+            lbl.textContent = checkbox.checked ? "启用" : "禁用";
         });
         cb.appendChild(checkbox);
         cb.appendChild(lbl);
@@ -746,7 +746,7 @@
             || select.querySelector('option[value=""]')) return;
         const option = document.createElement("option");
         option.value = "";
-        option.textContent = "llama.cpp default";
+        option.textContent = "llama.cpp 默认";
         option.disabled = true;
         select.prepend(option);
     }
@@ -814,7 +814,7 @@
         const warning = document.createElement("div");
         warning.className = "flag-multi-warning hidden";
         warning.dataset.flagWarningId = f.id;
-        warning.textContent = "High-risk tools selected. Only enable on trusted/local environments.";
+        warning.textContent = "已选择高风险工具。仅在可信/本地环境启用。";
 
         const updateWarning = (selectedValues) => {
             if (!hasHighRiskOptions) return;
@@ -864,7 +864,7 @@
             if (opt.risk === "high") {
                 const badge = document.createElement("span");
                 badge.className = "flag-risk-badge";
-                badge.textContent = "High risk";
+                badge.textContent = "高风险";
                 row.appendChild(badge);
             }
             optionWrap.appendChild(row);
@@ -892,7 +892,7 @@
         });
         const browseBtn = document.createElement("button");
         browseBtn.className = "btn btn-sm";
-        browseBtn.textContent = "Browse";
+        browseBtn.textContent = "浏览";
         browseBtn.addEventListener("click", async () => {
             try {
                 const selectedPath = await dependencies.browseForPathFlag(f);
@@ -900,7 +900,7 @@
                 textField.value = selectedPath;
                 getFlagCore().setPathFlagValue(f.id, selectedPath);
             } catch (e) {
-                dependencies.showStatus("error", "Failed to select file: " + e.message);
+                dependencies.showStatus("error", "选择文件失败：" + e.message);
             }
         });
         input.appendChild(textField);
@@ -972,7 +972,7 @@
             const raw = textField.value || undefined;
             if (f.id === "gpu_layers") {
                 const normalized = getFlagCore().normalizeGpuLayersValue(raw);
-                textField.setCustomValidity(raw && normalized === undefined ? "Use auto, all, 0, or a non-negative integer." : "");
+                textField.setCustomValidity(raw && normalized === undefined ? "请使用 auto、all、0 或非负整数。" : "");
                 getFlagCore().setFlagValue(f.id, normalized);
                 return;
             }
@@ -987,7 +987,7 @@
         field.dataset.flagId = f.id;
         field.dataset.flagType = "text_list";
         field.rows = 4;
-        field.placeholder = f.placeholder || "One value per line";
+        field.placeholder = f.placeholder || "每行一个值";
         const current = getFlagValues()[f.id];
         field.value = Array.isArray(current) ? current.join("\n") : String(current || "");
         field.addEventListener("input", () => {
@@ -999,7 +999,7 @@
 
     function generateSensitiveValue() {
         if (!window.crypto || typeof window.crypto.getRandomValues !== "function") {
-            throw new Error("Secure random generation is unavailable in this browser.");
+            throw new Error("此浏览器不支持安全随机数生成");
         }
         const bytes = new Uint8Array(32);
         window.crypto.getRandomValues(bytes);
@@ -1059,7 +1059,7 @@
         textField.dataset.flagType = "text";
         textField.dataset.sensitiveInput = "true";
         initializeSensitiveTextInput(textField);
-        textField.placeholder = f.placeholder || "Leave blank for no authentication";
+        textField.placeholder = f.placeholder || "若无需身份验证，请留空";
         textField.value = getFlagValues()[f.id] || "";
         textField.addEventListener("input", () => {
             getFlagCore().setFlagValue(f.id, textField.value || undefined);
@@ -1072,28 +1072,28 @@
         const showButton = document.createElement("button");
         showButton.type = "button";
         showButton.className = "btn btn-sm btn-ghost";
-        showButton.textContent = "Show";
+        showButton.textContent = "显示";
         showButton.dataset.sensitiveRequiresValue = "true";
         showButton.addEventListener("click", () => {
             const isHidden = textField.dataset.sensitiveMaskMode === "css"
                 ? textField.classList.contains("sensitive-input-masked")
                 : textField.type === "password";
             setSensitiveTextInputRevealed(textField, isHidden);
-            showButton.textContent = isHidden ? "Hide" : "Show";
+            showButton.textContent = isHidden ? "隐藏" : "显示";
             showButton.setAttribute("aria-pressed", String(isHidden));
         });
 
         const generateButton = document.createElement("button");
         generateButton.type = "button";
         generateButton.className = "btn btn-sm";
-        generateButton.textContent = "Generate";
+        generateButton.textContent = "生成";
         generateButton.addEventListener("click", () => {
             try {
                 const value = generateSensitiveValue();
                 getFlagCore().setFlagValue(f.id, value);
                 textField.value = value;
                 syncSensitiveTextInput(control, value);
-                if (dependencies.showToast) dependencies.showToast("Generated a new API key", "success");
+                if (dependencies.showToast) dependencies.showToast("API Key 已生成", "success");
             } catch (error) {
                 if (dependencies.showToast) dependencies.showToast(error.message, "error");
                 else console.warn(error.message);
@@ -1103,12 +1103,12 @@
         const copyButton = document.createElement("button");
         copyButton.type = "button";
         copyButton.className = "btn btn-sm btn-ghost";
-        copyButton.textContent = "Copy key";
+        copyButton.textContent = "复制 API Key";
         copyButton.dataset.sensitiveRequiresValue = "true";
         copyButton.addEventListener("click", () => {
             if (!textField.value) return;
             if (dependencies.copyText) dependencies.copyText(textField.value);
-            if (dependencies.showToast) dependencies.showToast("API key copied", "success");
+            if (dependencies.showToast) dependencies.showToast("API Key 已复制", "success");
         });
 
         actions.appendChild(showButton);
@@ -1141,13 +1141,13 @@
 
         const select = document.createElement("select");
         select.className = "override-tensor-buffer-select";
-        select.setAttribute("aria-label", "MoE expert tensor buffer");
+        select.setAttribute("aria-label", "MoE 专家张量缓冲区");
         populateTensorBufferSelect(select, tensorBufferTypesState);
 
         const applyBtn = document.createElement("button");
         applyBtn.type = "button";
         applyBtn.className = "btn btn-sm";
-        applyBtn.textContent = "Apply MoE Experts";
+        applyBtn.textContent = "应用 MoE Experts「专家」";
         applyBtn.addEventListener("click", () => {
             const bufferType = select.value || tensorBufferTypesState.default || "CPU";
             const nextValue = mergeMoEExpertOverride(getFlagValues()[f.id], bufferType);
@@ -1166,7 +1166,7 @@
 
         const note = document.createElement("div");
         note.className = "override-tensor-note";
-        note.textContent = "Experimental. MoE models only: assigns matching expert weight tensors, not prompt-active experts. GPU targets clear CPU MoE settings to avoid conflicts.";
+        note.textContent = "【实验性功能】仅限 MoE 混合专家模型：分配相匹配的专家权重张量，而非根据提示词激活的专家。目标 GPU 会清除 CPU MoE 设置以避免冲突。";
         wrap.appendChild(note);
 
         loadTensorBufferTypes().then((state) => {
@@ -1215,7 +1215,7 @@
                 tensorBufferTypesState = {
                     buffers: ["CPU"],
                     default: "CPU",
-                    detail: error && error.message ? error.message : "Unable to discover buffer types.",
+                    detail: error && error.message ? error.message : "无法发现缓冲区类型。",
                 };
                 return tensorBufferTypesState;
             });
@@ -1295,7 +1295,7 @@
                 el.checked = val === true;
                 el.indeterminate = val === "";
                 const lbl = el.parentElement.querySelector("label");
-                if (lbl) lbl.textContent = el.indeterminate ? "llama.cpp default" : val === true ? "Enabled" : "Disabled";
+                if (lbl) lbl.textContent = el.indeterminate ? "llama.cpp 默认" : val === true ? "启用" : "禁用";
             } else if (f.type === "enum") {
                 if (f.id === "chat_template") {
                     ensureChatTemplateOption(

@@ -10,46 +10,46 @@
 
     const API_ENDPOINTS = [
         {
-            name: "OpenAI Chat Completions",
+            name: "OpenAI 对话补全「Chat Completions」",
             method: "POST",
             path: "/v1/chat/completions",
-            compatibility: "OpenAI compatible",
-            detail: "Primary chat endpoint used by most OpenAI-compatible clients.",
+            compatibility: "OpenAI 兼容接口",
+            detail: "大多数 OpenAI 兼容客户端所使用的主要对话接口",
         },
         {
-            name: "OpenAI Completions",
+            name: "OpenAI 文本补全「Completions」",
             method: "POST",
             path: "/v1/completions",
-            compatibility: "OpenAI compatible",
-            detail: "Legacy text completion endpoint.",
+            compatibility: "OpenAI 兼容接口",
+            detail: "旧版文本补全接口",
         },
         {
-            name: "OpenAI Embeddings",
+            name: "OpenAI 向量嵌入「Embeddings」",
             method: "POST",
             path: "/v1/embeddings",
-            compatibility: "OpenAI compatible",
-            detail: "Create vector embeddings for retrieval and semantic search.",
+            compatibility: "OpenAI 兼容接口",
+            detail: "生成向量嵌入，用于检索与语义搜索。",
         },
         {
-            name: "OpenAI Models",
+            name: "OpenAI 模型列表「Models」",
             method: "GET",
             path: "/v1/models",
-            compatibility: "OpenAI compatible",
-            detail: "Lists available model aliases exposed by llama-server.",
+            compatibility: "OpenAI 兼容接口",
+            detail: "列出 llama-server 对外公开的可用模型别名",
         },
         {
-            name: "Health Check",
+            name: "健康检查「Health Check」",
             method: "GET",
             path: "/health",
-            compatibility: "Native llama-server",
-            detail: "Quick status probe for monitoring and uptime checks.",
+            compatibility: "llama-server 原生接口r",
+            detail: "用于监控与在线状态检测的快速状态探测.",
         },
         {
-            name: "Web UI",
+            name: "图形界面「Web UI」",
             method: "GET",
             path: "/",
-            compatibility: "Native llama-server",
-            detail: "Built-in browser interface.",
+            compatibility: "llama-server 原生接口r",
+            detail: "内置浏览器图形界面",
         },
     ];
 
@@ -341,20 +341,20 @@
         baseLink.textContent = baseUrl;
 
         const modeText = flagCore.getCurrentTool() === "llama-server"
-            ? "Tool mode is set to llama-server."
-            : "Tool mode is set to llama-cli. Switch to llama-server to expose HTTP endpoints.";
+            ? "工具模式已设置为 llama-server："
+            : "工具模式已设置为 llama-cli，请切换至 llama-server 以公开 HTTP 接口端点：";
         const runningText = isLoading
-            ? "Server process is running but the model is still loading; endpoints are temporarily unavailable."
+            ? "服务器进程正在运行，但模型仍在加载中；接口端点暂时不可用。"
             : isRunning && latestStatus.active_process_tool === "llama-server"
-            ? "Server process appears to be ready."
+            ? "服务器进程已准备就绪。"
             : externalTarget
-            ? "Connected to a llama-server started outside this GUI."
+            ? "已连接到在此图形界面外部启动的 llama-server。"
             : isRunning
-            ? "A llama.cpp tool is running, but it is not llama-server — endpoints are not available."
-            : "Server process is not running right now.";
+            ? "某个 llama.cpp 工具正在运行，但并非 llama-server — 接口端点不可用。"
+            : "服务器进程当前未运行。";
         const authText = hasApiKey
-            ? "API key is configured. Use `Authorization: Bearer <key>` in clients."
-            : "No API key configured. Endpoints are open on this host/port.";
+            ? "API key 已配置，请在客户端中使用 `Authorization: Bearer <key>` 进行认证。"
+            : "API key 未配置，接口端点在此主机 / 端口上公开访问。";
         statusNote.textContent = `${modeText} ${runningText} ${authText}`;
 
         list.innerHTML = "";
@@ -386,8 +386,8 @@
             const copyBtn = document.createElement("button");
             copyBtn.className = "btn btn-sm";
             copyBtn.type = "button";
-            copyBtn.textContent = "Copy";
-            copyBtn.ariaLabel = `Copy ${endpoint.name} URL`;
+            copyBtn.textContent = "复制";
+            copyBtn.ariaLabel = `复制 ${endpoint.name} 的 URL`;
             copyBtn.addEventListener("click", () => {
                 if (copyText) copyText(baseUrl + endpoint.path);
             });
@@ -426,8 +426,8 @@
             const copyBtn = document.createElement("button");
             copyBtn.className = "btn btn-sm";
             copyBtn.type = "button";
-            copyBtn.textContent = "Copy";
-            copyBtn.ariaLabel = `Copy ${snippet.name} snippet`;
+            copyBtn.textContent = "复制";
+            copyBtn.ariaLabel = `复制 ${snippet.name} 片段`;
 
             const code = document.createElement("code");
             code.textContent = snippet.build(baseUrl, modelName, hasApiKey);

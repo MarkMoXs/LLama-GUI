@@ -120,7 +120,7 @@ function flat(result) {
     assert.ok(result.excluded.some((item) => item.label === "Context"));
     assert.ok(result.excluded.some((item) => item.label === "GPU Layers"));
     assert.ok(result.excluded.some((item) => item.label === "Temperature"));
-    assert.ok(result.excluded.some((item) => item.label === "Custom Launch Args"));
+    assert.ok(result.excluded.some((item) => item.label === "自定义启动参数"));
 }
 
 {
@@ -146,7 +146,7 @@ function flat(result) {
         flags,
         source: { model: "../secret.gguf", flags: {} },
     });
-    assert.match(escaped.error, /Invalid model filename/);
+    assert.match(escaped.error, /无效的模型文件名/);
 
     context.customModelDir = {
         models_dir: "/mnt/My Models",
@@ -169,7 +169,7 @@ function flat(result) {
         flags,
         source: { model: "vendor/nested.gguf", flags: {} },
     });
-    assert.match(unknown.error, /status is not available/);
+    assert.match(unknown.error, /状态尚不可用/);
     vm.runInContext(`window.LlamaGui.flagCore.setModelDirInfo({
         models_dir: "models",
         models_arg_root: "models",
@@ -236,7 +236,7 @@ function flat(result) {
         source: { model: "", flags: {} },
     });
 
-    assert.match(result.error, /Select a model/);
+    assert.match(result.error, /请先选择一个模型/);
 }
 
 {
@@ -276,7 +276,7 @@ function flat(result) {
         "--ppl-stride", "64",
         "--no-warmup",
     ]);
-    assert.ok(result.excluded.some((item) => item.label === "Configure/Preset Flags"));
+    assert.ok(result.excluded.some((item) => item.label === "配置/预设标志"));
     assert.ok(!flat(result).includes("-hf"));
 }
 
@@ -303,7 +303,7 @@ function flat(result) {
 
     assert.equal(result.error, null);
     assert.deepEqual(flat(result), ["-m", "models/ppl-model.gguf", "-f", "wiki.test.raw"]);
-    assert.ok(result.excluded.some((item) => item.label === "Perplexity Controls"));
+    assert.ok(result.excluded.some((item) => item.label === "困惑度控制"));
 }
 
 {
@@ -326,7 +326,7 @@ function flat(result) {
         source: { model: "ppl-model.gguf", flags: {} },
     });
 
-    assert.match(result.error, /prompt\/data file/);
+    assert.match(result.error, /提示词\/数据文件/);
 }
 
 {
@@ -412,8 +412,8 @@ function flat(result) {
     const pplLoadModeIndex = pplFlat.indexOf("--load-mode");
     assert.notEqual(pplLoadModeIndex, -1, "mmap-off must translate to a load mode");
     assert.equal(pplFlat[pplLoadModeIndex + 1], "none");
-    assert.ok(ppl.applied.some((item) => item.label === "Memory Mapping"
-        && item.value === "Off (--load-mode none)"), "the settings summary must show the translated flag");
+    assert.ok(ppl.applied.some((item) => item.label === "内存映射"
+        && item.value === "关闭 (--load-mode none)"), "the settings summary must show the translated flag");
 
     const benchMmapOff = adapter.buildBenchmarkArgs({
         benchmarkType: "bench",
@@ -531,12 +531,12 @@ function trackedClassList(initial = []) {
         id === "benchmark-manual-model" ? manualModelSelect : null
     );
     adapter.configure({
-        fetchJson: async () => { throw new Error("Configured models folder is offline."); },
+        fetchJson: async () => { throw new Error("配置模型文件夹处于离线状态"); },
     });
     await adapter._testLoadModelsForSelect();
     assert.equal(
         manualModelSelect.children[0].textContent,
-        "Models unavailable: Configured models folder is offline."
+        "模型不可用： 配置模型文件夹处于离线状态"
     );
 
     const runButton = { classList: trackedClassList(["hidden"]) };

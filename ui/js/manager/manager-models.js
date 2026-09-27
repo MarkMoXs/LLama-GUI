@@ -36,7 +36,7 @@
             // them before the await made a second refresh snapshot an empty value,
             // so the winning response silently dropped the selected model.
             const selectedValue = sel.value;
-            sel.innerHTML = '<option value="">-- Select Model --</option>';
+            sel.innerHTML = '<option value="">-- 选择模型 --</option>';
             const names = new Set();
             const optionValues = new Set();
             let added = 0;
@@ -54,7 +54,7 @@
             if (added === 0) {
                 const opt = document.createElement("option");
                 opt.value = "";
-                opt.textContent = "No .gguf models found in the active models folder \u2014 download one from Quick Launch";
+                opt.textContent = "在当前模型文件夹中未找到 .gguf 模型 \u2014 请通过 Quick Launch 下载一个。";
                 sel.appendChild(opt);
             }
             sel.value = selectedValue && optionValues.has(selectedValue) ? selectedValue : "";
@@ -75,10 +75,10 @@
             // Drop the cache rather than keeping a stale one: callers must not read
             // a failed refresh as proof that a model is missing.
             knownModelNames = null;
-            sel.innerHTML = '<option value="">-- Select Model --</option>';
+            sel.innerHTML = '<option value="">-- 选择模型 --</option>';
             const opt = document.createElement("option");
             opt.value = "";
-            opt.textContent = "Failed to load models";
+            opt.textContent = "加载模型失败";
             sel.appendChild(opt);
             if (window.LlamaGui && window.LlamaGui.flagCore) {
                 window.LlamaGui.flagCore.setSelectedModelValue("");
@@ -87,7 +87,7 @@
                 I.dependencies.syncQuickLaunchModelOptions();
             }
             if (typeof I.dependencies.showToast === "function") {
-                I.dependencies.showToast("Could not load models: " + e.message, "error");
+                I.dependencies.showToast("无法加载模型：" + e.message, "error");
             } else {
                 console.debug("Failed to refresh model list", e);
             }

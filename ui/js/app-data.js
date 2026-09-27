@@ -78,7 +78,7 @@ const QUICK_PROFILES = Object.fromEntries(
             label: `${size} · MTP ${mode}`,
             summary: `${size} context · MTP ${mode} · Automatic runtime settings. `
                 + (specType === "auto" ? "MTP depends on model/build support; draft max uses the llama.cpp default. " : "Speculative decoding disabled. ")
-                + "Samplers unchanged.",
+                + "采样器保持不变。",
             flags: { ctx_size: ctx, spec_type: specType },
         }];
     }))

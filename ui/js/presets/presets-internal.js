@@ -146,7 +146,7 @@ function findPresetImportNameCollision(existingPresets, importedPresets) {
 
 function getPresetFlagCore() {
     if (!window.LlamaGui || !window.LlamaGui.flagCore) {
-        throw new Error("Flag core is not available.");
+        throw new Error("标志核心不可用。");
     }
     return window.LlamaGui.flagCore;
 }

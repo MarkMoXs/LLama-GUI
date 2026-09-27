@@ -246,11 +246,11 @@ assert.equal(applied[2][1].ctx_size, 4096);
     assert.equal(presetApi.comparePresetToCurrent(saved).blocked, true);
     assert.equal(presetApi.matchesCurrentPreset(saved), false);
     context.FLAGS.push({ id: "hf_token" });
-    assert.equal(presetApi.formatSavedPresetValue("hf_token", "private-token"), "Set · value hidden");
-    assert.equal(presetApi.formatSavedPresetValue("custom_args", "--other-token private"), "Set · value hidden");
-    assert.equal(presetApi.formatSavedPresetValue("api_key", "private-token"), "Set · value hidden");
-    assert.equal(presetApi.formatSavedPresetValue("ctx_size", 0), "Auto · from model (0)");
-    assert.equal(presetApi.formatSavedPresetValue("gpu_layers", "auto"), "Auto");
+    assert.equal(presetApi.formatSavedPresetValue("hf_token", "private-token"), "已设置 · 值已隐藏");
+    assert.equal(presetApi.formatSavedPresetValue("custom_args", "--other-token private"), "已设置 · 值已隐藏");
+    assert.equal(presetApi.formatSavedPresetValue("api_key", "private-token"), "已设置 · 值已隐藏");
+    assert.equal(presetApi.formatSavedPresetValue("ctx_size", 0), "自动 · 使用模型值（0）");
+    assert.equal(presetApi.formatSavedPresetValue("gpu_layers", "auto"), "自动");
     context.window.LlamaGui.manager = undefined;
     context.document.getElementById = () => null;
 }
@@ -770,28 +770,28 @@ const healthMessage = (setup) => {
 const RESET = "presetSearchQuery = ''; presetWarningFilterActive = false; presetFavoritesMode = 'all'";
 
 const unfilteredRot = healthMessage(RESET);
-assert.match(unfilteredRot, /^1 preset points at a model file/, "an unfiltered view states the count plainly");
-assert.match(unfilteredRot, /Use the Warnings filter/, "the review hint belongs on an unfiltered view");
+assert.match(unfilteredRot, /^1 个预设指向的模型文件/, "an unfiltered view states the count plainly");
+assert.match(unfilteredRot, /请使用“警告”筛选条件查看/, "the review hint belongs on an unfiltered view");
 
 const hiddenRot = healthMessage(`${RESET}; presetSearchQuery = 'hermes'`);
 assert.doesNotMatch(
     hiddenRot,
-    /Every preset/,
+    /每个预设/,
     "a filtered view that hides the only rotten preset must not claim every preset is clean"
 );
-assert.match(hiddenRot, /among the presets shown/, "a clean filtered view must scope its all-clear");
-assert.match(hiddenRot, /Clear the search and filters/, "and must say how to check the rest");
+assert.match(hiddenRot, /当前显示的预设无警告/, "a clean filtered view must scope its all-clear");
+assert.match(hiddenRot, /清除搜索和筛选条件/, "and must say how to check the rest");
 
 assert.match(
     healthMessage(`${RESET}; presetSearchQuery = 'old'`),
-    /^Of the presets shown, 1 preset points/,
+    /^当前显示的预设中，1 个预设指向/,
     "counts under a filter must be scoped to what is visible"
 );
 
 // The Warnings filter cannot be the suggested next step when it is already on.
 assert.doesNotMatch(
     healthMessage(`${RESET}; presetWarningFilterActive = true`),
-    /Use the Warnings filter/,
+    /请使用“警告”筛选条件查看/,
     "advice to apply the already-active filter is dead advice"
 );
 
@@ -811,16 +811,16 @@ assert.equal(uncheckedSummary.missingModelCount, 0, "and the count stays silent,
 const uncheckedMessage = vm.runInContext("getPresetHealthMessage(getPresetLibrarySummary())", uncheckedContext);
 assert.doesNotMatch(
     uncheckedMessage,
-    /model that is present/,
+    /模型文件已存在/,
     "an unloaded model list must not produce an all-clear about model presence"
 );
-assert.match(uncheckedMessage, /not checked/, "it must say plainly which check did not run");
+assert.match(uncheckedMessage, /未对模型文件进行检查/, "it must say plainly which check did not run");
 
 // The same applies under a filter, where both caveats are in play at once.
 vm.runInContext("presetSearchQuery = 'a'; currentPresetGroups = buildPresetGroups(__presets)", uncheckedContext);
 const uncheckedFiltered = vm.runInContext("getPresetHealthMessage(getPresetLibrarySummary())", uncheckedContext);
-assert.match(uncheckedFiltered, /presets shown/, "the filtered scope is still stated");
-assert.match(uncheckedFiltered, /not checked/, "and so is the skipped model check");
+assert.match(uncheckedFiltered, /当前显示的预设/, "the filtered scope is still stated");
+assert.match(uncheckedFiltered, /未检查模型文件/, "and so is the skipped model check");
 
 // Unfiltered and clean is the one case allowed to speak for the whole library.
 const cleanContext = createModelContext(new Set(["kept.gguf"]));
@@ -828,7 +828,7 @@ cleanContext.__presets = [{ name: "alpha", data: { model: "kept.gguf", flags: {}
 vm.runInContext("currentPresetGroups = buildPresetGroups(__presets)", cleanContext);
 assert.match(
     vm.runInContext("getPresetHealthMessage(getPresetLibrarySummary())", cleanContext),
-    /Every preset points at a model that is present/,
+    /每个预设都指向一个真实存在且能干净加载的模型/,
     "an unfiltered clean library may still give an absolute all-clear"
 );
 
@@ -919,8 +919,8 @@ assert.equal(searchNames("draft"), "speculative", "'draft' must find the preset 
 assert.equal(searchNames("flash"), "gpu-tuned", "'flash' must find the preset that set flash_attn");
 
 // Human labels are searchable too, not just raw ids.
-assert.equal(searchNames("flash attention"), "gpu-tuned", "the flag label must be searchable");
-assert.equal(searchNames("context window"), "long-context", "'ctx_size' is labelled Total Context Window");
+assert.equal(searchNames("Flash 注意力"), "gpu-tuned", "the flag label must be searchable");
+assert.equal(searchNames("上下文大小"), "long-context", "'ctx_size' is labelled Total Context Window");
 // The de-underscored id, which neither the raw id nor the label contains.
 assert.equal(searchNames("ctx size"), "long-context", "an id typed with a space must still match");
 
@@ -959,8 +959,8 @@ assert.match(
 
 // Label lookup is cached on the definitions array identity.
 const flagLabel = searchContext.window.LlamaGui.presets.getPresetFlagLabel;
-assert.equal(flagLabel("ctx_size"), "Total Context Window");
-assert.equal(flagLabel("flash_attn"), "Flash Attention");
+assert.equal(flagLabel("ctx_size"), "上下文大小");
+assert.equal(flagLabel("flash_attn"), "Flash 注意力");
 assert.equal(flagLabel("not_a_real_flag"), "not a real flag", "an unknown id degrades to spaced text");
 searchContext.FLAGS = [{ id: "ctx_size", label: "Replaced Label" }];
 assert.equal(
@@ -1125,11 +1125,11 @@ async function testPresetLoadFailureClearsAuxiliaryState() {
     assert.equal(vm.runInContext("currentPresetGroups.length", ctx), 0);
     assert.equal(vm.runInContext("selectedPresetName", ctx), "");
     assert.equal(vm.runInContext("selectedPresetNames.size", ctx), 0);
-    assert.match(elements.get("presets-list").children[0].textContent, /Failed to load presets/);
+    assert.match(elements.get("presets-list").children[0].textContent, /加载预设失败/);
     assert.equal(elements.get("preset-detail-panel").children.length, 1, "stale preset actions must be removed");
-    assert.match(elements.get("preset-detail-panel").children[0].textContent, /library unavailable/);
+    assert.match(elements.get("preset-detail-panel").children[0].textContent, /预设库不可用/);
     assert.equal(elements.get("btn-presets-delete-selected").disabled, true);
-    assert.equal(elements.get("presets-count-line").textContent, "0 presets · 0 models");
+    assert.equal(elements.get("presets-count-line").textContent, "0 个预设 · 0 个模型");
 }
 
 // --- Archive view ------------------------------------------------------------
