@@ -872,7 +872,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/assets/app-logo.png":
             if not APP_LOGO_FILE.exists():
-                self.send_error(404, "Logo not found")
+                self.send_error(404, "未找到 Logo")
                 return
             body = APP_LOGO_FILE.read_bytes()
             Response(self).bytes(
@@ -1022,11 +1022,11 @@ def main():
         APP_CONTEXT.state.gui_server = server_class((GUI_HOST, port), Handler)
     except OSError as e:
         if "address already in use" in str(e).lower() or e.errno == 10048:
-            print(f"ERROR: Port {port} is already in use.")
+            print(f"错误：端口 {port} 已被占用")
             print(f"Another instance of Llama GUI may be running at {build_http_origin(GUI_HOST, port)}")
             print("Stop the other instance first, or close the browser tab and try again.")
         else:
-            print(f"ERROR: Could not start server on port {port}: {e}")
+            print(f"错误：无法在端口 {port} 上启动服务器：{e}")
         sys.exit(1)
 
     print(f"Llama GUI running at {build_http_origin(GUI_HOST, port)}")

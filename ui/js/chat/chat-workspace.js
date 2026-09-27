@@ -45,8 +45,8 @@
     function workspaceBusyReason() {
         if (S.confirmationPending) return "A confirmation is pending.";
         if (S.characterImportPending) return "A character card is being imported.";
-        if (S.pendingEdit) return "An edit is pending.";
-        if (S.compactionController) return "Compaction is in progress.";
+        if (S.pendingEdit) return "有待处理的编辑。";
+        if (S.compactionController) return "压缩正在进行中。";
         if (S.sendPreflightPromise) return "A send is being prepared.";
         if (S.chatStreaming) return "A response is streaming.";
         return "";
@@ -93,9 +93,9 @@
     }
 
     function getTransferState() {
-        if (!S.workspaceOwned) return { allowed: false, reason: "Chat is owned by another window." };
-        if (!S.workspaceHostAvailable) return { allowed: false, reason: "The chat host is unavailable." };
-        if (S.workspaceSuspended) return { allowed: false, reason: "Chat transfer is already suspended." };
+        if (!S.workspaceOwned) return { allowed: false, reason: "聊天由另一个窗口拥有。" };
+        if (!S.workspaceHostAvailable) return { allowed: false, reason: "聊天主机不可用。" };
+        if (S.workspaceSuspended) return { allowed: false, reason: "聊天传输已暂停。" };
         const reason = workspaceBusyReason();
         if (reason) return { allowed: false, reason };
         return { allowed: true, reason: "" };
@@ -470,7 +470,7 @@
             const systemPrompt = document.getElementById("chat-system-prompt");
             const sysCharCount = document.getElementById("chat-sys-char-count");
             if (systemPrompt) systemPrompt.value = inputs.systemPrompt;
-            if (sysCharCount) sysCharCount.textContent = `${inputs.systemPrompt.length} chars`;
+            if (sysCharCount) sysCharCount.textContent = `${inputs.systemPrompt.length} 字符`;
             const chatInput = document.getElementById("chat-input");
             if (chatInput) {
                 chatInput.value = inputs.draft;

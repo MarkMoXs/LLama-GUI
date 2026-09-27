@@ -447,7 +447,7 @@ def start_hf_model_download(
 
     with ctx.state.model_download_lock:
         if ctx.state.model_download_in_progress:
-            raise RuntimeError("A model download is already in progress.")
+            raise RuntimeError("模型下载已在进行中。")
         models_dir = model_dir.get_models_dir(ctx)
         repo_folder = slugify_repo_id(repo_id)
         model_basename = pathlib.PurePosixPath(model_file).name

@@ -193,7 +193,7 @@ const rendering = context.window.LlamaGui.chatRendering;
 
     assert.match(html, /<div class="chat-code-block" data-code-index="0">/);
     assert.match(html, /<span class="chat-code-lang">html<\/span>/);
-    assert.match(html, /<button class="chat-code-copy" type="button" data-code-index="0" title="Copy code">Copy<\/button>/);
+    assert.match(html, /<button class="chat-code-copy" type="button" data-code-index="0" title="复制代码">复制<\/button>/);
     assert.match(html, /<pre data-lang="html"><code>&lt;div onclick=&quot;bad\(\)&quot;&gt;x&lt;\/div&gt;<\/code><\/pre>/);
     assert.ok(!html.includes("<div onclick"), "fenced code blocks should stay escaped");
 }
@@ -209,8 +209,8 @@ const rendering = context.window.LlamaGui.chatRendering;
         "```",
     ].join("\n"));
 
-    assert.match(html, /<span class="chat-code-lang">Code<\/span>/);
-    assert.match(html, /<button class="chat-code-copy" type="button" data-code-index="1" title="Copy code">Copy<\/button>/);
+    assert.match(html, /<span class="chat-code-lang">代码<\/span>/);
+    assert.match(html, /<button class="chat-code-copy" type="button" data-code-index="1" title="复制代码">复制<\/button>/);
     assert.match(html, /<code>echo &quot;hello&quot;<\/code>/);
     assert.match(html, /<span class="chat-code-lang">jsimg<\/span>/);
     assert.match(html, /<code>console\.log\(&#39;&lt;safe&gt;&#39;\);<\/code>/);
@@ -233,7 +233,7 @@ const rendering = context.window.LlamaGui.chatRendering;
     });
 
     assert.equal(copiedText, "console.log('<raw copy>');");
-    assert.equal(button.textContent, "Copy");
+    assert.equal(button.textContent, "复制");
 }
 
 {
@@ -352,9 +352,9 @@ const rendering = context.window.LlamaGui.chatRendering;
     });
     assert.ok(metadata, "supplied response metadata should render a compact footer");
     assert.equal(metadata.children.length, 5);
-    assert.equal(metadata.children[0].textContent, "Prompt: 12");
-    assert.equal(metadata.children[3].textContent, "Speed: 4.5 tok/s");
-    assert.equal(metadata.children[4].textContent, "Stop: Output limit reached");
+    assert.equal(metadata.children[0].textContent, "提示词: 12");
+    assert.equal(metadata.children[3].textContent, "速度: 4.5 tok/s");
+    assert.equal(metadata.children[4].textContent, "停止原因: 此对话已达到输出限制");
     rendering.setChatResponseMetadata(bubble, {});
     assert.equal(bubble.closest(".chat-message-content").querySelector(".chat-response-metadata"), null,
         "absent response metadata should not invent or retain statistics");

@@ -52,7 +52,7 @@
         if (!button) return;
         button.hidden = !show;
         button.setAttribute("aria-hidden", String(!show));
-        button.textContent = "Jump to latest";
+        button.textContent = "跳转至最新";
     }
 
     function captureChatScrollState() {
@@ -119,7 +119,7 @@
         const stored = I.getStoredConversations();
         const active = S.currentConversationId && stored.find(item => item.id === S.currentConversationId);
         const backupTitle = `${active?.title || I.generateConversationTitle(S.chatMessages)} — before edit`;
-        const confirmed = await I.requestConfirmation("Edit and resend", `A selectable history copy named “${backupTitle}” will preserve the current conversation and later turns. The active conversation will be truncated only when you resend. Continue?`, "Edit message");
+        const confirmed = await I.requestConfirmation("编辑并重新发送", `一个名为“${backupTitle}”的可选历史副本将保留当前对话和后续轮次。只有在你重新发送时，当前对话才会被截断。是否继续？`, "编辑消息");
         if (!confirmed || !I.workspaceMutationAllowed(ownerEpoch)) return false;
         const input = document.getElementById("chat-input");
         if (!input) return false;
@@ -249,8 +249,8 @@
                 const editButton = document.createElement("button");
                 editButton.type = "button";
                 editButton.className = "btn btn-xs chat-response-action";
-                editButton.title = "Edit and resend";
-                editButton.setAttribute("aria-label", "Edit and resend");
+                editButton.title = "编辑并重新发送";
+                editButton.setAttribute("aria-label", "编辑并重新发送");
                 editButton.innerHTML = '<span class="icon icon-sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m16 3 5 5-13 13H3v-5L16 3Z"/><path d="m13 6 5 5"/></svg></span>';
                 editButton.addEventListener("click", () => { void editUserMessage(index); });
                 footer.appendChild(editButton);
@@ -265,9 +265,9 @@
             footer.className = "chat-response-footer";
             const label = document.createElement("span");
             label.className = "chat-response-status";
-            label.textContent = msg.status === "failed" ? `Incomplete — ${msg.error || "Request failed"}`
-                : msg.status === "stopped" ? "Stopped — response may be incomplete"
-                : msg.status === "length" ? "Output limit reached" : "";
+            label.textContent = msg.status === "failed" ? `不完整 — ${msg.error || "请求失败"}`
+                : msg.status === "stopped" ? "已停止 — 回复可能不完整"
+                : msg.status === "length" ? "此对话已达到输出限制" : "";
             footer.appendChild(label);
             const latest = index === S.chatMessages.length - 1;
             const addAction = (text, action, requiresServer = false) => {
@@ -284,11 +284,11 @@
             if (Array.isArray(msg.versions) && msg.versions.length > 1) {
                 const selected = msg.versionIndex || 0;
                 const versionLabel = document.createElement("span");
-                versionLabel.textContent = `Answer ${selected + 1} of ${msg.versions.length}`;
+                versionLabel.textContent = `第 ${selected + 1} / ${msg.versions.length} 个回答`;
                 footer.appendChild(versionLabel);
                 const lastAttempt = msg.versions[msg.versions.length - 1];
                 if (selected < msg.versions.length - 1 && ["failed", "stopped"].includes(lastAttempt.status)) {
-                    label.textContent += `${label.textContent ? ". " : ""}Latest attempt ${lastAttempt.status}; previous answer kept.`;
+                    label.textContent += `${label.textContent ? "。 " : ""}最近一次尝试 ${lastAttempt.status}；保留了上一个回答。`;
                 }
                 // Choosing a different answer after later turns would rewrite
                 // their context. Branch/edit support is a separate change.
@@ -304,12 +304,12 @@
                     I.requestWorkspaceCheckpoint({ reason: "select-version" });
                     return true;
                 };
-                if (latest && selected > 0) addAction("Previous answer", () => selectVersion(selected - 1));
-                if (latest && selected < msg.versions.length - 1) addAction("Next answer", () => selectVersion(selected + 1));
+                if (latest && selected > 0) addAction("上一个回答", () => selectVersion(selected - 1));
+                if (latest && selected < msg.versions.length - 1) addAction("下一个回答", () => selectVersion(selected + 1));
             }
             const lastAttempt = Array.isArray(msg.versions) ? msg.versions[msg.versions.length - 1] : msg;
             if (latest && [msg.status, lastAttempt.status].some(value => ["failed", "stopped", "length"].includes(value))) {
-                addAction("Retry", regenerateResponse, true);
+                addAction("重试", regenerateResponse, true);
             }
             bubble.closest(".chat-message-content").appendChild(footer);
         });
@@ -344,7 +344,7 @@
             if (!persistEditBranch(editing)) {
                 const editStatus = document.getElementById("chat-edit-status");
                 if (editStatus) {
-                    if (editStatus.children[0]) editStatus.children[0].textContent = "The before-edit history copy could not be saved. Your original conversation is still intact; try again or cancel.";
+                    if (editStatus.children[0]) editStatus.children[0].textContent = "编辑前的历史副本无法保存。你的原始对话仍然完整；请重试或取消。";
                     editStatus.hidden = false;
                 }
                 return;
@@ -381,7 +381,7 @@
         restoreChatScrollPosition();
 
         const body = I.buildChatBody(replacementIndex >= 0 ? S.chatMessages.slice(0, replacementIndex) : S.chatMessages, "", true);
-        I.renderContextBudget({ message: body.web_search ? "Waiting for web results before measuring context…" : "Checking context before generating…" });
+        I.renderContextBudget({ message: body.web_search ? "等待网页结果后再测量上下文…" : "生成前正在检查上下文…" });
 
         S.chatAbortController = new AbortController();
         let bubble = null;
@@ -417,7 +417,7 @@
                 }
 
                 if (!resp.body) {
-                    throw new Error("Response body is empty.");
+                    throw new Error("响应体为空。");
                 }
                 bubble = renderChatMessage("assistant", "");
                 reader = resp.body.getReader();
@@ -485,7 +485,7 @@
                         updateResponseMetadata(responseMetadata, parsed);
                         S.streamingCheckpoint.metadata = responseMetadata;
                         if (delta?.tool_calls !== undefined) {
-                            if (!body.tools?.length) throw new Error("The model requested a tool while Chat tools are disabled.");
+                            if (!body.tools?.length) throw new Error("在聊天工具被禁用时，模型请求了一个工具。");
                             window.LlamaGui.chatTools.collectCalls(toolCalls, delta.tool_calls);
                         }
                         const reasoningDelta = I.getChatDeltaText(delta, ["reasoning_content", "reasoning"]);
@@ -505,7 +505,7 @@
                         if (reasoningDelta || contentDelta) I.requestWorkspaceCheckpoint({ reason: "response-progress" });
                     }
                     if (done) {
-                        if (!streamDone && !receivedFinish) throw new Error("Connection closed before the response completed.");
+                        if (!streamDone && !receivedFinish) throw new Error("连接在响应完成前已关闭。");
                         break;
                     }
                 }
@@ -517,9 +517,9 @@
                 S.chatAbortController.signal.throwIfAborted();
                 if (!I.workspaceMutationAllowed(ownerEpoch)) throw Object.assign(new Error("Chat ownership changed"), { name: "AbortError" });
                 if (toolCalls.length || roundFinishReason === "tool_calls") {
-                    if (round > 0) throw new Error("The model requested more tools instead of answering. Retry the reply.");
+                    if (round > 0) throw new Error("模型请求了更多工具而不是回答。请重试回复。");
                     if (!toolCalls.length || roundFinishReason !== "tool_calls") {
-                        throw new Error("The date/time tool call was incomplete. Retry the reply.");
+                        throw new Error("日期/时间工具调用不完整。请重试回复。");
                     }
                     const results = window.LlamaGui.chatTools.executeCalls(toolCalls);
                     toolMessages.push({
@@ -543,7 +543,7 @@
                 break;
             }
 
-            if (!fullContent && !fullReasoning) throw new Error("The server returned no answer.");
+            if (!fullContent && !fullReasoning) throw new Error("服务器未返回答案。");
         } catch (e) {
             removeChatTypingIndicator();
             if (e.name === "AbortError") {

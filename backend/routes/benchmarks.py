@@ -53,7 +53,7 @@ def ensure_wikitext2(request, response, ctx):
                 with zipfile.ZipFile(tmp_path) as archive:
                     member = _find_zip_member(archive)
                     if member is None:
-                        response.error("WikiText-2 test file was not found in the downloaded archive.", 500)
+                        response.error("下载的压缩包中未找到 WikiText-2 测试文件。", 500)
                         return
                     # Extract to a sibling .part first: writing straight to target
                     # meant an interrupted extraction left a truncated file that
@@ -78,5 +78,5 @@ def ensure_wikitext2(request, response, ctx):
 
             response.json({"ready": True, "downloaded": True, "path": str(target)})
         except Exception as exc:
-            print(f"WikiText-2 download failed: {exc}", file=sys.stderr, flush=True)
+            print(f"WikiText-2 下载失败：{exc}", file=sys.stderr, flush=True)
             response.error(sanitize_error(exc, 500), 500)

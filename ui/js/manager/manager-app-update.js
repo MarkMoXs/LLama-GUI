@@ -33,7 +33,7 @@
     }
 
     function describeAppUpdateStatus(status) {
-        if (!status) return "Unable to determine app update status.";
+        if (!status) return "无法确定应用更新状态。";
         if (status.reason && !status.available) return status.reason;
 
         const formatPaths = (paths) => {
@@ -57,7 +57,7 @@
         // latest release are reported as up_to_date, since there is nothing to
         // fast-forward to.
         if (status.state === "error") {
-            return status.reason || "Unable to determine app update status.";
+            return status.reason || "无法确定应用更新状态。";
         }
         if (status.state === "up_to_date") {
             const safeNote = safePaths ? ` Local app data is present and ignored for updates: ${safePaths}.` : "";
@@ -86,7 +86,7 @@
         }
         if (status.dirty) {
             const detail = safePaths ? ` Safe local app data: ${safePaths}.` : "";
-            return "Only local app data changes were detected." + detail;
+            return "仅检测到本地应用数据的更改。" + detail;
         }
         return "App update status is available, but cannot auto-update in current state.";
     }
@@ -122,7 +122,7 @@
         const channel = selectedAppUpdateChannel();
         const updateBtn = document.getElementById("btn-update-app");
         if (updateBtn) updateBtn.disabled = true;
-        showAppUpdateStatus("info", "Checking app update status...");
+        showAppUpdateStatus("info", "正在检查应用程序更新状态...");
         try {
             const url = channel === "nightly"
                 ? "/api/app-update-status?channel=nightly"
@@ -132,7 +132,7 @@
             renderAppUpdateStatus(status);
         } catch (e) {
             if (selectedAppUpdateChannel() !== channel) return;
-            showAppUpdateStatus("error", "Failed to check app updates: " + e.message);
+            showAppUpdateStatus("error", "未检查到应用程序更新：" + e.message);
         }
     }
 
@@ -140,7 +140,7 @@
         const channel = selectedAppUpdateChannel();
         let status = latestAppUpdateStatus;
         if (!status || appUpdateStatusChannel(status) !== channel) {
-            showAppUpdateStatus("info", "Checking app update status...");
+            showAppUpdateStatus("info", "正在检查应用程序更新状态...");
             try {
                 const url = channel === "nightly"
                     ? "/api/app-update-status?channel=nightly"
@@ -148,7 +148,7 @@
                 status = await I.dependencies.fetchJson(url);
                 if (selectedAppUpdateChannel() !== channel) return;
             } catch (e) {
-                showAppUpdateStatus("error", "Failed to check app updates: " + e.message);
+                showAppUpdateStatus("error", "未检查到应用程序更新：" + e.message);
                 return;
             }
         }
@@ -160,7 +160,7 @@
         const ok = await I.dependencies.confirmAction(
             "Update Llama GUI",
             `Install the ${describeAppUpdateTarget(status)} from GitHub now? Python dependencies from requirements.txt will be installed after the update. The app may need a restart after updating.`,
-            "Update"
+            "更新"
         );
         if (!ok) return;
 
@@ -192,7 +192,7 @@
                         reconnectingMessage: "Llama GUI is restarting. Reconnecting...",
                         successMessage: "Llama GUI restarted. Loading the updated interface...",
                         timeoutMessage: "Llama GUI updated, but the server did not become ready in time. Try reloading manually.",
-                        failurePrefix: "App updated, but restart failed: ",
+                        failurePrefix: "应用已更新，但重启失败：",
                     });
                     return;
                 }
@@ -205,7 +205,7 @@
                 checkAppUpdateStatus();
             }
         } catch (e) {
-            showAppUpdateStatus("error", "App update failed: " + e.message);
+            showAppUpdateStatus("error", "应用更新失败：" + e.message);
         }
     }
 

@@ -82,20 +82,20 @@
         const preset = getChatTemplatePresetByValue(selectedTemplateValue);
         if (preset) {
             if (preset.mode === "bundled") {
-                return `Using bundled template preset: ${preset.label}.`;
+                return `使用捆绑模板预设：${preset.label}。`;
             }
             if (preset.mode === "builtin") {
-                return `Using preset: ${preset.label}.`;
+                return `使用预设：${preset.label}。`;
             }
         }
         if (selectedTemplateValue) {
-            return `Using llama.cpp built-in template: ${selectedTemplateValue}`;
+            return `使用 llama.cpp 内置模板：${selectedTemplateValue}`;
         }
         const values = getFlagCore().getFlagValues();
         if (values.chat_template_custom) {
-            return `Using custom template file: ${values.chat_template_custom}`;
+            return `使用自定义模板文件：${values.chat_template_custom}`;
         }
-        return "Use the template embedded in the model metadata when available.";
+        return "如果可用，将使用模型元数据中内置的模板。";
     }
 
     // One atomic patch per selection: set one template field and clear the other

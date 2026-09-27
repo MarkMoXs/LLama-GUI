@@ -91,7 +91,7 @@
         if (alias) return alias;
         const selectedModel = S.flagCore.getSelectedModel();
         if (selectedModel) return selectedModel;
-        return "local-model";
+        return "本地模型";
     }
 
     function isChatWebSearchEnabled() {
@@ -163,16 +163,16 @@
         if (chatInput) {
             chatInput.disabled = !isRunning || !canOperate;
             chatInput.placeholder = !canOperate
-                ? (S.workspaceOwned ? "Chat is temporarily unavailable while the other window is active." : "Chat is open in another window.")
+                ? (S.workspaceOwned ? "当另一个窗口仍然处于激活状态，聊天暂时无法使用。" : "聊天窗口已在另一个窗口中打开")
                 : isRunning
-                ? "Type a message..."
+                ? "在此输入信息……"
                 : isLoading
-                    ? "Waiting for the model to finish loading..."
-                    : "Start llama-server, or connect to a running one on the API tab...";
+                    ? "请等待模型完成加载......"
+                    : "在发送聊天消息之前，请先启动 llama-server，或在 API 选项卡......";
         }
         if (sendBtn) {
             sendBtn.disabled = !canSend;
-            sendBtn.title = !canOperate ? "Chat is currently owned by another window or transfer is in progress." : isRunning ? "" : "Start llama-server, or connect to a running one on the API tab, before sending chat messages.";
+            sendBtn.title = !canOperate ? "Chat is currently owned by another window or transfer is in progress." : isRunning ? "" : "在发送聊天消息之前，请先启动 llama-server，或在 API 选项卡中连接到正在运行的服务。";
         }
         const container = document.getElementById("chat-messages");
         if (container) {
@@ -186,8 +186,8 @@
             const message = note.querySelector("span");
             if (message) {
                 message.textContent = isLoading
-                    ? "llama-server is loading the selected model. Chat will unlock when it is ready."
-                    : "Start llama-server, or connect to a running one on the API tab, before sending chat messages.";
+                    ? "llama-server 正在加载所选模型。准备就绪后，即可开始对话。"
+                    : "在发送聊天消息之前，请先启动 llama-server，或在 API 选项卡中连接到正在运行的服务。";
             }
         }
         I.notifyWorkspaceChange();
@@ -209,7 +209,7 @@
         );
         runningBadge.style.display = isRunning ? "" : "none";
         noServerBadge.style.display = isRunning ? "none" : "";
-        noServerBadge.textContent = isLoading ? "Loading Model" : "No Server";
+        noServerBadge.textContent = isLoading ? "Loading Model" : "服务器未运行";
         updateChatAvailability(isRunning);
         refreshSidebarUI();
         void refreshTemplateCaps();
@@ -219,10 +219,10 @@
         const hint = document.getElementById("chat-thinking-effort-cap-hint");
         if (!hint) return;
         hint.textContent = unsupported
-            ? "This model may ignore the reasoning setting."
+            ? "该模型可能会忽略推理设置"
             : "";
         hint.title = unsupported
-            ? "The loaded chat template does not advertise reasoning-effort support."
+            ? "当前加载的聊天模板未声明支持 reasoning-effort（推理投入力度）"
             : "";
         hint.classList.toggle("hidden", !unsupported);
     }
@@ -330,9 +330,9 @@
         const focusBtn = document.getElementById("btn-chat-focus");
         if (!focusBtn) return;
         focusBtn.setAttribute("aria-pressed", String(S.chatFocusMode));
-        focusBtn.title = S.chatFocusMode ? "Exit Focus Chat" : "Focus Chat";
+        focusBtn.title = S.chatFocusMode ? "退出专注聊天" : "专注聊天";
         const label = document.getElementById("chat-focus-label");
-        if (label) label.textContent = S.chatFocusMode ? "Exit Focus" : "Focus";
+        if (label) label.textContent = S.chatFocusMode ? "退出专注模式" : "专注模式";
     }
 
     function setChatFocusMode(enabled) {

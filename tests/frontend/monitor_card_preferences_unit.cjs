@@ -176,7 +176,7 @@ test("drag ordering and deferred samples", async (t) => {
     assert.equal(cardByKey("gpu:nvidia:uuid:GPU-AAAA").querySelector(".monitor-card-tools").title, "");
     assert.equal(
         cardByKey("gpu:nvidia:uuid:GPU-AAAA").querySelector(".monitor-drag-handle").title,
-        "Drag GPU 0 · NVIDIA GeForce RTX 4090 to reorder; use arrow keys to move",
+        "拖动 GPU 0 · NVIDIA GeForce RTX 4090 以重新排序；使用方向键移动",
         "the grip advertises pointer and keyboard reordering",
     );
 

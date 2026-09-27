@@ -26,7 +26,7 @@
     let isSamplerPresetNameTaken = () => false;
     let saveSamplerPreset = () => ({ ok: false, reason: "missing" });
     let renameSamplerPreset = () => ({ ok: false, reason: "missing" });
-    let getSamplerRenameMessage = () => "Failed to rename sampler preset.";
+    let getSamplerRenameMessage = () => "无法重命名采样预设";
     let confirmAction = async () => false;
     let promptAction = async () => null;
     let showToast = () => {};
@@ -107,7 +107,7 @@
                     if (presetLoadInProgress) return;
                     presetLoadInProgress = true;
                     refreshPresetStates();
-                    status.textContent = `Loading ${entry.name}…`;
+                    status.textContent = `正在加载 ${entry.name}…`;
                     try {
                         const outcome = await presets.loadPreset(entry.name);
                         status.textContent = outcome.ok
@@ -122,7 +122,7 @@
                         }
                     } catch (error) {
                         console.warn("Could not apply Quick Launch preset", error);
-                        status.textContent = "Could not apply the preset. Open View all to retry.";
+                        status.textContent = "无法应用预设。打开“查看全部”后重试。";
                     } finally {
                         presetLoadInProgress = false;
                         refresh();
@@ -130,12 +130,12 @@
                 });
                 host.appendChild(button);
             }
-            status.textContent = savedPresets.length ? "Favorites first, then recently used. Loading a preset replaces pending settings." : "Save a launch preset in Presets to add a shortcut here.";
+            status.textContent = savedPresets.length ? "排序规则：优先展示你标记为收藏的预设，其余预设按最近使用时间排序，加载一个预设会直接覆盖当前所有待生效的临时设置。" : "在“预设”中保存一个启动预设，以便在此处添加快捷方式。";
             refreshPresetStates();
         } catch (error) {
             if (request !== savedPresetsRequest) return;
             console.warn("Could not load Quick Launch presets", error);
-            status.textContent = "Could not refresh presets. Open View all to retry.";
+            status.textContent = "无法刷新预设。打开“查看全部”后重试。";
         }
     }
 
@@ -146,8 +146,8 @@
             const matches = entry && presets.matchesCurrentPreset(entry.data);
             button.setAttribute("aria-pressed", String(Boolean(matches)));
             button.disabled = presetLoadInProgress;
-            button.querySelector(".quick-preset-state").textContent = matches ? "Matches settings"
-                : presets.getLastLoadedPresetName() === entry?.name ? "Modified · load again" : "Load preset";
+            button.querySelector(".quick-preset-state").textContent = matches ? "匹配当前设置"
+                : presets.getLastLoadedPresetName() === entry?.name ? "已修改 · 请重新加载" : "加载预设";
         }
     }
 
@@ -157,18 +157,18 @@
         const runtime = state.activeRuntime;
         const external = !runtime && status?.external_chat_target?.connected;
         const endpointLabel = document.querySelector(".quick-endpoint-label");
-        if (endpointLabel) endpointLabel.textContent = runtime?.tool === "llama-server" || status?.external_chat_target?.connected ? "Active endpoint" : "Next launch endpoint";
-        const phaseLabels = { idle: "Stopped", starting: "Starting", loading: "Loading model", ready: "Ready", running: "Running", stopping: "Stopping", failed: "Action failed" };
+        if (endpointLabel) endpointLabel.textContent = runtime?.tool === "llama-server" || status?.external_chat_target?.connected ? "当前活跃端点" : "下次启动端点";
+        const phaseLabels = { idle: "已停止", starting: "开始", loading: "加载模型", ready: "准备就绪", running: "运行", stopping: "停止", failed: "操作失败" };
         const label = document.getElementById("quick-runtime-state");
         if (!label) return;
-        label.textContent = external ? "External server" : phaseLabels[state.phase] || "Checking runtime…";
+        label.textContent = external ? "外部服务器" : phaseLabels[state.phase] || "检查运行时间…";
         label.dataset.phase = state.phase || "idle";
         const model = document.getElementById("quick-runtime-model");
-        model.textContent = runtime ? [runtime.tool, runtime.alias || runtime.model || "Model unavailable", runtime.host && runtime.port ? `${runtime.host}:${runtime.port}` : ""].filter(Boolean).join(" · ") : external ? "Managed outside this app" : "No local process running";
+        model.textContent = runtime ? [runtime.tool, runtime.alias || runtime.model || "Model 模型不可用", runtime.host && runtime.port ? `${runtime.host}:${runtime.port}` : ""].filter(Boolean).join(" · ") : external ? "由本应用外部托管" : "没有正在运行的本地进程";
         model.title = model.textContent;
         const build = document.getElementById("quick-runtime-build");
         build.textContent = runtime ? [runtime.backend, runtime.version].filter(Boolean).join(" · ")
-            : status?.installed ? [status.backend, status.version].filter(Boolean).join(" · ") : status ? "llama.cpp not installed" : "";
+            : status?.installed ? [status.backend, status.version].filter(Boolean).join(" · ") : status ? "未检测到 llama.cpp 安装" : "";
     }
 
     function renderContextSnapshot(snapshot) {
@@ -176,8 +176,8 @@
         if (!label) return;
         const total = snapshot?.context?.total;
         label.textContent = snapshot?.sources?.slots === "ok" && Number.isFinite(total) && total > 0
-            ? `Active slot context: ${formatContextLabel(total)}`
-            : "Active slot context: unavailable";
+            ? `活跃槽位上下文：${formatContextLabel(total)}`
+            : "当前插槽上下文：不可用";
     }
 
     function populateTemplatePackOptions() {
@@ -234,12 +234,12 @@
 
         const placeholder = document.createElement("option");
         placeholder.value = "";
-        placeholder.textContent = entries.length ? "-- Select Sampler Preset --" : "No sampler presets";
+        placeholder.textContent = entries.length ? "-- 选择采样预设 --" : "没有采样预设";
         select.appendChild(placeholder);
 
         if (builtins.length) {
             const group = document.createElement("optgroup");
-            group.label = "Built-in";
+            group.label = "内置采样";
             for (const preset of builtins) {
                 const opt = document.createElement("option");
                 opt.value = `builtin|${preset.name}`;
@@ -251,7 +251,7 @@
 
         if (customs.length) {
             const group = document.createElement("optgroup");
-            group.label = "Custom";
+            group.label = "自定义";
             for (const preset of customs) {
                 const opt = document.createElement("option");
                 opt.value = `custom|${preset.name}`;
@@ -443,7 +443,7 @@
         setReadinessChip(
             "quick-chip-model",
             hasModel ? "ok" : "missing",
-            modelName ? `Model: ${modelName}` : hasModel ? "Model: remote source" : "Model: none",
+            modelName ? `模型: ${modelName}` : hasModel ? "模型: 远程仓库" : "模型: 无",
         );
 
         const profileSelect = document.getElementById("quick-profile-select");
@@ -453,14 +453,14 @@
         setReadinessChip(
             "quick-chip-profile",
             "info",
-            profileLabel ? `Profile: ${profileLabel}` : "Profile: optional",
+            profileLabel ? `配置 Profile: ${profileLabel}` : "配置 Profile: 可选",
         );
 
         const ctx = values.ctx_size ?? getDefaultCtxSize();
-        setReadinessChip("quick-chip-context", "info", `Requested context: ${formatContextLabel(ctx)}`);
+        setReadinessChip("quick-chip-context", "info", `上下文大小： ${formatContextLabel(ctx)}`);
 
         const gpuLayers = String(values.gpu_layers ?? "auto");
-        const gpuLabel = gpuLayers === "auto" ? "Auto" : gpuLayers === "0" ? "CPU only" : gpuLayers === "all" ? "All layers" : `${gpuLayers} layers`;
+        const gpuLabel = gpuLayers === "auto" ? "自动 Fit" : gpuLayers === "0" ? "仅 CPU" : gpuLayers === "all" ? "全部层" : `${gpuLayers} layers`;
         setReadinessChip("quick-chip-gpu", "info", `GPU: ${gpuLabel}`);
 
         const apiApplies = tool === "llama-server";
@@ -468,7 +468,7 @@
         setReadinessChip(
             "quick-chip-api",
             hasApiKey ? "ok" : "info",
-            !apiApplies ? "API: not applicable" : hasApiKey ? "API: protected" : "API: open access",
+            !apiApplies ? "API: 不适用" : hasApiKey ? "API: 受保护" : "API: 无保护",
         );
 
         const protectedBadge = document.getElementById("quick-api-protected-badge");
@@ -490,7 +490,7 @@
             setQuickLaunchStatus("info", "Launching llama.cpp — loading the model, this can take a moment.");
             return;
         }
-        label.textContent = flagCore.getCurrentTool() === "llama-server" ? "Launch server" : "Launch terminal";
+        label.textContent = flagCore.getCurrentTool() === "llama-server" ? "开始运行" : "Terminal·运行";
         launchBtn.disabled = false;
         updateActionButtons();
         if (outcome && outcome.ok) {
@@ -504,7 +504,7 @@
     }
 
     function getQuickLaunchReadiness() {
-        if (getLatestStatus()?.installed === false) return { ok: false, type: "warning", message: "Install llama.cpp in Install and Update before launching." };
+        if (getLatestStatus()?.installed === false) return { ok: false, type: "warning", message: "在启动前，请先在「安装与更新」中安装 llama.cpp" };
         const result = flagCore.getLaunchArgs();
         if (result.error) {
             return { ok: false, type: "error", message: result.error };
@@ -513,7 +513,7 @@
             return {
                 ok: false,
                 type: "warning",
-                message: "Select a model or provide a remote model source before launching.",
+                message: "在启动之前，请选择一个模型或提供远程模型源。",
             };
         }
         return { ok: true, type: "", message: "" };
@@ -535,10 +535,10 @@
         quickLaunchBtn.disabled = launchInProgress || Boolean(state.busy) || mainLaunchBtn.disabled || !readiness.ok;
         quickStopBtn.disabled = mainStopBtn.disabled;
         quickLaunchBtn.title = readiness.ok ? "" : readiness.message;
-        if (!launchInProgress) document.getElementById("btn-quick-launch-label").textContent = flagCore.getCurrentTool() === "llama-server" ? "Launch server" : "Launch terminal";
-        document.getElementById("btn-quick-stop-label").textContent = state.activeRuntime?.tool === "llama-cli" ? "Stop terminal" : state.activeRuntime?.tool && state.activeRuntime.tool !== "llama-server" ? "Stop process" : "Stop server";
+        if (!launchInProgress) document.getElementById("btn-quick-launch-label").textContent = flagCore.getCurrentTool() === "llama-server" ? "开始运行" : "Terminal·运行";
+        document.getElementById("btn-quick-stop-label").textContent = state.activeRuntime?.tool === "llama-cli" ? "停止·Terminal" : state.activeRuntime?.tool && state.activeRuntime.tool !== "llama-server" ? "停止进程" : "停止服务";
         const summary = document.getElementById("quick-launch-readiness");
-        summary.textContent = state.busy ? "Process action in progress…" : state.activeRuntime ? "Settings for your next launch" : readiness.ok ? "Ready to launch" : "Launch not ready";
+        summary.textContent = state.busy ? "正在执行处理操作……" : state.activeRuntime ? "下一次启动设置" : readiness.ok ? "准备就绪" : "尚未运行";
         refreshRuntime();
         if (sidebarLaunchBtn) {
             sidebarLaunchBtn.classList.toggle("hidden", mainLaunchBtn.classList.contains("hidden"));
@@ -596,8 +596,8 @@
         const modeSummary = document.getElementById("quick-mode-summary");
         if (modeSummary) {
             modeSummary.textContent = tool === "llama-server"
-                ? "llama-server · Web UI and API"
-                : "llama-cli · Interactive chat";
+                ? "llama-server · Web UI 和 API"
+                : "llama-cli · 终端交互式聊天";
         }
 
         const ctxValue = values.ctx_size ?? getDefaultCtxSize();
@@ -645,12 +645,12 @@
 
         const fitSummary = document.getElementById("quick-fit-summary");
         if (fitSummary) {
-            const margin = values.fit_target ? `${values.fit_target} MiB` : "llama.cpp default";
+            const margin = values.fit_target ? `${values.fit_target} MiB` : "llama.cpp 默认";
             const minimum = values.fit_ctx === undefined || values.fit_ctx === null || values.fit_ctx === ""
-                ? "llama.cpp default" : formatContextLabel(values.fit_ctx);
+                ? "llama.cpp 默认" : formatContextLabel(values.fit_ctx);
             fitSummary.textContent = String(values.fit ?? "on") === "on"
-                ? `Auto Fit: headroom ${margin} · minimum context ${minimum}.`
-                : "Auto Fit is off. Manual memory settings apply.";
+                ? `Fit 计算余量： ${margin} · 上下文大小：${minimum}.`
+                : "自动 Fit 计算已关闭，当前采用手动内存设置。";
         }
 
         const templateSelect = document.getElementById("quick-template-pack");
@@ -685,7 +685,7 @@
             const profile = QUICK_PROFILES[profileSelect.value];
             profileSummary.textContent = profile
                 ? profile.summary
-                : "Sets context and runtime defaults. Keeps your sampler settings.";
+                : "设置上下文运行时的默认值，并保留您现有的采样设置。";
         }
 
         const quickMetricsToggle = document.getElementById("quick-metrics-toggle");
@@ -726,7 +726,7 @@
 
         const placeholder = document.createElement("option");
         placeholder.value = "";
-        placeholder.textContent = "Choose a profile...";
+        placeholder.textContent = "选择内置配置...";
         select.appendChild(placeholder);
 
         for (const [profileId, profile] of Object.entries(QUICK_PROFILES)) {
@@ -755,10 +755,10 @@
         syncModelOptions();
         if (window.LlamaGui.searchableSelect) {
             window.LlamaGui.searchableSelect.enhance(document.getElementById("model-select"), {
-                searchPlaceholder: "Search models...",
+                searchPlaceholder: "搜索模型...",
             });
             window.LlamaGui.searchableSelect.enhance(document.getElementById("quick-model-select"), {
-                searchPlaceholder: "Search models...",
+                searchPlaceholder: "搜索模型...",
             });
         }
         hfDownloadUi.init();
@@ -889,13 +889,13 @@
             const name = typedName || selectedCustomName;
             if (!name) {
                 nameInput.focus();
-                showToast("Enter a sampler preset name.", "error");
+                showToast("输入采样预设名称", "error");
                 return;
             }
 
             const result = saveSamplerPreset(name, selectedCustomName, collectSamplerValues());
             if (!result.ok) {
-                showToast(getSamplerRenameMessage(result.reason) + " Rename or delete the existing preset first.", "error");
+                showToast(getSamplerRenameMessage(result.reason) + " 重命名或删除现有预设", "error");
                 return;
             }
             nameInput.value = "";
@@ -931,21 +931,21 @@
 
             refreshSamplerPresetSelect(`custom|${result.name}`);
             configFlagsUi.renderFlags();
-            showToast(`Renamed sampler preset to "${result.name}"`, "success");
+            showToast(`采样预设已重命名为 "${result.name}"`, "success");
         });
 
         on("btn-quick-sampler-delete", "click", async () => {
             const selected = getSelectedSamplerEntry();
             if (!selected) return;
             if (selected.source !== "custom") {
-                showToast("Built-in sampler presets cannot be deleted.", "error");
+                showToast("内置采样预设无法删除", "error");
                 return;
             }
 
             const ok = await confirmAction(
                 "Delete Sampler Preset",
                 `Delete sampler preset "${selected.name}"? This cannot be undone.`,
-                "Delete"
+                "删除"
             );
             if (!ok) return;
 
@@ -954,7 +954,7 @@
             saveSamplerPresetStore(store);
             refreshSamplerPresetSelect();
             configFlagsUi.renderFlags();
-            showToast(`Deleted sampler preset "${selected.name}"`, "success");
+            showToast(`删除采样预设 "${selected.name}"`, "success");
         });
 
         const quickSamplerFieldMap = {

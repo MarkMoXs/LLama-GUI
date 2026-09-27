@@ -42,7 +42,7 @@
             if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
             return parsed;
         } catch (e) {
-            console.debug("Failed to load sampler presets", e);
+            console.debug("无法加载采样预设", e);
             return {};
         }
     }
@@ -51,7 +51,7 @@
         try {
             localStorage.setItem(SAMPLER_PRESET_STORAGE_KEY, JSON.stringify(store));
         } catch (e) {
-            console.warn("Failed to save sampler presets", e);
+            console.warn("无法保存采样预设", e);
         }
     }
 
@@ -114,14 +114,14 @@
     }
 
     const SAMPLER_RENAME_MESSAGES = {
-        empty: "Sampler preset name cannot be empty.",
-        builtin: "Built-in sampler presets cannot be renamed.",
-        missing: "That sampler preset no longer exists.",
-        taken: "A sampler preset with that name already exists.",
+        empty: "采样预设名称不能为空",
+        builtin: "内置采样预设无法重命名",
+        missing: "该采样预设已不存在",
+        taken: "采样预设名称已存在",
     };
 
     function getSamplerRenameMessage(reason) {
-        return SAMPLER_RENAME_MESSAGES[reason] || "Failed to rename sampler preset.";
+        return SAMPLER_RENAME_MESSAGES[reason] || "无法重命名采样预设";
     }
 
     function isSamplerPresetNameTaken(name, store, excludeCustomName = "") {
@@ -241,7 +241,7 @@
 
         const title = document.createElement("div");
         title.className = "sampler-presets-title";
-        title.textContent = "Sampler Presets";
+        title.textContent = "采样预设";
 
         const row = document.createElement("div");
         row.className = "sampler-presets-row";
@@ -249,37 +249,37 @@
         const select = document.createElement("select");
         const nameInput = document.createElement("input");
         nameInput.type = "text";
-        nameInput.placeholder = "Preset name...";
+        nameInput.placeholder = "预设名称...";
 
         const loadBtn = document.createElement("button");
         loadBtn.className = "btn btn-sm";
         loadBtn.type = "button";
-        loadBtn.textContent = "Load";
+        loadBtn.textContent = "载入";
 
         const saveBtn = document.createElement("button");
         saveBtn.className = "btn btn-sm";
         saveBtn.type = "button";
-        saveBtn.textContent = "Save";
+        saveBtn.textContent = "保存";
 
         const renameBtn = document.createElement("button");
         renameBtn.className = "btn btn-sm";
         renameBtn.type = "button";
-        renameBtn.textContent = "Rename";
+        renameBtn.textContent = "重命名";
 
         const delBtn = document.createElement("button");
         delBtn.className = "btn btn-sm btn-danger";
         delBtn.type = "button";
-        delBtn.textContent = "Delete";
+        delBtn.textContent = "删除";
 
         const exportBtn = document.createElement("button");
         exportBtn.className = "btn btn-sm";
         exportBtn.type = "button";
-        exportBtn.textContent = "Export";
+        exportBtn.textContent = "导出";
 
         const importBtn = document.createElement("button");
         importBtn.className = "btn btn-sm";
         importBtn.type = "button";
-        importBtn.textContent = "Import";
+        importBtn.textContent = "导入";
 
         const importInput = document.createElement("input");
         importInput.type = "file";
@@ -314,12 +314,12 @@
 
             const placeholder = document.createElement("option");
             placeholder.value = "";
-            placeholder.textContent = entries.length ? "-- Select Sampler Preset --" : "No sampler presets";
+            placeholder.textContent = entries.length ? "-- 选择采样预设--" : "没有采样预设";
             select.appendChild(placeholder);
 
             if (builtins.length) {
                 const group = document.createElement("optgroup");
-                group.label = "Built-in";
+                group.label = "内置采样";
                 for (const p of builtins) {
                     const opt = document.createElement("option");
                     opt.value = `builtin|${p.name}`;
@@ -371,12 +371,12 @@
             const name = typedName || selectedCustomName;
             if (!name) {
                 nameInput.focus();
-                showSamplerPresetToast("Enter a sampler preset name.", "error");
+                showSamplerPresetToast("输入采样预设名称", "error");
                 return;
             }
             const result = saveSamplerPreset(name, selectedCustomName, collectSamplerValues());
             if (!result.ok) {
-                showSamplerPresetToast(getSamplerRenameMessage(result.reason) + " Rename or delete the existing preset first.", "error");
+                showSamplerPresetToast(getSamplerRenameMessage(result.reason) + " 重命名或删除现有预设", "error");
                 return;
             }
             refreshOptions(`custom|${result.name}`);
@@ -397,10 +397,10 @@
             // resolves to null on cancel, so an empty string still means "cleared the field"
             const nextName = typeof promptAction === "function"
                 ? await promptAction(
-                    "Rename Sampler Preset",
-                    `Enter a new name for "${selected.name}".`,
+                    "重命名采样预设",
+                    `为 "${selected.name}" 输入新名称。`,
                     selected.name,
-                    "Rename"
+                    "重命名"
                 )
                 : prompt(`Enter a new name for "${selected.name}".`, selected.name);
             if (nextName === null || nextName === undefined) return;
@@ -413,24 +413,24 @@
 
             refreshOptions(`custom|${result.name}`);
             refreshConsumers(`custom|${result.name}`);
-            showSamplerPresetToast(`Renamed sampler preset to "${result.name}"`, "success");
+            showSamplerPresetToast(`采样预设已重命名为 "${result.name}"`, "success");
         });
 
         delBtn.addEventListener("click", async () => {
             const selected = getSelectedPresetEntry();
             if (!selected) return;
             if (selected.source !== "custom") {
-                showSamplerPresetToast("Built-in sampler presets cannot be deleted.", "error");
+                showSamplerPresetToast("内置采样预设无法删除", "error");
                 return;
             }
             const confirmAction = dependencies.confirmAction;
             const ok = typeof confirmAction === "function"
                 ? await confirmAction(
-                    "Delete Sampler Preset",
-                    `Delete sampler preset "${selected.name}"? This cannot be undone.`,
-                    "Delete"
+                    "删除采样预设",
+                    `确定要删除采样预设 "${selected.name}"? 此操作不可撤销`,
+                    "删除"
                 )
-                : confirm(`Delete sampler preset "${selected.name}"? This cannot be undone.`);
+                : confirm(`确定要删除采样预设 "${selected.name}"？此操作不可撤销`);
             if (!ok) return;
 
             const store = loadSamplerPresetStore();
@@ -438,7 +438,7 @@
             saveSamplerPresetStore(store);
             refreshOptions();
             refreshConsumers();
-            showSamplerPresetToast(`Deleted sampler preset "${selected.name}"`, "success");
+            showSamplerPresetToast(`删除采样预设 "${selected.name}"`, "success");
         });
 
         exportBtn.addEventListener("click", () => {
@@ -471,7 +471,7 @@
 
                 const incoming = getSamplerPresetImportEntries(parsed);
                 if (!incoming) {
-                    showSamplerPresetToast("Invalid sampler preset JSON format. Every preset must contain an object of sampler values.", "error");
+                    showSamplerPresetToast("采样预设 JSON 格式无效，每个预设必须包含一个采样值对象。", "error");
                     return;
                 }
 
@@ -481,7 +481,7 @@
                 for (const item of incoming) {
                     const baseName = String(item.name || "Imported Sampler").trim() || "Imported Sampler";
                     if (isSamplerPresetNameTaken(baseName, pendingStore)) {
-                        showSamplerPresetToast(`A sampler preset named "${baseName}" already exists. Rename or delete it before importing.`, "error");
+                        showSamplerPresetToast(`已存在名为 "${baseName}" 的采样预设，请在导入前重命名或将其删除。`, "error");
                         return;
                     }
                     pendingStore[baseName] = normalizeSamplerPresetValues(item.values);
@@ -491,9 +491,9 @@
                 saveSamplerPresetStore(pendingStore);
                 refreshOptions(lastImportedName ? `custom|${lastImportedName}` : "");
                 refreshConsumers();
-                showSamplerPresetToast(`Imported ${incoming.length} sampler preset${incoming.length === 1 ? "" : "s"}`, "success");
+                showSamplerPresetToast(`已导入 ${incoming.length} 采样预设${incoming.length === 1 ? "" : "s"}`, "success");
             } catch (e) {
-                showSamplerPresetToast("Failed to import sampler preset: " + e.message, "error");
+                showSamplerPresetToast("无法导入采样预设：" + e.message, "error");
             }
         });
 

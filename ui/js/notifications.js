@@ -54,8 +54,8 @@
         const closeBtn = document.createElement("button");
         closeBtn.className = "toast-close";
         closeBtn.type = "button";
-        closeBtn.title = "Dismiss";
-        closeBtn.setAttribute("aria-label", "Dismiss notification");
+        closeBtn.title = "关闭";
+        closeBtn.setAttribute("aria-label", "关闭通知");
         closeBtn.textContent = "×";
         closeBtn.addEventListener("click", (event) => {
             event.stopPropagation();

@@ -32,34 +32,33 @@ function getPresetLibrarySummary() {
 //      means "not checked", not "checked and fine".
 function getPresetHealthMessage(summary) {
     // Pointing at a filter that is already applied is dead advice.
-    const review = presetWarningFilterActive ? "" : " Use the Warnings filter to review them.";
-    const scopePrefix = summary.filtered ? "Of the presets shown, " : "";
+    const review = presetWarningFilterActive ? "" : "请使用“警告”筛选条件查看。";
+    const scopePrefix = summary.filtered ? "当前显示的预设中，" : "";
 
     if (summary.missingModelCount > 0) {
         const count = summary.missingModelCount;
-        const subject = count === 1 ? "1 preset points" : `${count} presets point`;
-        return `${scopePrefix}${subject} at a model file that is no longer in the models folder.${review}`;
+        return `${scopePrefix}${count} 个预设指向的模型文件已不在模型目录中。${review}`;
     }
 
     if (summary.warningCount > 0) {
         const count = summary.warningCount;
-        const subject = `${count} warning${count === 1 ? "" : "s"}`;
+        const subject = `${count} 条警告`;
         return summary.filtered
-            ? `${subject} among the presets shown.${review}`
-            : `${subject} across the library.${review}`;
+            ? `${subject}出现在当前显示的预设中。${review}`
+            : `${subject}出现在预设库中。${review}`;
     }
 
     // Clean, but model presence was never verified. Report the other warnings
     // honestly and say plainly which check did not run.
     if (!summary.modelsChecked) {
         return summary.filtered
-            ? "No warnings among the presets shown. The model list has not loaded, so model files were not checked."
-            : "No template or launch-argument warnings. The model list has not loaded, so model files were not checked.";
+            ? "当前显示的预设没有警告；模型列表尚未加载，因此未检查模型文件。"
+            : "没有模板或启动参数警告，由于模型列表尚未加载，因此未对模型文件进行检查。";
     }
 
     return summary.filtered
-        ? "No warnings among the presets shown. Clear the search and filters to check the whole library."
-        : "No warnings. Every preset points at a model that is present and loads cleanly.";
+        ? "当前显示的预设无警告。清除搜索和筛选条件以检查整个库。"
+        : "无警告。每个预设都指向一个真实存在且能干净加载的模型。";
 }
 
 function renderPresetLibrarySummary(panel) {
@@ -72,12 +71,12 @@ function renderPresetLibrarySummary(panel) {
 
         const emptyTitle = document.createElement("div");
         emptyTitle.className = "preset-detail-empty-title";
-        emptyTitle.textContent = summary.filtered ? "No presets match" : "No presets saved yet";
+        emptyTitle.textContent = summary.filtered ? "没有符合条件的预设" : "尚未保存预设";
 
         const emptyText = document.createElement("p");
         emptyText.textContent = summary.filtered
-            ? "Clear the search or filters to see the rest of the library."
-            : "Save a preset from Configure to keep a launch setup you can return to.";
+            ? "清除搜索关键词或筛选条件，即可查看模型库中其余未展示的内容。"
+            : "从「配置面板」中保存预设，就能把当前这套启动配置永久留存，后续随时可以一键恢复使用。";
 
         empty.appendChild(emptyTitle);
         empty.appendChild(emptyText);
@@ -87,25 +86,25 @@ function renderPresetLibrarySummary(panel) {
 
     const kicker = document.createElement("div");
     kicker.className = "preset-detail-kicker";
-    kicker.textContent = summary.filtered ? "Matching Presets" : "Preset Library";
+    kicker.textContent = summary.filtered ? "筛选结果" : "预设库";
 
     const title = document.createElement("div");
     title.className = "preset-detail-title";
-    title.textContent = `${summary.presetCount} preset${summary.presetCount === 1 ? "" : "s"}`;
+    title.textContent = `${summary.presetCount} 个预设`;
 
     const subtitle = document.createElement("div");
     subtitle.className = "preset-detail-subtitle";
     subtitle.textContent = summary.filtered
-        ? "Filtered view. Clear the search and filters to summarize the whole library."
-        : "Select a preset on the left to preview its saved model, tool, warnings, and settings.";
+        ? "当前处于筛选视图状态。清除所有搜索和筛选条件后，就能看到整个模型库的完整汇总统计信息。"
+        : "在左侧列表选中任意一个预设，即可在右侧预览它保存的关联模型、工具配置、警告信息和全部参数设置。";
 
     const stats = document.createElement("div");
     stats.className = "preset-detail-stats";
-    appendDetailStat(stats, "Models", String(summary.modelCount));
-    appendDetailStat(stats, "Favorites", String(summary.favoriteCount));
+    appendDetailStat(stats, "模型", String(summary.modelCount));
+    appendDetailStat(stats, "收藏", String(summary.favoriteCount));
     appendDetailStat(
         stats,
-        "Warnings",
+        "警告",
         String(summary.warningCount),
         summary.warningCount ? "warn" : "ok"
     );
@@ -117,7 +116,7 @@ function renderPresetLibrarySummary(panel) {
     }
     appendDetailStat(
         stats,
-        "Missing Models",
+        "缺失模型",
         summary.modelsChecked ? String(summary.missingModelCount) : "—",
         missingModelClass
     );
@@ -129,7 +128,7 @@ function renderPresetLibrarySummary(panel) {
 
     const recentTitle = document.createElement("div");
     recentTitle.className = "preset-detail-section-title";
-    recentTitle.textContent = "Most Recently Used";
+    recentTitle.textContent = "最近使用";
 
     const recent = document.createElement("div");
     recent.className = "preset-detail-info preset-summary-block";
@@ -137,7 +136,7 @@ function renderPresetLibrarySummary(panel) {
     // textContent, never innerHTML: preset names are user-supplied.
     recentText.textContent = summary.mostRecent
         ? `${summary.mostRecent.name} · ${formatPresetTimestamp(summary.mostRecent.lastUsed)}`
-        : "No preset loaded yet on this machine.";
+        : "本机尚未加载预设";
     recent.appendChild(recentText);
 
     panel.appendChild(recentTitle);
@@ -146,7 +145,7 @@ function renderPresetLibrarySummary(panel) {
     const healthTitle = document.createElement("div");
     healthTitle.className = "preset-detail-section-title";
     // "Library Health" is an absolute claim, and the counts under it are not.
-    healthTitle.textContent = summary.filtered ? "Health Of Presets Shown" : "Library Health";
+    healthTitle.textContent = summary.filtered ? "Health Of Presets Shown" : "库健康状态";
 
     const health = document.createElement("div");
     const needsAttention = summary.warningCount > 0;
@@ -173,7 +172,7 @@ function renderPresetDetailPanel() {
 
     const kicker = document.createElement("div");
     kicker.className = "preset-detail-kicker";
-    kicker.textContent = "Saved configuration";
+    kicker.textContent = "配置存档";
 
     const title = document.createElement("div");
     title.className = "preset-detail-title";
@@ -181,22 +180,22 @@ function renderPresetDetailPanel() {
 
     const subtitle = document.createElement("div");
     subtitle.className = "preset-detail-subtitle";
-    subtitle.textContent = entry.groupKey === NO_MODEL_PRESET_GROUP_KEY ? "No model saved" : entry.groupKey;
+    subtitle.textContent = entry.groupKey === NO_MODEL_PRESET_GROUP_KEY ? "未保存模型" : entry.groupKey;
 
     const actions = document.createElement("div");
     actions.className = "preset-detail-actions";
-    actions.appendChild(createPresetButton("Load into Configure", "btn btn-sm btn-primary", async () => {
+    actions.appendChild(createPresetButton("加载到配置中", "btn btn-sm btn-primary", async () => {
         const result = await loadPreset(entry.name);
         if (result.ok) presetDependencies.switchTab("configure");
-    }, "Load these saved settings for editing; the running process stays as it is"));
+    }, "加载这些已保存的设置以进行编辑；正在运行的进程保持不变"));
 
     const favoriteBtn = document.createElement("button");
     favoriteBtn.type = "button";
     favoriteBtn.className = entry.favorite ? "btn btn-sm preset-favorite-btn active" : "btn btn-sm preset-favorite-btn";
-    favoriteBtn.title = entry.favorite ? "Remove from favorites" : "Add to favorites";
+    favoriteBtn.title = entry.favorite ? "取消收藏" : "添加到收藏";
     favoriteBtn.setAttribute("aria-pressed", String(entry.favorite));
     favoriteBtn.appendChild(createPresetIcon(entry.favorite ? PRESET_ICON_STAR : PRESET_ICON_STAR_OUTLINE));
-    favoriteBtn.appendChild(document.createTextNode(entry.favorite ? " Favorited" : " Favorite"));
+    favoriteBtn.appendChild(document.createTextNode(entry.favorite ? " 已收藏" : " 收藏"));
     favoriteBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         togglePresetFavorite(entry.name);
@@ -208,24 +207,24 @@ function renderPresetDetailPanel() {
     more.className = "preset-more-actions";
     const moreLabel = document.createElement("summary");
     moreLabel.className = "btn btn-sm";
-    moreLabel.textContent = "More actions";
+    moreLabel.textContent = "更多操作";
     const moreButtons = document.createElement("div");
     moreButtons.className = "preset-more-buttons";
-    moreButtons.appendChild(createPresetButton(`Update "${entry.name}"…`, "btn btn-sm", () => updatePreset(entry.name), "Review current edits before overwriting this saved preset"));
-    moreButtons.appendChild(createPresetButton("Duplicate", "btn btn-sm", () => duplicatePreset(entry.name), "Save a copy of this preset without changing current settings"));
-    moreButtons.appendChild(createPresetButton("Rename", "btn btn-sm", () => renamePreset(entry.name), "Rename this preset, keeping its favorite and usage history"));
-    moreButtons.appendChild(createPresetButton("Export", "btn btn-sm", () => exportPreset(entry.name)));
-    moreButtons.appendChild(createPresetButton("Windows Shortcut", "btn btn-sm", () => exportPresetShortcut(entry.name), "Export a Windows .cmd shortcut for this preset"));
+    moreButtons.appendChild(createPresetButton(`更新“${entry.name}”…`, "btn btn-sm", () => updatePreset(entry.name), "在覆盖此已保存的预设之前，请先检查当前的编辑内容。"));
+    moreButtons.appendChild(createPresetButton("复制", "btn btn-sm", () => duplicatePreset(entry.name), "在不改变当前设置的情况下，保存此预设的副本。"));
+    moreButtons.appendChild(createPresetButton("重命名", "btn btn-sm", () => renamePreset(entry.name), "重命名此预设，同时保留其“收藏”状态和使用历史记录。"));
+    moreButtons.appendChild(createPresetButton("导出", "btn btn-sm", () => exportPreset(entry.name)));
+    moreButtons.appendChild(createPresetButton("Windows 快捷方式", "btn btn-sm", () => exportPresetShortcut(entry.name), "为此预设导出一个 Windows .cmd 快捷方式文件"));
     moreButtons.appendChild(createPresetButton(
-        entry.archived ? "Restore" : "Archive",
+        entry.archived ? "恢复" : "存档",
         "btn btn-sm",
         () => setPresetArchived([entry.name], !entry.archived),
         entry.archived
-            ? "Restore this preset from the archive back into the main list"
-            : "Move this preset to the archive to clean up the list; it can be restored any time"
+            ? "将此预设从存档中恢复至主列表"
+            : "将此预设移至存档以清理列表；您可以随时将其恢复。"
     ));
 
-    moreButtons.appendChild(createPresetButton("Delete", "btn btn-sm btn-danger", () => deletePreset(entry.name)));
+    moreButtons.appendChild(createPresetButton("删除", "btn btn-sm btn-danger", () => deletePreset(entry.name)));
     more.append(moreLabel, moreButtons);
     more.addEventListener("keydown", event => {
         if (event.key === "Escape" && more.open) {
@@ -238,28 +237,28 @@ function renderPresetDetailPanel() {
 
     const stats = document.createElement("div");
     stats.className = "preset-detail-stats";
-    appendDetailStat(stats, "Tool", entry.data.tool || "Keep current tool");
+    appendDetailStat(stats, "工具", entry.data.tool || "保持当前工具");
     const effective = getPresetFlagCore().buildEffectiveFlagValues(entry.data.flags);
     for (const [id, label] of [["ctx_size", "Context"], ["gpu_layers", "GPU offload"], ["cache_type_k", "K cache"], ["cache_type_v", "V cache"]]) {
         const saved = Object.prototype.hasOwnProperty.call(entry.data.flags, id);
-        appendDetailStat(stats, label, `${saved ? "" : "GUI default · "}${formatSavedPresetValue(id, effective[id])}`);
+        appendDetailStat(stats, label, `${saved ? "" : "GUI 默认 · "}${formatSavedPresetValue(id, effective[id])}`);
     }
 
     const settingsTitle = document.createElement("div");
     settingsTitle.className = "preset-detail-section-title";
-    settingsTitle.textContent = "Launch inputs";
+    settingsTitle.textContent = "运行与输入";
 
     const settings = document.createElement("details");
     settings.className = "preset-saved-settings";
     const settingsLabel = document.createElement("summary");
-    settingsLabel.textContent = `All saved settings · ${entry.overrideCount} non-default overrides`;
+    settingsLabel.textContent = `所有已保存的设置项 · 共 ${entry.overrideCount} 项非默认自定义覆盖`;
     const values = document.createElement("table");
     values.className = "preset-comparison-table preset-saved-values";
     const caption = document.createElement("caption");
-    caption.textContent = "GUI defaults are shown only where saved values differ. Blank cells match the current GUI default.";
+    caption.textContent = "仅当你保存的数值与GUI出厂默认值不同时，才会显示自定义配置；空白单元格代表该参数完全匹配当前GUI的默认值。";
     const head = document.createElement("thead");
     const headings = document.createElement("tr");
-    for (const title of ["Setting", "Saved value", "GUI default"]) {
+    for (const title of ["设置", "已保存的值", "GUI 默认"]) {
         const heading = document.createElement("th");
         heading.scope = "col";
         heading.textContent = title;
@@ -282,7 +281,7 @@ function renderPresetDetailPanel() {
             const definition = definitions.get(id);
             defaultText.textContent = definition && Object.prototype.hasOwnProperty.call(definition, "default")
                 ? formatSavedPresetValue(id, definition.default)
-                : "Unavailable";
+                : "不可用";
         }
         row.append(label, text, defaultText);
         body.appendChild(row);
@@ -291,7 +290,7 @@ function renderPresetDetailPanel() {
     settings.append(settingsLabel, values);
     const settingsNote = document.createElement("p");
     settingsNote.className = "help-text";
-    settingsNote.textContent = "Saved launch inputs, before llama.cpp resolves Auto or Auto Fit. Missing settings use GUI defaults on load. API keys and HF tokens are excluded; sensitive values and Custom Launch Args are hidden here.";
+    settingsNote.textContent = "已保存的启动输入项，存储于 llama.cpp 解析「自动」或「Fit 自动显存适配」规则之前的原始状态。加载预设时，所有缺失的设置项将自动使用GUI界面的默认值。API 密钥、Hugging Face令牌会被排除在预设文件之外；敏感信息和自定义启动参数在此界面中处于隐藏状态。";
 
     const warnings = document.createElement("div");
     warnings.className = entry.warnings.length ? "preset-warning" : "preset-detail-note";
@@ -299,7 +298,7 @@ function renderPresetDetailPanel() {
     const warningsText = document.createElement("span");
     warningsText.textContent = entry.warnings.length
         ? entry.warnings.join(" ")
-        : "No preset warnings. This preset should load cleanly into Configure and Quick Launch.";
+        : "无预设警告：该预设可以直接干净地加载到「配置面板」和「快速启动」功能中，不会出现参数缺失、冲突或报错。";
     warnings.appendChild(warningsText);
 
     panel.appendChild(kicker);
@@ -329,7 +328,7 @@ function renderPresetBulkControls() {
     }
 
     if (countEl) {
-        countEl.textContent = `${visibleSelectedCount} selected`;
+        countEl.textContent = `已选择 ${visibleSelectedCount} 项`;
     }
     if (deleteButton) {
         deleteButton.disabled = selectedPresetNames.size === 0;
@@ -364,11 +363,11 @@ function renderPresetArchiveChip() {
     if (!chip) return;
     const countText = presetArchivedCount > 0 ? ` (${presetArchivedCount})` : "";
     chip.textContent = presetArchiveViewActive
-        ? `\uD83D\uDCE6 Viewing archive${countText}`
-        : `\uD83D\uDCE6 Archived${countText}`;
+        ? `\uD83D\uDCE6 正在查看归档${countText}`
+        : `\uD83D\uDCE6 已归档${countText}`;
     chip.title = presetArchiveViewActive
-        ? "Viewing archived presets. Click to return to the main list"
-        : "Show presets hidden from the main list by archiving";
+        ? "正在查看归档预设，点击此处返回预设主列表。"
+        : "显示预设主列表中被归档隐藏的所有预设";
     chip.classList.toggle("active", presetArchiveViewActive);
     chip.setAttribute("aria-pressed", String(presetArchiveViewActive));
 }
@@ -378,7 +377,7 @@ function renderPresetCountLine() {
     if (!countLine) return;
     const presetCount = getVisiblePresetEntries().length;
     const modelCount = currentPresetGroups.length;
-    countLine.textContent = `${presetCount} preset${presetCount === 1 ? "" : "s"} · ${modelCount} model${modelCount === 1 ? "" : "s"}`;
+    countLine.textContent = `${presetCount} 个预设 · ${modelCount} 个模型`;
 }
 
 function renderPresetAuxiliaryPanels() {
@@ -393,7 +392,7 @@ function renderPresetLoadErrorState() {
         panel.textContent = "";
         const error = document.createElement("div");
         error.className = "preset-detail-empty presets-error";
-        error.textContent = "Preset library unavailable. Try refreshing the list.";
+        error.textContent = "预设库不可用，请尝试刷新列表。";
         panel.appendChild(error);
     }
     renderPresetBulkControls();
@@ -447,13 +446,13 @@ function renderPresetEntry(entry) {
 
     const checkWrap = document.createElement("label");
     checkWrap.className = "preset-checkbox";
-    checkWrap.title = "Select this preset for bulk actions";
+    checkWrap.title = "选择此预设以进行批量操作";
     checkWrap.addEventListener("click", (event) => event.stopPropagation());
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = selectedPresetNames.has(entry.name);
-    checkbox.setAttribute("aria-label", `Select preset ${entry.name}`);
+    checkbox.setAttribute("aria-label", `选择预设 ${entry.name}`);
     checkbox.addEventListener("change", () => setPresetChecked(entry.name, checkbox.checked));
     checkWrap.appendChild(checkbox);
 
@@ -473,7 +472,7 @@ function renderPresetEntry(entry) {
 
     const metaEl = document.createElement("div");
     metaEl.className = "preset-meta";
-    metaEl.textContent = `${entry.toolText} · ${entry.overrideCount} override${entry.overrideCount === 1 ? "" : "s"}`;
+    metaEl.textContent = `${entry.toolText} · ${entry.overrideCount} 项自定义设置`;
 
     details.appendChild(titleRow);
     details.appendChild(metaEl);
@@ -493,8 +492,8 @@ function renderPresetEntry(entry) {
     const rowFavorite = document.createElement("button");
     rowFavorite.type = "button";
     rowFavorite.className = entry.favorite ? "preset-row-favorite active" : "preset-row-favorite";
-    rowFavorite.title = entry.favorite ? "Remove from favorites" : "Add to favorites";
-    rowFavorite.setAttribute("aria-label", `${entry.favorite ? "Remove" : "Add"} ${entry.name} ${entry.favorite ? "from" : "to"} favorites`);
+    rowFavorite.title = entry.favorite ? "取消收藏" : "加入收藏";
+    rowFavorite.setAttribute("aria-label", `${entry.favorite ? "从收藏中移除" : "加入收藏"} ${entry.name}`);
     rowFavorite.setAttribute("aria-pressed", String(entry.favorite));
     rowFavorite.appendChild(createPresetIcon(entry.favorite ? PRESET_ICON_STAR : PRESET_ICON_STAR_OUTLINE));
     rowFavorite.addEventListener("click", (event) => {
@@ -507,8 +506,8 @@ function renderPresetEntry(entry) {
     const rowArchive = document.createElement("button");
     rowArchive.type = "button";
     rowArchive.className = "preset-row-archive";
-    rowArchive.title = entry.archived ? "Restore from archive" : "Archive preset";
-    rowArchive.setAttribute("aria-label", `${entry.archived ? "Restore" : "Archive"} ${entry.name}`);
+    rowArchive.title = entry.archived ? "从存档还原" : "存档恢复";
+    rowArchive.setAttribute("aria-label", `${entry.archived ? "恢复" : "存档"} ${entry.name}`);
     rowArchive.appendChild(createPresetIcon(entry.archived ? PRESET_ICON_RESTORE : PRESET_ICON_ARCHIVE));
     rowArchive.addEventListener("click", (event) => {
         event.stopPropagation();

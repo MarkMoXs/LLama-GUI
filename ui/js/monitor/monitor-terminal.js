@@ -10,27 +10,27 @@
         const runtime = state.activeRuntime;
         const target = I.dependencies.getLatestStatus?.()?.external_chat_target;
         const external = !runtime && state.phase === "idle" && target?.connected;
-        const phases = { idle: "Stopped", starting: "Starting", loading: "Loading model", ready: "Ready", running: "Running", stopping: "Stopping", failed: "Action failed" };
-        const phaseLabel = external ? "External server"
-            : runtime && state.phase === "failed" ? "Process active · action failed"
-                : phases[state.phase] || "Checking…";
+        const phases = { idle: "已停止", starting: "开始", loading: "加载模型", ready: "准备就绪", running: "运行", stopping: "停止", failed: "操作失败" };
+        const phaseLabel = external ? "外部服务器"
+            : runtime && state.phase === "failed" ? "进程处于活动状态・操作失败"
+                : phases[state.phase] || "正在检查…";
         const badge = I.dom.byId("monitor-runtime-state");
         I.dom.setText(badge, phaseLabel);
         if (badge) {
             badge.classList.toggle("badge-green", state.phase === "ready" || state.phase === "running");
             badge.classList.toggle("badge-yellow", Boolean(state.busy) || state.phase === "failed");
         }
-        const model = runtime ? String(runtime.alias || runtime.model || "Model unavailable")
-            : external ? String(target.label || "Managed outside Llama GUI") : "No local process running";
+        const model = runtime ? String(runtime.alias || runtime.model || "Model 模型不可用")
+            : external ? String(target.label || "由 Llama GUI 外部托管") : "没有正在运行的本地进程";
         const modelEl = I.dom.byId("monitor-runtime-model");
         I.dom.setText(modelEl, runtime && !runtime.alias ? model.split(/[\\/]/).pop() : model);
         if (modelEl) modelEl.title = model;
         I.dom.setText(I.dom.byId("monitor-runtime-build"), runtime
             ? [runtime.tool, runtime.backend, runtime.version].filter(Boolean).join(" · ")
-            : external ? "llama-server · Managed outside Llama GUI" : "Launch a model to follow its output and activity here.");
+            : external ? "llama-server · 由 Llama GUI 外部托管" : "启动模型，以便在此处查看其输出内容和活动情况。");
         const endpoint = runtime?.tool === "llama-server" ? runtime : external ? target : null;
         I.dom.setText(I.dom.byId("monitor-runtime-endpoint"), endpoint?.host && endpoint?.port
-            ? `Endpoint: ${endpoint.host}:${endpoint.port}` : "");
+            ? `端点：${endpoint.host}:${endpoint.port}` : "");
 
         const comparison = I.dependencies.compareLaunchSettings?.(runtime);
         const count = comparison?.available ? comparison.changes.length : 0;
@@ -38,10 +38,10 @@
         const review = I.dom.byId("btn-monitor-review");
         if (review) {
             review.classList.toggle("hidden", !count && !modelChanged);
-            I.dom.setText(review, count ? `Review changes · ${count}` : "Review model change");
+            I.dom.setText(review, count ? `查看变更 · ${count}` : "检查模型变更");
         }
         const note = count || modelChanged
-            ? "Edits are pending for the next launch. The count covers recorded GUI settings; API keys and Custom Launch Args are excluded."
+            ? "编辑内容将在下次启动时生效，该计数仅统计已记录的图形界面（GUI）设置；API 密钥与自定义启动参数不计入统计。"
             : "";
         I.dom.setText(I.dom.byId("monitor-runtime-note"), note);
         I.dom.byId("monitor-runtime-note")?.classList.toggle("hidden", !note);
@@ -66,7 +66,7 @@
 
         const runtime = lifecycle && lifecycle.activeRuntime;
         const phase = lifecycle && lifecycle.phase;
-        const phaseLabels = { starting: "Starting", loading: "Loading", stopping: "Stopping" };
+        const phaseLabels = { starting: "开始", loading: "加载", stopping: "停止" };
         const transitional = Object.prototype.hasOwnProperty.call(phaseLabels, phase);
         const running = Boolean(runtime) || Boolean(transitional);
         const tool = runtime && runtime.tool ? runtime.tool : "";
@@ -83,7 +83,7 @@
                 toolBadge.classList.remove("badge-accent");
                 toolBadge.classList.add("badge-neutral");
             } else if (!running && externalConnected) {
-                toolBadge.textContent = "external server";
+                toolBadge.textContent = "外部服务器";
                 toolBadge.classList.remove("hidden");
                 toolBadge.classList.remove("badge-neutral");
                 toolBadge.classList.add("badge-accent");
@@ -93,21 +93,21 @@
         }
         if (stateBadge) {
             if (running) {
-                stateBadge.textContent = phaseLabels[phase] || (phase === "failed" ? "Action failed" : phase === "ready" ? "Ready" : "Running");
+                stateBadge.textContent = phaseLabels[phase] || (phase === "failed" ? "操作失败" : phase === "ready" ? "就绪" : "运行中");
                 stateBadge.classList.remove("hidden", "badge-dim", "badge-green", "badge-yellow");
                 stateBadge.classList.add(transitional || phase === "failed" ? "badge-yellow" : "badge-green");
             } else {
-                stateBadge.textContent = "No process running";
+                stateBadge.textContent = "未运行";
                 stateBadge.classList.remove("hidden", "badge-green", "badge-yellow");
                 stateBadge.classList.add("badge-dim");
             }
         }
         const externalOnly = externalConnected && !running;
         const hasOutput = Boolean(terminal?.children.length);
-        I.dom.setText(I.dom.byId("monitor-output-title"), !running && !externalOnly && hasOutput ? "Last run output" : "Process Output");
+        I.dom.setText(I.dom.byId("monitor-output-title"), !running && !externalOnly && hasOutput ? "历史输出" : "详细日志");
         I.dom.setText(noProcessNote, hasOutput
-            ? "No process running — the most recent output backlog is retained until the next launch."
-            : "Process output will appear here when you launch a model.");
+            ? "没有正在运行的进程——最近的输出 backlog（积压数据/日志缓存）将保留至下次启动。"
+            : "启动模型后，处理输出将显示在此处。");
         if (externalNote) externalNote.classList.toggle("hidden", !externalOnly);
         if (noProcessNote) noProcessNote.classList.toggle("hidden", running || externalOnly);
         if (terminal) terminal.classList.toggle("hidden", externalOnly || (!running && !hasOutput));

@@ -22,7 +22,7 @@
         if (!label) return;
         label.textContent = S.historyRetentionNotice
             ? `History keeps ${CHAT_MAX_STORED_CONVERSATIONS} conversations; older entries have been removed.`
-            : `History retention: ${count} of ${CHAT_MAX_STORED_CONVERSATIONS} conversations saved.`;
+            : `历史记录 ${count} 条，最多可保存 ${CHAT_MAX_STORED_CONVERSATIONS} 条对话历史。`;
     }
 
     function saveConversationsToStorage(list) {
@@ -32,7 +32,7 @@
         const saved = I.setStoredItem(CHAT_CONVERSATIONS_STORAGE_KEY, JSON.stringify(pruned));
         S.historyRetentionNotice = saved && all.length > CHAT_MAX_STORED_CONVERSATIONS;
         if (!saved && typeof window.showToast === "function") {
-            window.showToast("Conversation history could not be saved. Your active chat remains available for this session.", "warning");
+            window.showToast("无法保存对话历史。你的当前聊天在本次会话中仍然可用。", "warning");
         }
         renderHistoryRetention(pruned.length);
         return saved;
@@ -288,7 +288,7 @@
         if (visibleConversations.length === 0) {
             const empty = document.createElement("div");
             empty.className = "chat-history-empty";
-            empty.textContent = query ? "No conversations match your search" : "No saved conversations";
+            empty.textContent = query ? "没有与您的搜索内容匹配的对话" : "没有保存对话";
             list.appendChild(empty);
             return;
         }
@@ -307,19 +307,19 @@
             const deleteBtn = document.createElement("button");
             deleteBtn.type = "button";
             deleteBtn.className = "btn btn-xs chat-history-item-delete";
-            deleteBtn.textContent = "Delete";
-            deleteBtn.title = "Delete conversation";
-            deleteBtn.setAttribute("aria-label", "Delete conversation");
+            deleteBtn.textContent = "删除";
+            deleteBtn.title = "删除对话";
+            deleteBtn.setAttribute("aria-label", "删除对话");
             deleteBtn.addEventListener("click", async (e) => {
                 e.stopPropagation();
-                const confirmed = await I.requestConfirmation("Delete Conversation", `Delete "${convo.title || "Untitled"}"? This cannot be undone.`, "Delete");
+                const confirmed = await I.requestConfirmation("删除对话", `确定要删除 "${convo.title || "未命名"}" 吗？此操作无法撤销。`, "删除");
                 if (confirmed) return deleteConversation(convo.id);
             });
 
             const renameBtn = document.createElement("button");
             renameBtn.className = "btn btn-xs chat-history-item-rename";
-            renameBtn.textContent = "Rename";
-            renameBtn.title = "Rename conversation";
+            renameBtn.textContent = "重命名";
+            renameBtn.title = "重命名对话";
             renameBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 requestConversationRename(convo.id);
@@ -327,7 +327,7 @@
 
             const exportBtn = document.createElement("button");
             exportBtn.className = "btn btn-xs chat-history-item-export";
-            exportBtn.textContent = "Export";
+            exportBtn.textContent = "导出";
             exportBtn.title = "Export conversation as JSON";
             exportBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -418,7 +418,7 @@
         const ownerEpoch = S.workspaceEpoch;
         S.characterImportPending = true;
         I.updateChatAvailability(I.isServerRunning());
-        reportCharacterImport("Reading character card…");
+        reportCharacterImport("正在读取角色卡…");
         const originalMessages = S.chatMessages;
         const originalLength = S.chatMessages.length;
         const originalPrompt = document.getElementById("chat-system-prompt").value;
@@ -427,9 +427,9 @@
             if (S.chatMessages !== originalMessages || S.chatMessages.length !== originalLength
                 || document.getElementById("chat-system-prompt").value !== originalPrompt
                 || !I.workspaceMutationAllowed(ownerEpoch) || S.chatStreaming || S.compactionController || S.sendPreflightPromise) {
-                throw new Error("Chat changed while reading the card. Please load it again.");
+                throw new Error("读取角色卡时聊天已更改。请重新加载。");
             }
-            if (!saveCurrentConversation()) throw new Error("Could not save the current conversation. The character was not loaded.");
+            if (!saveCurrentConversation()) throw new Error("无法保存当前对话。角色未加载。");
             const conversation = {
                 id: I.createConversationId(), title: card.name.slice(0, 120),
                 messages: card.greeting.trim() ? [{ role: "assistant", content: card.greeting }] : [],
@@ -437,12 +437,12 @@
             };
             const conversations = getStoredConversations();
             conversations.unshift(conversation);
-            if (!I.invalidateWorkspace()) throw new Error("The chat changed while importing the character. Please try again.");
-            if (!saveConversationsToStorage(conversations)) throw new Error("Could not save the character chat. The current conversation is still open.");
+            if (!I.invalidateWorkspace()) throw new Error("导入角色时聊天已更改。请重试。");
+            if (!saveConversationsToStorage(conversations)) throw new Error("无法保存角色聊天。当前对话仍然打开。");
             if (!I.workspaceMutationAllowed(ownerEpoch) || !(await loadConversation(conversation.id))) {
-                throw new Error("The chat changed while loading the character. Please try again.");
+                throw new Error("加载角色时聊天已更改。请重试。");
             }
-            reportCharacterImport([`Started a chat with ${card.name}.`, ...card.notices].join(" "));
+            reportCharacterImport([`已开始与 ${card.name} 的聊天。`, ...card.notices].join(" "));
         } catch (error) {
             console.debug("Character card import did not complete", error);
             reportCharacterImport(error.message || "Could not read the character card. Try another JSON or PNG file.");

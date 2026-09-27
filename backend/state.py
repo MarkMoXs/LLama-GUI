@@ -28,7 +28,7 @@ def default_remote_tunnel_state() -> dict[str, Any]:
     return {
         "status": "idle",
         "url": "",
-        "message": "Remote tunnel is not running.",
+        "message": "远程隧道未运行。",
         "log": "",
     }
 
