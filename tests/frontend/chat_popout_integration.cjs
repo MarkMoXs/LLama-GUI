@@ -324,10 +324,10 @@ test("direct Chat window URL without an opener shows a safe unavailable shell", 
     assert.equal(await page.locator(CHAT_WINDOW_PLACEHOLDER).getAttribute("role"), "region");
     const placeholderLabelId = await page.locator(CHAT_WINDOW_PLACEHOLDER).getAttribute("aria-labelledby");
     assert.ok(placeholderLabelId, "the Chat placeholder region must reference its heading");
-    assert.equal(await page.locator(`#${placeholderLabelId}`).textContent(), "Chat window unavailable");
+    assert.equal(await page.locator(`#${placeholderLabelId}`).textContent(), "聊天窗口不可用");
     assert.equal(await page.locator(CHAT_HOST_STATUS).getAttribute("role"), "status");
-    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /Chat window unavailable/i);
-    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} p`).textContent(), /same browser|cannot share/i);
+    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /聊天窗口不可用/i);
+    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} p`).textContent(), /同一浏览器|无法共享/i);
     assert.equal(await page.locator("#section-quick-launch").isVisible(), false);
     assert.equal(await page.locator("#app-sidebar").isVisible(), false);
     assert.equal(await page.locator(CHAT_POP_OUT).isDisabled(), true);
@@ -383,7 +383,7 @@ test("Chat pop-out contains URL construction and live host getter failures", { t
     await main.locator(CHAT_POP_OUT).click();
     const popup = await popupPromise;
     await popup.locator("body[data-chat-window-error]").waitFor({ state: "visible" });
-    assert.match(await popup.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /unavailable/i);
+    assert.match(await popup.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /不可用/i);
     assert.equal(await popup.locator("#chat-layout").isVisible(), false);
     assert.equal(await popup.locator("#section-quick-launch").isVisible(), false);
     assert.equal(await popup.locator(CHAT_RETURN).isDisabled(), true);
@@ -489,10 +489,10 @@ test("Recover chat here explains ownership contention and retries after the owne
     });
     await failed.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
     await failed.locator('.nav-item[data-section="chat"]').click();
-    assert.equal(await failed.locator("#chat-window-placeholder-heading").innerText(), "Chat needs recovery");
+    assert.equal(await failed.locator("#chat-window-placeholder-heading").innerText(), "聊天需要恢复");
     await failed.locator(CHAT_RETURN_HERE).click();
     await failed.locator(CHAT_HOST_STATUS).waitFor({ state: "visible" });
-    assert.match(await failed.locator(CHAT_HOST_STATUS).innerText(), /Chat could not be restored/);
+    assert.match(await failed.locator(CHAT_HOST_STATUS).innerText(), /无法恢复聊天/);
     await failed.locator(CHAT_RETURN_HERE).click();
     await failed.locator("#chat-layout").waitFor({ state: "visible" });
     assert.equal(await failed.locator("#chat-input").inputValue(), "Keep this unsent draft during recovery.");
@@ -532,7 +532,7 @@ test("Chat initialization failure leaves an unavailable shell without breaking t
     await page.locator('.nav-item[data-section="chat"]').click();
     await page.locator("#section-chat").waitFor({ state: "visible" });
     await page.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "visible" });
-    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /Chat unavailable/i);
+    assert.match(await page.locator(`${CHAT_WINDOW_PLACEHOLDER} h3`).textContent(), /聊天不可用/i);
     assert.equal(await page.locator("#chat-layout").isVisible(), false, "a failed Chat init cannot expose an editable orphan layout");
     assert.equal(await page.locator("#chat-input").isEditable(), false, "a failed Chat init leaves the composer inert");
     assert.equal(await page.locator(CHAT_POP_OUT).isDisabled(), true, "a failed Chat init disables pop-out");
@@ -564,7 +564,7 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
     await selectChat(main);
     assert.equal(await main.locator(CHAT_RETURN).isVisible(), false, "main Return control is hidden before opening a pop-out");
-    assert.equal(await main.locator(CHAT_POP_OUT).getAttribute("title"), "Open Chat in a separate window");
+    assert.equal(await main.locator(CHAT_POP_OUT).getAttribute("title"), "在独立窗口中打开聊天");
     if (await main.locator("#chat-history-panel").evaluate(element => element.classList.contains("collapsed"))) {
         await main.locator("#btn-open-history").click();
     }
@@ -601,7 +601,7 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
     assert.equal(await main.locator(CHAT_WINDOW_PLACEHOLDER).getAttribute("role"), "region");
     const detachedPlaceholderLabelId = await main.locator(CHAT_WINDOW_PLACEHOLDER).getAttribute("aria-labelledby");
     assert.ok(detachedPlaceholderLabelId, "the detached Chat placeholder must reference its heading");
-    assert.equal(await main.locator(`#${detachedPlaceholderLabelId}`).textContent(), "Chat is open in another window");
+    assert.equal(await main.locator(`#${detachedPlaceholderLabelId}`).textContent(), "聊天窗口已在另一个窗口中打开");
     assert.equal(await main.locator(CHAT_HOST_STATUS).getAttribute("role"), "status");
     assert.equal(await main.locator(CHAT_SHOW_WINDOW).isVisible(), true);
     assert.equal(await main.locator(CHAT_RETURN_HERE).isVisible(), true);
@@ -696,7 +696,7 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
     // bootstrap. Keyboard cancellation must leave this workspace unchanged.
     const [chooser] = await Promise.all([
         popup.waitForEvent("filechooser"),
-        popup.getByRole("button", { name: "Load character card", exact: true }).press("Enter"),
+        popup.getByRole("button", { name: "加载角色", exact: true }).press("Enter"),
     ]);
     await chooser.setFiles([]);
     for (const selector of [".chat-history-item-delete", "#btn-chat-clear", "#btn-delete-all-history"]) {
@@ -748,7 +748,7 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
     assert.equal(await main.locator(CHAT_RETURN).isVisible(), false, "main Return control remains hidden after returning");
     assert.equal(await main.locator(CHAT_POP_OUT).isDisabled(), false, "Pop out is enabled after returning");
     const popoutTitleAfterReturn = await main.locator(CHAT_POP_OUT).getAttribute("title");
-    assert.equal(popoutTitleAfterReturn, "Open Chat in a separate window");
+    assert.equal(popoutTitleAfterReturn, "在独立窗口中打开聊天");
     assert.doesNotMatch(popoutTitleAfterReturn || "", /owned|busy|unavailable/i, "Pop out does not retain an old disabled reason");
     for (const [pathname, count] of forbiddenBefore) assert.equal(callsFor(calls, pathname).length, count, `${pathname} must not run while returning Chat`);
     await assertNoSecret(main, "returned main window");
@@ -804,7 +804,7 @@ test("blocked and blank pop-outs preserve ownership and a fresh transfer identit
     });
     await main.locator(CHAT_POP_OUT).click();
     await main.locator(CHAT_HOST_STATUS).waitFor({ state: "visible" });
-    assert.match(await main.locator(CHAT_HOST_STATUS).textContent(), /remains available|Allow popups/i);
+    assert.match(await main.locator(CHAT_HOST_STATUS).textContent(), /仍然可用|请允许此页面的弹窗/i);
     assert.equal(await main.locator("#chat-input").isVisible(), true);
     assert.equal(await main.locator("#chat-input").isDisabled(), false);
     assert.equal(await main.evaluate(() => window.LlamaGui.chatUi.getTransferState().allowed), true);
@@ -822,7 +822,7 @@ test("blocked and blank pop-outs preserve ownership and a fresh transfer identit
     await main.locator(CHAT_POP_OUT).click();
     const blankPopup = await blankPopupPromise;
     await main.locator(CHAT_HOST_STATUS).waitFor({ state: "visible", timeout: 15_000 });
-    assert.match(await main.locator(CHAT_HOST_STATUS).textContent(), /could not connect|preserved/i);
+    assert.match(await main.locator(CHAT_HOST_STATUS).textContent(), /无法连接|保留/i);
     assert.equal(await main.locator("#chat-input").isVisible(), true);
     assert.equal(await main.locator("#chat-input").isDisabled(), false);
     assert.equal(await main.evaluate(() => window.LlamaGui.chatUi.getTransferState().allowed), true);
@@ -900,8 +900,8 @@ test("blocked and blank pop-outs preserve ownership and a fresh transfer identit
     assert.equal(lateAckResult.owner, false, "a late owner-ack cannot restore ownership after popup close");
     await main.waitForFunction(() => window.LlamaGui.chatWindow._hostView?.popup === null
         && window.LlamaGui.chatWindow.hasDetachedView?.() === false
-        && document.querySelector("#chat-window-placeholder h3")?.textContent === "The Chat window was closed"
-        && document.querySelector("#btn-chat-return-here")?.textContent === "Recover chat here", null, { timeout: 15_000 });
+        && document.querySelector("#chat-window-placeholder h3")?.textContent === "聊天窗口已关闭"
+        && document.querySelector("#btn-chat-return-here")?.textContent === "点击此处恢复聊天", null, { timeout: 15_000 });
     assert.equal(await main.evaluate(() => window.LlamaGui.chatUi.getTransferState().allowed), false,
         "the closed handoff cannot mutate Chat until explicit recovery");
     assert.equal(await main.locator(CHAT_RETURN_HERE).isVisible(), true);
@@ -1026,7 +1026,7 @@ test("idle popup close and deletion recovery use an independently seeded transcr
     await popup.close();
     await main.waitForFunction(() => window.LlamaGui.chatWindow._hostView?.popup === null
         && window.LlamaGui.chatWindow.hasDetachedView?.() === false
-        && document.querySelector("#chat-window-placeholder h3")?.textContent === "The Chat window was closed"
+        && document.querySelector("#chat-window-placeholder h3")?.textContent === "聊天窗口已关闭"
         && inferencePolling._test.getState().documentVisible === false
         && inferencePolling._test.getState().hasInitialTimer === false
         && inferencePolling._test.getState().hasTimer === false
@@ -1082,7 +1082,7 @@ test("idle popup close and deletion recovery use an independently seeded transcr
     await deletePopup.waitForFunction(() => JSON.parse(localStorage.getItem("llama_gui_conversations") || "[]").length === 0);
     await deletePopup.close();
     await main.waitForFunction(() => window.LlamaGui.chatWindow._hostView?.popup === null
-        && document.querySelector("#btn-chat-return-here")?.textContent === "Recover chat here", null, { timeout: 15_000 });
+        && document.querySelector("#btn-chat-return-here")?.textContent === "点击此处恢复聊天", null, { timeout: 15_000 });
     await main.locator(CHAT_RETURN_HERE).click();
     await main.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "hidden" });
     const afterDelete = await main.evaluate(() => window.LlamaGui.chatUi.captureSnapshot());
@@ -1151,11 +1151,11 @@ test("popup reload and main reload recover the newest checkpoint without resend"
     assert.equal(reloadView.placeholderVisible, true);
     assert.equal(reloadView.inputVisible, false, "the unavailable reload shell must not expose an editable composer");
     assert.equal(reloadView.draft, "");
-    assert.match(await popup.locator("#chat-window-placeholder h3").textContent(), /Chat window unavailable/i);
+    assert.match(await popup.locator("#chat-window-placeholder h3").textContent(), /聊天窗口不可用/i);
     assert.equal(await popup.evaluate(() => localStorage.getItem("phase4-completion-count")), null);
     await popup.close();
     await main.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "visible" });
-    await main.waitForFunction(() => document.querySelector("#btn-chat-return-here")?.textContent === "Recover chat here");
+    await main.waitForFunction(() => document.querySelector("#btn-chat-return-here")?.textContent === "点击此处恢复聊天");
     await main.locator(CHAT_RETURN_HERE).click();
     await main.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "hidden" });
     assert.equal(await main.locator("#chat-input").inputValue(), "Draft before popup reload.");

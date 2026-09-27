@@ -12,7 +12,7 @@
             const changeBtn = document.getElementById("btn-" + prefix + "change-models-folder");
             const resetBtn = document.getElementById("btn-" + prefix + "reset-models-folder");
             const errorEl = document.getElementById(prefix + "models-folder-error");
-            if (pathEl) pathEl.textContent = info && info.models_dir ? info.models_dir : "Loading...";
+            if (pathEl) pathEl.textContent = info && info.models_dir ? info.models_dir : "正在加载...";
             if (changeBtn) changeBtn.disabled = modelDirChangeInProgress;
             if (resetBtn) {
                 resetBtn.hidden = !info || info.models_dir_is_default === true;
@@ -59,12 +59,12 @@
                 displayInfo = I.status.getLatestStatus();
             }
             if (await I.models.refreshModels() !== true) {
-                throw new Error("The folder was saved, but its models could not be refreshed.");
+                throw new Error("文件夹已保存，但无法刷新其模型。");
             }
             const core = window.LlamaGui && window.LlamaGui.flagCore;
             if (core && typeof core.updateCommandPreview === "function") core.updateCommandPreview();
             modelDirOperationError = "";
-            if (typeof I.dependencies.showToast === "function") I.dependencies.showToast("Models folder updated.", "success");
+            if (typeof I.dependencies.showToast === "function") I.dependencies.showToast("模型文件夹已更新。", "success");
             return true;
         } catch (error) {
             const core = window.LlamaGui && window.LlamaGui.flagCore;

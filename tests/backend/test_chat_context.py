@@ -31,7 +31,7 @@ class ChatContextTests(unittest.TestCase):
             read.assert_not_called()
             self.assertEqual(result["status"], "empty")
             self.assertIsNone(result["prompt_tokens"])
-            self.assertIn("Type a message", result["message"])
+            self.assertIn("输入一条消息以评估上下文", result["message"])
 
     def test_capacity_is_per_slot_and_reserves_requested_or_server_limit(self):
         measured = self.measure(body={"max_tokens": 512})
@@ -148,4 +148,4 @@ class ChatContextTests(unittest.TestCase):
                     self.assertNotIn(b"gui_require_context", inference.call_args.kwargs["data"])
                 else:
                     inference.assert_not_called()
-                    self.assertIn(b"Compaction needs a valid context count", response.handler.wfile.getvalue())
+                    self.assertIn("压缩需要有效的上下文计数".encode("utf-8"), response.handler.wfile.getvalue())

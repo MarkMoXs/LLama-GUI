@@ -61,7 +61,7 @@
     function safeRead(getter, fallback, logger) {
         try { return typeof getter === "function" ? getter() : fallback; }
         catch (error) {
-            if (logger && typeof logger.debug === "function") logger.debug("Chat window host read failed", error);
+            if (logger && typeof logger.debug === "function") logger.debug("聊天窗口主机读取失败", error);
             return fallback;
         }
     }

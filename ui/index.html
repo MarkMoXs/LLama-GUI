@@ -57,7 +57,7 @@
 
 <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
 
-<button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="Open navigation" title="Open navigation" aria-controls="sidebar" aria-expanded="false">
+<button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="打开导航" title="打开导航" aria-controls="sidebar" aria-expanded="false">
     <span class="icon icon-lg"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
 </button>
 <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
@@ -73,36 +73,36 @@
                 <div class="sidebar-title">Llama GUI</div>
                 <div class="sidebar-subtitle">llama.cpp Launcher</div>
             </div>
-            <button class="btn btn-sm sidebar-close" id="sidebar-close" type="button" aria-label="Close navigation" title="Close navigation">×</button>
+            <button class="btn btn-sm sidebar-close" id="sidebar-close" type="button" aria-label="关闭导航" title="关闭导航">×</button>
         </div>
 
-        <nav class="sidebar-nav" aria-label="Workspace">
+        <nav class="sidebar-nav" aria-label="工作区">
             <button class="nav-item active" data-section="quick-launch" aria-current="page">
                 <span class="icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                 Quick Launch
             </button>
             <div class="nav-group" role="group" aria-labelledby="nav-tune">
-            <div class="nav-section-label" id="nav-tune">Tune</div>
+            <div class="nav-section-label" id="nav-tune">调整</div>
             <button class="nav-item" data-section="configure">
                 <span class="icon"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>
-                Configure
+                配置
             </button>
             <button class="nav-item" data-section="monitor">
                 <span class="icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-                Monitor
-                <span id="monitor-nav-live" class="badge badge-green hidden" title="llama-server is running"><span class="badge-dot" aria-hidden="true"></span>Live</span>
+                监视器
+                <span id="monitor-nav-live" class="badge badge-green hidden" title="llama-server 正在运行"><span class="badge-dot" aria-hidden="true"></span>实时</span>
             </button>
             <button class="nav-item" data-section="benchmarking">
                 <span class="icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-                Benchmarking
+                基准测试
             </button>
             </div>
 
             <div class="nav-group" role="group" aria-labelledby="nav-interact">
-            <div class="nav-section-label" id="nav-interact">Interact</div>
+            <div class="nav-section-label" id="nav-interact">交互</div>
             <button class="nav-item" data-section="chat">
                 <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                Chat
+                聊天
             </button>
             <button class="nav-item" data-section="api">
                 <span class="icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
@@ -111,43 +111,43 @@
             </div>
 
             <div class="nav-group" role="group" aria-labelledby="nav-library">
-            <div class="nav-section-label" id="nav-library">Library</div>
+            <div class="nav-section-label" id="nav-library">库</div>
             <button class="nav-item" data-section="presets">
                 <span class="icon"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
-                Presets
+                预设
             </button>
             </div>
 
         </nav>
 
         <div class="sidebar-footer">
-            <div class="sidebar-runtime-controls" aria-label="Runtime controls">
+            <div class="sidebar-runtime-controls" aria-label="运行时控制项">
                 <details class="sidebar-runtime" id="sidebar-runtime">
                     <summary>
-                        <span class="sidebar-runtime-heading">Runtime</span>
-                        <span id="sidebar-runtime-state" data-phase="idle" role="status">Checking…</span>
-                        <span id="sidebar-runtime-model">No local process running</span>
+                        <span class="sidebar-runtime-heading">运行时</span>
+                        <span id="sidebar-runtime-state" data-phase="idle" role="status">正在检查…</span>
+                        <span id="sidebar-runtime-model">没有正在运行的本地进程</span>
                     </summary>
                     <div class="sidebar-runtime-detail">
                         <span id="sidebar-runtime-build"></span>
                         <span id="sidebar-runtime-endpoint"></span>
-                        <button class="btn btn-sm" id="btn-sidebar-runtime-details" type="button">Open Monitor</button>
+                        <button class="btn btn-sm" id="btn-sidebar-runtime-details" type="button">打开监视器</button>
                     </div>
                 </details>
                 <div class="sidebar-runtime-actions">
                     <button id="btn-sidebar-launch" class="btn btn-primary sidebar-runtime-btn" type="button">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                        <span id="btn-sidebar-launch-label">Launch server</span>
+                        <span id="btn-sidebar-launch-label">开始运行</span>
                     </button>
                     <button id="btn-sidebar-stop" class="btn btn-danger sidebar-runtime-btn hidden" type="button">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg></span>
-                        <span id="btn-sidebar-stop-label">Stop server</span>
+                        <span id="btn-sidebar-stop-label">停止服务</span>
                     </button>
                 </div>
                 <div class="sidebar-launch-reason" id="sidebar-launch-reason" hidden></div>
                 <details class="sidebar-memory-estimate" id="sidebar-memory-estimate">
-                    <summary class="sidebar-memory-summary" title="Estimated memory for your next launch, based on pending settings">
-                        <span class="sidebar-memory-title">Next launch</span>
+                    <summary class="sidebar-memory-summary" title="基于待处理设置估算下次启动所需内存">
+                        <span class="sidebar-memory-title">下一个启动</span>
                         <span class="sidebar-memory-reading">
                             <span class="sidebar-memory-label">GPU</span>
                             <strong id="memory-estimate-accelerator">--</strong>
@@ -156,13 +156,13 @@
                             <span class="sidebar-memory-label">RAM</span>
                             <strong id="memory-estimate-ram">--</strong>
                         </span>
-                        <span class="sidebar-memory-state" id="memory-estimate-state">Idle</span>
+                        <span class="sidebar-memory-state" id="memory-estimate-state">空闲</span>
                     </summary>
-                    <div class="sidebar-memory-detail" id="memory-estimate-detail">Select a model to estimate.</div>
+                    <div class="sidebar-memory-detail" id="memory-estimate-detail">选择一个模型进行评估</div>
                 </details>
             </div>
             <section class="sidebar-model-switcher" id="sidebar-model-switcher" aria-labelledby="sidebar-model-switcher-label">
-                <div class="sidebar-model-switcher-heading" id="sidebar-model-switcher-label">Model Switcher</div>
+                <div class="sidebar-model-switcher-heading" id="sidebar-model-switcher-label">模型切换</div>
                 <div class="sidebar-model-switcher-control">
                     <span class="sidebar-model-switcher-slot is-active" id="sidebar-model-switcher-label-a" aria-hidden="true">A</span>
                     <div
@@ -170,7 +170,7 @@
                         id="sidebar-model-switcher-slider"
                         role="slider"
                         tabindex="0"
-                        aria-label="Active model switcher slot"
+                        aria-label="活动的模型切换槽位"
                         aria-valuemin="0"
                         aria-valuemax="1"
                         aria-valuenow="0"
@@ -183,29 +183,29 @@
                     </div>
                     <span class="sidebar-model-switcher-slot" id="sidebar-model-switcher-label-b" aria-hidden="true">B</span>
                 </div>
-                <div class="sidebar-model-switcher-status" id="sidebar-model-switcher-status" aria-live="polite">Launch a slot in Quick Launch first</div>
+                <div class="sidebar-model-switcher-status" id="sidebar-model-switcher-status" aria-live="polite">请先在 Quick Launch 栏中启动一个运行槽位</div>
             </section>
-            <nav class="sidebar-maintenance" aria-label="Maintenance">
+            <nav class="sidebar-maintenance" aria-label="维护">
                 <button class="nav-item" data-section="install">
                     <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-                    Install &amp; Update
+                    安装 &amp; 更新
                 </button>
-                <span id="version-badge" class="badge badge-neutral" title="Installed llama.cpp build">Not Installed</span>
+                <span id="version-badge" class="badge badge-neutral" title="Installed llama.cpp build">未安装</span>
             </nav>
             <!-- The list is built by theme-ui.js from its THEMES registry, so
                  adding a theme needs no markup change here. -->
             <div class="sidebar-meta-row">
                 <div class="theme-menu" id="theme-menu">
-                    <button class="theme-menu-trigger" id="theme-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu-list" title="Change theme">
+                    <button class="theme-menu-trigger" id="theme-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu-list" title="浏览主题">
                         <span class="theme-menu-swatch" id="theme-menu-current-swatch" aria-hidden="true"></span>
-                        <span class="theme-menu-current" id="theme-menu-current">Theme</span>
+                        <span class="theme-menu-current" id="theme-menu-current">主题</span>
                         <span class="icon icon-sm theme-menu-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
-                    <ul class="theme-menu-list" id="theme-menu-list" role="menu" aria-label="Theme" hidden></ul>
+                    <ul class="theme-menu-list" id="theme-menu-list" role="menu" aria-label="主题" hidden></ul>
                 </div>
-                <button id="btn-sidebar-stop-app" class="btn sidebar-quit" type="button" title="Quit Llama GUI and stop its local process">
+                <button id="btn-sidebar-stop-app" class="btn sidebar-quit" type="button" title="退出Llama GUI并停止其本地进程">
                     <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></span>
-                    Quit Llama GUI
+                    退出 Llama GUI
                 </button>
             </div>
         </div>
@@ -217,54 +217,54 @@
         <div class="section-panel" id="section-install" style="display:none;">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Install &amp; Update</h1>
-                    <div class="page-title-sub">Download releases, choose an install target, and manage your llama.cpp installation.</div>
+                    <h1 class="page-title">安装 &amp; 更新</h1>
+                    <div class="page-title-sub">请下载发布版本，选择安装目标，并管理您的 llama.cpp 安装。</div>
                 </div>
             </div>
 
             <div class="stacked-cards install-cards">
                 <div class="card">
-                    <h3>Install</h3>
+                    <h3>安装</h3>
                     <div id="install-status" class="status-box"></div>
 
                     <div id="installed-backend-summary" class="installed-backend-summary" aria-live="polite">
-                        Installed backend: checking...
+                        已安装后端: 正在检查...
                     </div>
 
                     <div class="form-group" id="release-group">
-                        <label class="form-label">Version</label>
+                        <label class="form-label">版本</label>
                         <div class="input-row">
-                            <select id="release-select"><option value="">Loading...</option></select>
-                            <button id="refresh-releases" class="btn btn-sm" title="Refresh releases and official backends" aria-label="Refresh releases and official backends">
+                            <select id="release-select"><option value="">请稍等...</option></select>
+                            <button id="refresh-releases" class="btn btn-sm" title="刷新版本" aria-label="刷新版本">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Backend</label>
+                        <label class="form-label">后端</label>
                         <select id="backend-select">
-                            <option value="">Loading available backends...</option>
+                            <option value="">正在加载可用后端...</option>
                         </select>
                         <p id="backend-discovery-status" class="help-text" role="status">Official CUDA/ROCm versions are discovered automatically. Switching versions requires an install.</p>
                     </div>
 
                     <div id="custom-backend-info" style="display:none;">
                         <div class="status-box info">
-                            <strong id="custom-backend-title">Custom Setup:</strong><br>
-                            Place your pre-compiled llama.cpp binaries in:<br>
+                            <strong id="custom-backend-title">自定义设置：</strong><br>
+                            将预编译的 llama.cpp 二进制文件放入：<br>
                             <code id="custom-backend-folder">llama/custom/bin/</code><br><br>
-                            Expected executables: <code>llama-server</code>, <code>llama-cli</code>, <code>llama-bench</code>, <code>llama-perplexity</code><br>
-                            Runtime libraries (.dll, .so, .dylib) should also be placed in the same directory.<br><br>
-                            Stop the running llama.cpp process, then click "Activate Custom" once your binaries are in place.
-                            Switching slots keeps both builds and uses the same models and presets.
+                            预期可执行文件：<code>llama-server</code>, <code>llama-cli</code>, <code>llama-bench</code>, <code>llama-perplexity</code><br>
+                            运行时库（.dll、.so、.dylib）也应放置在同一目录中。<br><br>
+                            停止正在运行的 llama.cpp 进程，然后将二进制文件放入后再点击“激活自定义”。
+                            切换插槽可以保留构建和使用相同的模型和预设。
                         </div>
                     </div>
 
                     <div class="form-row">
-                        <button id="btn-install" class="btn btn-primary">Install</button>
-                        <button id="btn-update" class="btn">Check for Updates</button>
-                        <button id="btn-repair" class="btn hidden">Repair Install</button>
+                        <button id="btn-install" class="btn btn-primary">安装</button>
+                        <button id="btn-update" class="btn">检查更新</button>
+                        <button id="btn-repair" class="btn hidden">修复安装</button>
                     </div>
 
                     <div id="download-progress" class="progress-container hidden">
@@ -274,45 +274,45 @@
                 </div>
 
                 <div class="card">
-                    <h3>Llama GUI App Updates</h3>
+                    <h3>Llama GUI App 更新</h3>
                     <div class="form-group">
-                        <label class="form-label" for="app-update-channel">Update channel</label>
+                        <label class="form-label" for="app-update-channel">更新通道</label>
                         <select id="app-update-channel">
-                            <option value="stable">Stable releases</option>
-                            <option value="nightly">Nightly — may be unstable</option>
+                            <option value="stable">稳定版</option>
+                            <option value="nightly">Nightly — 可能不稳定</option>
                         </select>
-                        <p class="help-text">Stable installs tagged releases. Nightly includes unreleased commits from the main branch.</p>
+                        <p class="help-text">稳定版，Nightly 包括来自主分支的未发布的提交。</p>
                     </div>
                     <div id="app-update-status" class="status-box"></div>
                     <div class="form-row">
-                        <button id="btn-check-app-update" class="btn" type="button">Check App Updates</button>
-                        <button id="btn-update-app" class="btn btn-primary" type="button">Update App from GitHub</button>
+                        <button id="btn-check-app-update" class="btn" type="button">检查应用程序更新</button>
+                        <button id="btn-update-app" class="btn btn-primary" type="button">从 GitHub 更新应用程序</button>
                     </div>
                     <p class="app-update-note">
-                        Repository:
+                        仓库地址：
                         <a href="https://github.com/thomas9120/LLama-GUI.git" target="_blank" rel="noopener noreferrer" class="server-link">github.com/thomas9120/LLama-GUI.git</a>
                     </p>
                 </div>
 
                 <div class="card span-full">
-                    <h3>Installed</h3>
+                    <h3>已安装</h3>
                     <div id="installed-info"></div>
                     <div class="section">
-                        <h3>Folders</h3>
+                        <h3>文件夹</h3>
                         <div class="form-row">
-                            <button id="btn-open-models" class="btn" type="button">Open Models</button>
-                            <button id="btn-open-llama" class="btn" type="button">Open llama.cpp</button>
+                            <button id="btn-open-models" class="btn" type="button">打开模型</button>
+                            <button id="btn-open-llama" class="btn" type="button">打开 llama.cpp</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="card card-danger span-full">
-                    <h3>Danger Zone</h3>
-                    <p class="help-text">These actions remove files or stop the app itself. They ask for confirmation, but use them deliberately.</p>
+                    <h3>危险区域</h3>
+                    <p class="help-text">这些操作会删除文件或停止应用程序本身，虽然系统会要求确认，但请务必谨慎使用。</p>
                     <div class="form-row">
-                        <button id="btn-remove-llama" class="btn btn-danger">Remove llama.cpp Files</button>
-                        <button id="btn-restart-app" class="btn" type="button">Restart Llama GUI</button>
-                        <button id="btn-stop-app" class="btn btn-danger" type="button">Quit Llama GUI</button>
+                        <button id="btn-remove-llama" class="btn btn-danger">移除 llama.cpp</button>
+                        <button id="btn-restart-app" class="btn" type="button">重启 Llama GUI</button>
+                        <button id="btn-stop-app" class="btn btn-danger" type="button">退出 Llama GUI</button>
                     </div>
                 </div>
             </div>
@@ -320,76 +320,76 @@
 
         <!-- ═══ QUICK LAUNCH ═══ -->
         <div class="section-panel" id="section-quick-launch">
-            <div class="quick-runtime" aria-label="Current runtime">
-                <div><strong id="quick-runtime-state">Checking runtime…</strong><span id="quick-runtime-model"></span>
-                    <span id="quick-runtime-context">Active slot context: unavailable</span>
+            <div class="quick-runtime" aria-label="当前运行时间">
+                <div><strong id="quick-runtime-state">检查运行时间…</strong><span id="quick-runtime-model"></span>
+                    <span id="quick-runtime-context">当前插槽上下文：不可用</span>
                 </div>
                 <span id="quick-runtime-build"></span>
             </div>
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Quick Launch</h1>
-                    <div class="page-title-sub">Your next session, ready to go.</div>
+                    <h1 class="page-title">欢迎使用 Quick Launch</h1>
+                    <div class="page-title-sub">您的下一个会话，准备就绪。</div>
                 </div>
-                <button id="btn-open-configure" class="btn btn-ghost" type="button">Open Configure ↗</button>
+                <button id="btn-open-configure" class="btn btn-ghost" type="button">打开配置 ↗</button>
             </div>
             <section class="quick-saved" aria-labelledby="quick-saved-title">
                 <div class="quick-section-heading">
-                    <h2 id="quick-saved-title">Saved presets</h2>
-                    <button id="btn-quick-presets" class="btn btn-sm btn-ghost" type="button">View all →</button>
+                    <h2 id="quick-saved-title">自定义配置</h2>
+                    <button id="btn-quick-presets" class="btn btn-sm btn-ghost" type="button">查看全部 →</button>
                 </div>
                 <div id="quick-saved-presets" class="quick-saved-grid">
                 </div>
-                <p id="quick-presets-status" class="help-text" role="status">Loading saved presets…</p>
+                <p id="quick-presets-status" class="help-text" role="status">正在加载已保存的预设…</p>
             </section>
             <details id="quick-starter-profiles" class="quick-disclosure">
-                <summary><span>Starter profiles</span><span class="quick-disclosure-summary">Context and MTP</span>
+                <summary><span>入门配置</span><span class="quick-disclosure-summary">上下文大小 与 MTP</span>
                 </summary>
                 <div class="quick-profile-body">
                     <div class="form-group">
-                        <label class="form-label" for="quick-profile-select">Profile</label>
+                        <label class="form-label" for="quick-profile-select">配置</label>
                         <select id="quick-profile-select">
-                            <option value="">Choose a profile...</option>
+                            <option value="">选择内置配置...</option>
                         </select>
                     </div>
                     <p id="quick-profile-summary" class="help-text">
                     </p>
                 </div>
             </details>
-            <section class="preset-context hidden" data-preset-context aria-label="Saved preset comparison">
+            <section class="preset-context hidden" data-preset-context aria-label="对比已保存预设">
                 <div class="preset-context-heading">
-                    <div class="preset-context-identity"><span data-preset-origin>Unsaved configuration</span> <button type="button" class="btn btn-link" data-preset-name></button><span data-preset-state></span></div>
-                    <div class="preset-context-actions"><button type="button" class="btn btn-sm" data-preset-update>Update preset</button><button type="button" class="btn btn-sm btn-ghost" data-preset-save-new>Save as new preset</button></div>
+                    <div class="preset-context-identity"><span data-preset-origin>未保存的配置</span> <button type="button" class="btn btn-link" data-preset-name></button><span data-preset-state></span></div>
+                    <div class="preset-context-actions"><button type="button" class="btn btn-sm" data-preset-update>更新预设</button><button type="button" class="btn btn-sm btn-ghost" data-preset-save-new>保存为新预设</button></div>
                 </div>
                 <details data-preset-review class="preset-review hidden">
-                    <summary data-preset-review-label>Compared with saved preset</summary>
-                    <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">Setting</th><th scope="col">Saved preset</th><th scope="col">Current edits</th></tr></thead><tbody></tbody></table></div>
+                    <summary data-preset-review-label>与保存的预设值相比</summary>
+                    <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">设置</th><th scope="col">保存预设</th><th scope="col">当前编辑</th></tr></thead><tbody></tbody></table></div>
                 </details>
                 <p class="help-text" data-preset-context-note></p>
             </section>
             <div class="quick-config">
-                <section class="quick-model-section" aria-label="Model and launch mode">
+                <section class="quick-model-section" aria-label="模型和启动模式">
                     <div class="quick-model-row">
                         <div class="form-group">
-                            <label class="form-label" for="quick-model-select">Model</label>
+                            <label class="form-label" for="quick-model-select">模型</label>
                             <div class="input-row">
                                 <select id="quick-model-select">
-                                    <option value="">-- Select Model --</option>
+                                    <option value="">-- 选择模型 --</option>
                                 </select>
-                                <button id="btn-quick-refresh-models" class="btn btn-sm" type="button" title="Refresh models" aria-label="Refresh models"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+                                <button id="btn-quick-refresh-models" class="btn btn-sm" type="button" title="刷新模型" aria-label="刷新模型"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                                 </button>
                             </div>
                         </div>
-                        <button id="btn-quick-download" class="btn btn-sm" type="button">Download model</button>
+                        <button id="btn-quick-download" class="btn btn-sm" type="button">下载模型</button>
                     </div>
-                    <div class="models-folder-row quick-folder-row"><span class="form-label form-label-inline">Models folder</span><code id="quick-models-folder-path" class="models-folder-path">Loading…</code>
-                        <button id="btn-quick-change-models-folder" class="btn btn-sm btn-ghost" type="button">Change…</button>
-                        <button id="btn-quick-reset-models-folder" class="btn btn-sm btn-ghost" type="button" hidden>Reset to default</button>
+                    <div class="models-folder-row quick-folder-row"><span class="form-label form-label-inline">模型存放路径：</span><code id="quick-models-folder-path" class="models-folder-path">正在加载…</code>
+                        <button id="btn-quick-change-models-folder" class="btn btn-sm btn-ghost" type="button">浏览…</button>
+                        <button id="btn-quick-reset-models-folder" class="btn btn-sm btn-ghost" type="button" hidden>重置为默认</button>
                     </div>
                     <div id="quick-models-folder-error" class="status-box hidden" role="status">
                     </div>
                     <fieldset class="quick-mode-row">
-                        <legend>Launch mode</legend>
+                        <legend>启动模式</legend>
                         <div class="quick-mode-toggle" id="quick-mode-toggle">
                             <label class="quick-choice">
                                 <input type="radio" name="quick-launch-mode" value="llama-server" checked> Web / API server</label>
@@ -400,10 +400,10 @@
                 </section>
                 <div class="quick-tuning">
                     <section class="quick-tuning-section" aria-labelledby="quick-memory-title">
-                        <h2 id="quick-memory-title">Memory &amp; GPU</h2>
+                        <h2 id="quick-memory-title">内存 &amp; GPU</h2>
                         <div class="quick-settings-rows">
                             <div class="form-group">
-                                <label class="form-label" for="quick-context-preset">Context Length</label>
+                                <label class="form-label" for="quick-context-preset">上下文大小</label>
                                 <div class="input-row">
                                     <select id="quick-context-preset">
                                         <option value="8192">8K</option>
@@ -412,44 +412,44 @@
                                         <option value="64000">64K</option>
                                         <option value="128000">128K</option>
                                         <option value="256000">256K</option>
-                                        <option value="custom">Custom…</option>
+                                        <option value="custom">自定义…</option>
                                     </select>
-                                    <input type="number" id="quick-context-custom" min="0" step="1" aria-label="Custom context tokens" placeholder="Custom tokens" />
+                                    <input type="number" id="quick-context-custom" min="0" step="1" aria-label="Custom context tokens" placeholder="自定义 tokens" />
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="quick-gpu-mode">GPU Offload</label>
                                 <div class="input-row">
                                     <select id="quick-gpu-mode">
-                                        <option value="auto">Auto</option>
-                                        <option value="0">CPU only</option>
-                                        <option value="all">All GPU layers</option>
-                                        <option value="custom">Custom</option>
+                                        <option value="auto">自动</option>
+                                        <option value="0">仅使用 CPU</option>
+                                        <option value="all">所有 GPU 层</option>
+                                        <option value="custom">自定义</option>
                                     </select>
                                     <input type="text" id="quick-gpu-custom" aria-label="Custom GPU layers" placeholder="Manual layers" />
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="quick-fit-toggle">Auto Fit</label>
+                                <label class="form-label" for="quick-fit-toggle">Fit 自动计算</label>
                                 <select id="quick-fit-toggle">
-                                    <option value="on">On</option>
-                                    <option value="off">Off</option>
+                                    <option value="on">开启</option>
+                                    <option value="off">关闭</option>
                                 </select>
                             </div>
                         </div>
                         <details class="fit-advanced">
-                            <summary>Advanced fit options</summary>
-                            <p class="help-text">Auto Fit adjusts unset settings. An explicit context size can still exceed available memory.</p>
+                            <summary>高级 fit 选项</summary>
+                            <p class="help-text">自动 Fit 仅调整未明确设置的参数。若显式指定了上下文大小，仍有可能超出可用内存。</p>
                             <div class="quick-fit-grid">
                                 <div class="form-group">
-                                    <label class="form-label" for="quick-fit-target">Keep this much VRAM free (MiB)</label>
-                                    <input type="text" id="quick-fit-target" placeholder="llama.cpp default" />
+                                    <label class="form-label" for="quick-fit-target">保持该大小的空闲 VRAM 显存（单位：MiB）</label>
+                                    <input type="text" id="quick-fit-target" placeholder="llama.cpp 默认" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="quick-fit-ctx">Never shrink context below</label>
+                                    <label class="form-label" for="quick-fit-ctx">上下文最小保留阈值</label>
                                     <div class="input-row">
-                                        <input type="number" id="quick-fit-ctx" min="0" step="1" placeholder="llama.cpp default" />
-                                        <button id="btn-quick-fit-sync" class="btn btn-sm" type="button">Match Context</button>
+                                        <input type="number" id="quick-fit-ctx" min="0" step="1" placeholder="llama.cpp 默认" />
+                                        <button id="btn-quick-fit-sync" class="btn btn-sm" type="button">上下文匹配</button>
                                     </div>
                                 </div>
                             </div>
@@ -458,19 +458,19 @@
                         </p>
                     </section>
                     <section class="quick-tuning-section" aria-labelledby="quick-sampling-title">
-                        <h2 id="quick-sampling-title">Sampling</h2>
+                        <h2 id="quick-sampling-title">采样</h2>
                         <div class="form-group">
-                            <label class="form-label" for="quick-sampler-select">Sampler Preset</label>
+                            <label class="form-label" for="quick-sampler-select">采样预设</label>
                             <div class="input-row">
                                 <select id="quick-sampler-select">
                                 </select>
-                                <button id="btn-quick-sampler-load" class="btn btn-sm" type="button">Load</button>
+                                <button id="btn-quick-sampler-load" class="btn btn-sm" type="button">加载</button>
                             </div>
                         </div>
                         <div class="quick-slider-grid">
                             <div class="sampler-slider">
                                 <div class="sampler-slider-head">
-                                    <label class="form-label" for="quick-temperature">Temperature</label>
+                                    <label class="form-label" for="quick-temperature">温度</label>
                                     <span class="sampler-slider-value" id="quick-temperature-value">—</span>
                                     <input type="number" id="quick-temperature-input" class="quick-sampler-number" aria-label="Temperature value" min="0" step="any" placeholder="Default">
                                 </div>
@@ -486,7 +486,7 @@
                             </div>
                         </div>
                         <details id="quick-sampling-details" class="fit-advanced">
-                            <summary>More sampling settings</summary>
+                            <summary>更多采样设置</summary>
                             <div class="quick-slider-grid">
                                 <div class="sampler-slider">
                                     <div class="sampler-slider-head">
@@ -511,56 +511,56 @@
                                 </div>
                                 <div class="sampler-slider">
                                     <div class="sampler-slider-head">
-                                        <label class="form-label" for="quick-presence-penalty">Presence Penalty</label>
+                                        <label class="form-label" for="quick-presence-penalty">存在惩罚</label>
                                         <span class="sampler-slider-value" id="quick-presence-penalty-value">—</span>
                                     </div>
                                     <input type="range" class="sampler-range" id="quick-presence-penalty" min="0" max="2" step="0.1" />
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="quick-sampler-name">Save Current Sampler</label>
+                                <label class="form-label" for="quick-sampler-name">保存当前采样</label>
                                 <div class="input-row">
-                                    <input type="text" id="quick-sampler-name" placeholder="Preset name..." />
-                                    <button id="btn-quick-sampler-save" class="btn btn-sm" type="button">Save</button>
-                                    <button id="btn-quick-sampler-rename" class="btn btn-sm" type="button">Rename</button>
-                                    <button id="btn-quick-sampler-delete" class="btn btn-sm btn-danger" type="button">Delete</button>
+                                    <input type="text" id="quick-sampler-name" placeholder="预设名称..." />
+                                    <button id="btn-quick-sampler-save" class="btn btn-sm" type="button">保存</button>
+                                    <button id="btn-quick-sampler-rename" class="btn btn-sm" type="button">重命名</button>
+                                    <button id="btn-quick-sampler-delete" class="btn btn-sm btn-danger" type="button">删除</button>
                                 </div>
                             </div>
-                            <button id="btn-quick-more-sampling" class="btn btn-sm btn-ghost" type="button">All sampling flags in Configure ↗</button>
+                            <button id="btn-quick-more-sampling" class="btn btn-sm btn-ghost" type="button">在配置中调整更多采样 ↗</button>
                         </details>
                     </section>
                 </div>
                 <details id="quick-server-settings" class="quick-disclosure">
-                    <summary><span>Server &amp; template settings</span><span id="quick-server-summary" class="quick-disclosure-summary"></span>
+                    <summary><span>服务 &amp; 模板设置</span><span id="quick-server-summary" class="quick-disclosure-summary"></span>
                     </summary>
                     <div class="quick-server-grid">
                         <div id="quick-server-fields">
                             <div class="form-group">
-                                <label class="form-label" for="quick-port">Port <code>--port</code>
+                                <label class="form-label" for="quick-port">端口 <code>--port</code>
                                 </label>
-                                <input type="number" id="quick-port" min="1" max="65535" step="1" placeholder="Server default">
+                                <input type="number" id="quick-port" min="1" max="65535" step="1" placeholder="服务器默认">
                             </div>
                             <div class="quick-auth-section" id="quick-auth-section">
-                                <div class="quick-subsection-label">API Protection (optional)</div>
+                                <div class="quick-subsection-label">API 保护（可选）</div>
                                 <label class="form-label" for="quick-api-key">API Key</label>
                                 <div class="api-key-row">
                                     <div id="quick-api-key-control">
                                     </div>
-                                    <span class="protected-badge" id="quick-api-protected-badge">● Protected</span>
+                                    <span class="protected-badge" id="quick-api-protected-badge">● 受保护</span>
                                 </div>
-                                <p class="help-text">Leave blank to keep the current open-access behavior. The key is not saved in presets.</p>
+                                <p class="help-text">留空将保持当前的公开访问行为，密钥不会保存在预设配置中。</p>
                             </div>
                             <label class="checkbox-group">
-                                <input type="checkbox" id="quick-metrics-toggle" checked> Enable metrics &amp; stats bar</label>
+                                <input type="checkbox" id="quick-metrics-toggle" checked> 启用指标 &amp; 统计信息栏</label>
                         </div>
                         <div class="quick-template-section">
-                            <div class="quick-subsection-label">Instruction Template</div>
+                            <div class="quick-subsection-label">指令模板</div>
                             <div class="form-group">
-                                <label class="form-label" for="quick-template-pack">Template Pack</label>
+                                <label class="form-label" for="quick-template-pack">模板</label>
                                 <select id="quick-template-pack">
                                 </select>
                             </div>
-                            <p id="quick-template-summary" class="help-text">Choose a pack that matches your model family or desired thinking style.</p>
+                            <p id="quick-template-summary" class="help-text">选择与您的模型系列或所需的思考风格相匹配的配置包。</p>
                         </div>
                     </div>
                 </details>
@@ -569,8 +569,8 @@
                 <div class="model-switch-header">
                     <button class="model-switch-collapse" id="model-switch-toggle" type="button" aria-expanded="false" aria-controls="model-switch-body"><span class="model-switch-chevron" aria-hidden="true">▾</span>
                         <span>
-                            <span class="model-switch-heading" id="model-switch-title">Model Switcher</span>
-                            <span class="model-switch-summary" id="model-switch-summary">Assign two saved server presets for quick switching.</span>
+                            <span class="model-switch-heading" id="model-switch-title">模型切换</span>
+                            <span class="model-switch-summary" id="model-switch-summary">指定两个已保存的服务器预设以实现快速切换</span>
                         </span>
                     </button>
                 </div>
@@ -581,98 +581,98 @@
                         <article class="model-switch-slot" id="model-switch-slot-a" aria-labelledby="model-switch-slot-a-title">
                             <div class="model-switch-slot-top">
                                 <div>
-                                    <div class="model-switch-slot-label">Model A</div>
-                                    <div class="model-switch-slot-name" id="model-switch-slot-a-title">Unassigned</div>
+                                    <div class="model-switch-slot-label">模型 A</div>
+                                    <div class="model-switch-slot-name" id="model-switch-slot-a-title">未分配</div>
                                 </div>
-                                <span class="model-switch-badge" id="model-switch-slot-a-badge">Unassigned</span>
+                                <span class="model-switch-badge" id="model-switch-slot-a-badge">未分配</span>
                             </div>
                             <dl class="model-switch-details">
-                                <div><dt>Model</dt><dd id="model-switch-slot-a-model">—</dd>
+                                <div><dt>模型</dt><dd id="model-switch-slot-a-model">—</dd>
                                 </div>
                                 <div><dt>GGUF</dt><dd id="model-switch-slot-a-gguf">—</dd>
                                 </div>
                             </dl>
                             <div class="slot-assign-row">
-                                <select id="model-switch-select-a" aria-label="Model A preset">
-                                    <option value="">Assign preset…</option>
+                                <select id="model-switch-select-a" aria-label="模型 A 预设">
+                                    <option value="">指定预设…</option>
                                 </select>
-                                <button class="btn btn-sm" id="model-switch-refresh-a" type="button" title="Refresh presets" aria-label="Refresh Model A presets"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+                                <button class="btn btn-sm" id="model-switch-refresh-a" type="button" title="刷新预设" aria-label="刷新模型 A 预设"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                                 </button>
-                                <button class="btn btn-sm btn-ghost" id="model-switch-clear-a" type="button" title="Clear slot A" aria-label="Clear slot A preset" disabled>✕</button>
+                                <button class="btn btn-sm btn-ghost" id="model-switch-clear-a" type="button" title="清除槽位 A" aria-label="清除槽位 A 预设" disabled>✕</button>
                             </div>
                             <div class="model-switch-slot-footer">
-                                <span class="model-switch-slot-message" id="model-switch-slot-a-message">Choose a saved llama-server preset.</span>
-                                <button class="btn btn-sm btn-primary hidden" id="model-switch-slot-a-action" type="button" data-model-switch-action="a">Switch to Model A</button>
+                                <span class="model-switch-slot-message" id="model-switch-slot-a-message">请选择一个已保存的 llama-server 预设</span>
+                                <button class="btn btn-sm btn-primary hidden" id="model-switch-slot-a-action" type="button" data-model-switch-action="a">切换至模型 A</button>
                             </div>
                         </article>
                         <article class="model-switch-slot" id="model-switch-slot-b" aria-labelledby="model-switch-slot-b-title">
                             <div class="model-switch-slot-top">
                                 <div>
-                                    <div class="model-switch-slot-label">Model B</div>
-                                    <div class="model-switch-slot-name" id="model-switch-slot-b-title">Unassigned</div>
+                                    <div class="model-switch-slot-label">模型 B</div>
+                                    <div class="model-switch-slot-name" id="model-switch-slot-b-title">未分配</div>
                                 </div>
-                                <span class="model-switch-badge" id="model-switch-slot-b-badge">Unassigned</span>
+                                <span class="model-switch-badge" id="model-switch-slot-b-badge">未分配</span>
                             </div>
                             <dl class="model-switch-details">
-                                <div><dt>Model</dt><dd id="model-switch-slot-b-model">—</dd>
+                                <div><dt>模型</dt><dd id="model-switch-slot-b-model">—</dd>
                                 </div>
                                 <div><dt>GGUF</dt><dd id="model-switch-slot-b-gguf">—</dd>
                                 </div>
                             </dl>
                             <div class="slot-assign-row">
-                                <select id="model-switch-select-b" aria-label="Model B preset">
-                                    <option value="">Assign preset…</option>
+                                <select id="model-switch-select-b" aria-label="模型 B 预设">
+                                    <option value="">指定预设…</option>
                                 </select>
-                                <button class="btn btn-sm" id="model-switch-refresh-b" type="button" title="Refresh presets" aria-label="Refresh Model B presets"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+                                <button class="btn btn-sm" id="model-switch-refresh-b" type="button" title="刷新预设" aria-label="刷新模型 B 预设"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                                 </button>
-                                <button class="btn btn-sm btn-ghost" id="model-switch-clear-b" type="button" title="Clear slot B" aria-label="Clear slot B preset" disabled>✕</button>
+                                <button class="btn btn-sm btn-ghost" id="model-switch-clear-b" type="button" title="清除槽位 B" aria-label="清除槽位 B 预设" disabled>✕</button>
                             </div>
                             <div class="model-switch-slot-footer">
-                                <span class="model-switch-slot-message" id="model-switch-slot-b-message">Choose a saved llama-server preset.</span>
-                                <button class="btn btn-sm btn-primary hidden" id="model-switch-slot-b-action" type="button" data-model-switch-action="b">Switch to Model B</button>
+                                <span class="model-switch-slot-message" id="model-switch-slot-b-message">请选择一个已保存的 llama-server 预设</span>
+                                <button class="btn btn-sm btn-primary hidden" id="model-switch-slot-b-action" type="button" data-model-switch-action="b">切换至模型 B</button>
                             </div>
                         </article>
                     </div>
-                    <p class="help-text model-switch-footer-note">Only saved full presets configured for llama-server are available. Standby means the model configuration is saved and ready to preflight; it is not kept loaded in RAM or VRAM.</p>
+                    <p class="help-text model-switch-footer-note">仅支持已保存的 llama-server 完整预设配置。待命状态状态意味着模型配置已保存并可随时进行预检；但模型并未实际加载到内存（RAM）或显存（VRAM）中。</p>
                 </div>
             </section>
-            <section class="quick-launch-bar" aria-label="Launch">
+            <section class="quick-launch-bar" aria-label="启动">
                 <div class="quick-launch-bar-main">
-                    <div class="quick-launch-info"><strong id="quick-launch-readiness">Choose a model</strong>
+                    <div class="quick-launch-info"><strong id="quick-launch-readiness">选择模型</strong>
                         <div class="readiness-bar" id="quick-readiness-bar">
-                            <span class="readiness-chip missing" id="quick-chip-model"><span class="chip-dot"></span><span class="chip-text">Model: none</span></span>
-                            <span class="readiness-chip info" id="quick-chip-profile"><span class="chip-dot"></span><span class="chip-text">Profile: optional</span></span>
-                            <span class="readiness-chip info" id="quick-chip-context"><span class="chip-dot"></span><span class="chip-text">Context: 64K</span></span>
-                            <span class="readiness-chip info" id="quick-chip-gpu"><span class="chip-dot"></span><span class="chip-text">GPU: Auto</span></span>
-                            <span class="readiness-chip info" id="quick-chip-api"><span class="chip-dot"></span><span class="chip-text">API: open access</span></span>
+                            <span class="readiness-chip missing" id="quick-chip-model"><span class="chip-dot"></span><span class="chip-text">模型: 无</span></span>
+                            <span class="readiness-chip info" id="quick-chip-profile"><span class="chip-dot"></span><span class="chip-text">配置 Profile: 可选</span></span>
+                            <span class="readiness-chip info" id="quick-chip-context"><span class="chip-dot"></span><span class="chip-text">上下文大小: 64K</span></span>
+                            <span class="readiness-chip info" id="quick-chip-gpu"><span class="chip-dot"></span><span class="chip-text">GPU: 自动 Fit</span></span>
+                            <span class="readiness-chip info" id="quick-chip-api"><span class="chip-dot"></span><span class="chip-text">API: 无保护</span></span>
                         </div>
                     </div>
                     <div class="quick-actions">
                         <button id="btn-quick-launch" class="btn btn-primary " type="button"><span class="icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                            <span id="btn-quick-launch-label">Launch server</span>
+                            <span id="btn-quick-launch-label">开始运行</span>
                         </button>
                         <button id="btn-quick-stop" class="btn btn-danger  hidden" type="button"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
-                            <span id="btn-quick-stop-label">Stop server</span>
+                            <span id="btn-quick-stop-label">停止服务</span>
                         </button>
                     </div>
                 </div>
                 <div id="quick-launch-status" class="quick-launch-status" role="status" aria-live="polite">
                 </div>
-                <div class="quick-launch-links"><span class="quick-endpoint-label">Next launch endpoint</span>
+                <div class="quick-launch-links"><span class="quick-endpoint-label">下次启动端点</span>
                     <div id="quick-server-address" class="server-address server-address-bare hidden">
                         <span class="badge badge-accent"><span class="badge-dot"></span> <a id="quick-server-url" href="#" target="_blank" class="badge-link"></a></span>
                         <span class="server-sep">|</span>
                         <a id="quick-server-webui" href="#" target="_blank" class="server-link">Web UI</a>
-                        <button id="btn-copy-quick-server-url" class="btn btn-sm btn-ghost" type="button" title="Copy URL" aria-label="Copy Quick Launch server URL"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+                        <button id="btn-copy-quick-server-url" class="btn btn-sm btn-ghost" type="button" title="复制 URL" aria-label="复制 Quick Launch server URL"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
                         </button>
                     </div>
                     <details class="cmd-preview-toggle" id="quick-command-details">
-                        <summary>View command</summary>
+                        <summary>查看命令</summary>
                         <div class="code-block-wrap">
                             <div class="code-block" id="quick-command-preview">
                             </div>
-                            <button id="btn-copy-quick-command" class="btn btn-xs btn-ghost code-block-copy" type="button" title="Copy command" aria-label="Copy Quick Launch command"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                                Copy
+                            <button id="btn-copy-quick-command" class="btn btn-xs btn-ghost code-block-copy" type="button" title="复制命令" aria-label="复制 Quick Launch 命令"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+                                复制
                             </button>
                         </div>
                     </details>
@@ -681,42 +681,42 @@
             <details class="hf-download-panel quick-disclosure">
                 <summary class="hf-download-title">
                     <span class="hf-download-copy">
-                        <span class="hf-download-label">Download from Hugging Face</span>
-                        <span class="hf-download-summary">Find GGUF files from a repo</span>
+                        <span class="hf-download-label">Hugging Face 仓库</span>
+                        <span class="hf-download-summary">从 Hugging Face 模型存储库中查找 GGUF 文件</span>
                     </span>
                     <span class="hf-download-toggle" aria-hidden="true">
-                        <span class="hf-toggle-expand">Expand</span>
-                        <span class="hf-toggle-collapse">Collapse</span>
+                        <span class="hf-toggle-expand">展开</span>
+                        <span class="hf-toggle-collapse">折叠</span>
                     </span>
                 </summary>
                 <div class="hf-download-body">
                     <div id="hf-download-status" class="hf-download-status">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="hf-repo-input">Repo ID</label>
+                        <label class="form-label" for="hf-repo-input">仓库 ID</label>
                         <input type="text" id="hf-repo-input" placeholder="owner/model-GGUF" />
                     </div>
                     <div class="hf-download-grid">
                         <div class="form-group">
-                            <label class="form-label" for="hf-revision-input">Revision</label>
+                            <label class="form-label" for="hf-revision-input">分支</label>
                             <input type="text" id="hf-revision-input" placeholder="main" />
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="hf-token-input">Token</label>
-                            <input type="password" id="hf-token-input" placeholder="Optional" autocomplete="off" spellcheck="false" />
+                            <input type="password" id="hf-token-input" placeholder="可选" autocomplete="off" spellcheck="false" />
                         </div>
                     </div>
                     <div class="form-row">
-                        <button id="btn-hf-find-files" class="btn btn-sm" type="button">Find GGUF Files</button>
+                        <button id="btn-hf-find-files" class="btn btn-sm" type="button">查找 GGUF 文件</button>
                     </div>
                     <div id="hf-file-options" class="hidden">
                         <div class="form-group">
-                            <label class="form-label" for="hf-model-file-select">Model File</label>
+                            <label class="form-label" for="hf-model-file-select">模型文件</label>
                             <select id="hf-model-file-select">
                             </select>
                         </div>
                         <div class="form-group" id="hf-mmproj-group">
-                            <label class="form-label" for="hf-mmproj-file-select">Companion mmproj</label>
+                            <label class="form-label" for="hf-mmproj-file-select">伴随 mmproj</label>
                             <select id="hf-mmproj-file-select">
                             </select>
                         </div>
@@ -725,11 +725,11 @@
                                 <div id="hf-progress-fill" class="progress-fill">
                                 </div>
                             </div>
-                            <span id="hf-progress-text">Starting...</span>
+                            <span id="hf-progress-text">运行中...</span>
                         </div>
                         <div class="form-row">
-                            <button id="btn-hf-download" class="btn btn-primary" type="button">Download</button>
-                            <button id="btn-hf-cancel" class="btn btn-danger hidden" type="button">Cancel</button>
+                            <button id="btn-hf-download" class="btn btn-primary" type="button">下载</button>
+                            <button id="btn-hf-cancel" class="btn btn-danger hidden" type="button">取消</button>
                         </div>
                     </div>
                 </div>
@@ -740,100 +740,100 @@
         <div class="section-panel" id="section-configure" style="display:none;">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Configure &amp; Launch</h1>
+                    <h1 class="page-title">配置 &amp; 启动</h1>
                 </div>
                 <div class="input-row page-actions">
-                    <label class="form-label form-label-inline" for="tool-select">Tool:</label>
+                    <label class="form-label form-label-inline" for="tool-select">工具：</label>
                     <select id="tool-select">
-                        <option value="llama-cli">llama-cli (Interactive Chat)</option>
+                        <option value="llama-cli">llama-cli 「终端交互式聊天」</option>
                         <option value="llama-server" selected>llama-server (HTTP API)</option>
                     </select>
                     <select id="model-select">
-                        <option value="">-- Select Model --</option>
+                        <option value="">-- 选择模型 --</option>
                     </select>
-                    <button class="btn btn-sm btn-ghost" id="btn-refresh-models" title="Refresh models" aria-label="Refresh models">
+                    <button class="btn btn-sm btn-ghost" id="btn-refresh-models" title="刷新模型" aria-label="刷新模型">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                     </button>
-                    <button id="btn-configure-hf-download" class="btn btn-sm" type="button">Download in Quick Launch</button>
+                    <button id="btn-configure-hf-download" class="btn btn-sm" type="button">下载 Quick Launch</button>
                 </div>
             </div>
 
             <div class="models-folder-row">
-                <span class="form-label form-label-inline">Models Folder</span>
-                <code id="models-folder-path" class="models-folder-path">Loading...</code>
-                <button id="btn-change-models-folder" class="btn btn-sm" type="button">Change&hellip;</button>
-                <button id="btn-reset-models-folder" class="btn btn-sm btn-ghost" type="button" hidden>Reset to default</button>
+                <span class="form-label form-label-inline">模型存放路径：</span>
+                <code id="models-folder-path" class="models-folder-path">正在加载...</code>
+                <button id="btn-change-models-folder" class="btn btn-sm" type="button">浏览&hellip;</button>
+                <button id="btn-reset-models-folder" class="btn btn-sm btn-ghost" type="button" hidden>重置为默认</button>
             </div>
             <div id="models-folder-error" class="status-box hidden" role="status" aria-live="polite"></div>
 
-            <section class="preset-context hidden" data-preset-context aria-label="Saved preset comparison">
+            <section class="preset-context hidden" data-preset-context aria-label="对比已保存预设">
                 <div class="preset-context-heading">
-                    <div class="preset-context-identity"><span data-preset-origin>Unsaved configuration</span> <button type="button" class="btn btn-link" data-preset-name></button><span data-preset-state></span></div>
-                    <div class="preset-context-actions"><button type="button" class="btn btn-sm" data-preset-update>Update preset</button><button type="button" class="btn btn-sm btn-ghost" data-preset-save-new>Save as new preset</button></div>
+                    <div class="preset-context-identity"><span data-preset-origin>未保存的配置</span> <button type="button" class="btn btn-link" data-preset-name></button><span data-preset-state></span></div>
+                    <div class="preset-context-actions"><button type="button" class="btn btn-sm" data-preset-update>更新预设</button><button type="button" class="btn btn-sm btn-ghost" data-preset-save-new>保存为新预设</button></div>
                 </div>
                 <details data-preset-review class="preset-review hidden">
-                    <summary data-preset-review-label>Compared with saved preset</summary>
-                    <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">Setting</th><th scope="col">Saved preset</th><th scope="col">Current edits</th></tr></thead><tbody></tbody></table></div>
+                    <summary data-preset-review-label>与保存的预设值相比</summary>
+                    <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">设置</th><th scope="col">保存预设</th><th scope="col">当前编辑</th></tr></thead><tbody></tbody></table></div>
                 </details>
                 <p class="help-text" data-preset-context-note></p>
             </section>
             <div class="config-controls">
-                <input type="text" id="config-search" placeholder="Search categories and flags..." />
+                <input type="text" id="config-search" placeholder="搜索类别或标记..." />
                 <div class="form-row">
-                    <button id="btn-clear-search" class="btn btn-sm" type="button" title="Clear search"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span><span class="ctrl-label">Clear</span></button>
-                    <button id="btn-expand-all" class="btn btn-sm" type="button" title="Expand all categories"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg></span><span class="ctrl-label">Expand All</span></button>
-                    <button id="btn-collapse-all" class="btn btn-sm" type="button" title="Collapse all categories"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><polyline points="7 11 12 6 17 11"/><polyline points="7 18 12 13 17 18"/></svg></span><span class="ctrl-label">Collapse All</span></button>
+                    <button id="btn-clear-search" class="btn btn-sm" type="button" title="清除搜索"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span><span class="ctrl-label">清除</span></button>
+                    <button id="btn-expand-all" class="btn btn-sm" type="button" title="展开所有类别"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg></span><span class="ctrl-label">全部展开</span></button>
+                    <button id="btn-collapse-all" class="btn btn-sm" type="button" title="折叠所有类别"><span class="ctrl-icon"><svg viewBox="0 0 24 24" width="14" height="14"><polyline points="7 11 12 6 17 11"/><polyline points="7 18 12 13 17 18"/></svg></span><span class="ctrl-label">全部折叠</span></button>
                 </div>
-                <button id="btn-config-reset" class="btn btn-sm" type="button">Reset to defaults&hellip;</button>
+                <button id="btn-config-reset" class="btn btn-sm" type="button">重置为默认值&hellip;</button>
             </div>
 
-            <section class="config-runtime" aria-label="Configuration comparison">
+            <section class="config-runtime" aria-label="配置对比">
                 <div class="config-runtime-heading">
                     <div class="config-runtime-identity">
                         <strong id="config-runtime-state">Stopped</strong>
-                        <span id="config-runtime-model">No local process running</span>
+                        <span id="config-runtime-model">没有正在运行的本地进程</span>
                         <span id="config-runtime-build"></span>
                     </div>
                     <div class="config-comparison-actions">
                         <span id="config-change-count" role="status"></span>
-                        <label class="checkbox-group"><input type="checkbox" id="config-changes-only" disabled> Changed since launch</label>
-                        <button id="config-restart" type="button" class="btn btn-primary btn-sm hidden" aria-describedby="config-restart-help">Restart with changes</button>
+                        <label class="checkbox-group"><input type="checkbox" id="config-changes-only" disabled> 自启动以来的变化</label>
+                        <button id="config-restart" type="button" class="btn btn-primary btn-sm hidden" aria-describedby="config-restart-help">应用更改并重启</button>
                     </div>
                 </div>
-                <p id="config-comparison-note">Launch a model to compare edits with its launch settings.</p>
-                <p id="config-restart-help" class="hidden">Restart loads the selected model with your current settings and interrupts active requests.</p>
+                <p id="config-comparison-note">启动一个模型，以便将其当前运行的设置与编辑中的设置进行对比。</p>
+                <p id="config-restart-help" class="hidden">重启操作，将会使用您当前的设置重新加载所选模型，并中断当前正在进行的请求。</p>
                 <details id="config-comparison-about" class="hidden">
-                    <summary>About this comparison</summary>
+                    <summary>关于本次对比</summary>
                     <p id="config-comparison-exclusions"></p>
                 </details>
                 <p id="config-restart-error" class="config-restart-error hidden" role="alert"></p>
                 <details id="config-change-review" class="hidden">
-                    <summary>Review changes</summary>
+                    <summary>查看更改</summary>
                     <div class="config-change-table-wrap">
                         <table class="config-change-table">
-                            <thead><tr><th scope="col">Setting</th><th scope="col">At launch</th><th scope="col">Next launch</th></tr></thead>
+                            <thead><tr><th scope="col">设置</th><th scope="col">当前运行</th><th scope="col">下次启动</th></tr></thead>
                             <tbody id="config-change-list"></tbody>
                         </table>
                     </div>
-                    <button id="config-revert-changes" type="button" class="btn btn-sm">Revert compared settings</button>
+                    <button id="config-revert-changes" type="button" class="btn btn-sm">还原比较的设置</button>
                 </details>
             </section>
             <div id="flags-container"></div>
-            <p id="config-comparison-empty" class="flags-empty hidden">No settings match this search and change filter.</p>
+            <p id="config-comparison-empty" class="flags-empty hidden">没有设置匹配此搜索和更改过滤器。</p>
 
             <div class="custom-launch-args-panel">
                 <div class="custom-args-header">
                     <div>
-                        <label class="form-label" for="custom-launch-args">Custom Launch Args</label>
+                        <label class="form-label" for="custom-launch-args">自定义启动参数</label>
                         <p class="help-text">
-                            Enter extra llama.cpp arguments like a shell command. Multiple args can be on one line or separate lines; quote values that contain spaces or JSON, such as <code>--chat-template-kwargs '{"preserve_thinking":true}'</code>.
+                            输入额外的 llama.cpp 参数，就像在 Widows Powershell 输入的命令一样。多个参数可以写在一行或写在单独的行上；如果值中包含空格或 JSON 格式，请使用"引号"括起来。 例如： <code>--chat-template-kwargs '{"preserve_thinking":true}'</code>.
                         </p>
                     </div>
-                    <span class="badge badge-neutral">Advanced</span>
+                    <span class="badge badge-neutral">高级设置</span>
                 </div>
                 <textarea id="custom-launch-args" rows="4" spellcheck="false" placeholder="--threads 8&#10;--flash-attn&#10;--chat-template-kwargs '{&quot;preserve_thinking&quot;:true}'"></textarea>
                 <p class="custom-args-warning">
-                    Custom args are appended after UI-managed flags and may conflict with visible controls or enable risky llama.cpp features.
+                    自定义参数将附加在 UI 管理的标志之后，可能会与界面上的控制选项产生冲突，或启用某些具有风险的 llama.cpp 特性。
                 </p>
                 <div id="custom-launch-args-status" class="custom-args-status" aria-live="polite"></div>
             </div>
@@ -841,22 +841,22 @@
             <div class="environment-variables-panel">
                 <div class="custom-args-header">
                     <div>
-                        <label class="form-label" for="environment-variables">Environment Variables</label>
-                        <p id="environment-variables-help" class="help-text">Enter one llama.cpp runtime variable per line as NAME=value. Use LLAMA_ or GGML_ names; values are literal, without shell quotes or export. Configure LLAMA_ARG_ options through the existing argument controls.</p>
+                        <label class="form-label" for="environment-variables">环境变量</label>
+                        <p id="environment-variables-help" class="help-text">请每行输入一个 llama.cpp 环境变量，格式：NAME=value。请使用 LLAMA_ 或 GGML_ 开头的名称；values 为 literal，无需添加 shell 引号或 export。 若要配置 LLAMA_ARG_ 选项，请通过现有的参数控制项进行。</p>
                     </div>
-                    <span class="badge badge-neutral">Advanced</span>
+                    <span class="badge badge-neutral">高级设置</span>
                 </div>
                 <textarea id="environment-variables" rows="3" maxlength="16000" spellcheck="false" aria-describedby="environment-variables-help environment-variables-note environment-variables-status" placeholder="GGML_OP_OFFLOAD_MIN_BATCH=512"></textarea>
-                <p id="environment-variables-note" class="help-text">Saved with presets. Overrides inherited values for the next llama.cpp launch; restart the running process to apply changes. Support depends on your build and backend.</p>
+                <p id="environment-variables-note" class="help-text">已与预设一起保存，将在下次启动 llama.cpp 时覆盖继承的值；请重启当前运行中的进程以应用更改，具体支持情况取决于您的构建版本及后端。</p>
                 <div id="environment-variables-status" class="custom-args-status" aria-live="polite"></div>
             </div>
 
             <div id="server-address" class="server-address hidden">
-                <span class="server-label">Server Address:</span>
+                <span class="server-label">服务器地址：</span>
                 <a id="server-url" href="#" target="_blank" class="server-link"></a>
                 <span class="server-sep">|</span>
                 <a id="server-webui" href="#" target="_blank" class="server-link">Web UI</a>
-                <button class="btn btn-sm btn-ghost" id="btn-copy-server-url" title="Copy URL" aria-label="Copy server URL">
+                <button class="btn btn-sm btn-ghost" id="btn-copy-server-url" title="复制 URL" aria-label="复制 server URL">
                     <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
                 </button>
             </div>
@@ -864,18 +864,18 @@
             <div class="launch-bar">
                 <button id="btn-launch" class="btn btn-primary btn-lg">
                     <span class="icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                    Launch
+                    运行
                 </button>
                 <button id="btn-stop" class="btn btn-danger btn-lg hidden">
                     <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
-                    Stop
+                    停止
                 </button>
                 <div class="command-preview">
                     <div class="command-preview-head">
-                        <label class="form-label">Command Preview</label>
-                        <button id="btn-copy-command" class="btn btn-xs btn-ghost command-copy-btn" type="button" title="Copy command" aria-label="Copy launch command">
+                        <label class="form-label">查看命令</label>
+                        <button id="btn-copy-command" class="btn btn-xs btn-ghost command-copy-btn" type="button" title="复制命令" aria-label="复制 launch 命令">
                             <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                            Copy
+                            复制
                         </button>
                     </div>
                     <code id="command-preview-text"></code>
@@ -888,26 +888,26 @@
         <div class="section-panel" id="section-monitor" style="display:none;">
             <div class="page-header monitor-page-header">
                 <div>
-                    <h1 class="page-title">Monitor</h1>
-                    <div class="page-title-sub">Follow the active runtime, inference activity, and this machine’s resources.</div>
+                    <h1 class="page-title">监视器</h1>
+                    <div class="page-title-sub">实时监控运行状态、推理活动以及本机的资源使用情况。</div>
                 </div>
                 <div class="page-actions monitor-header-actions">
-                    <span class="badge badge-dim" id="monitor-live-badge" aria-live="polite" title="System telemetry refreshes independently of the llama-server lifecycle">System telemetry · Unavailable</span>
-                    <span class="monitor-updated">Updated <span id="monitor-last-updated">--:--:--</span></span>
+                    <span class="badge badge-dim" id="monitor-live-badge" aria-live="polite" title="系统监控刷新独立于 llama-server 的生命周期">系统监控 · 不可用</span>
+                    <span class="monitor-updated">已更新 <span id="monitor-last-updated">--:--:--</span></span>
                 </div>
             </div>
 
-            <section class="monitor-runtime" aria-label="Active runtime">
+            <section class="monitor-runtime" aria-label="运行中状态">
                 <div class="monitor-runtime-heading">
                     <div class="monitor-runtime-identity">
-                        <span class="badge badge-neutral" id="monitor-runtime-state" aria-live="polite">Checking…</span>
-                        <strong id="monitor-runtime-model">No local process running</strong>
+                        <span class="badge badge-neutral" id="monitor-runtime-state" aria-live="polite">正在检查…</span>
+                        <strong id="monitor-runtime-model">没有正在运行的本地进程</strong>
                     </div>
                     <div class="page-actions">
-                        <button class="btn btn-sm hidden" id="btn-monitor-quick-launch" type="button">Open Quick Launch</button>
+                        <button class="btn btn-sm hidden" id="btn-monitor-quick-launch" type="button">快速启动</button>
                         <button class="btn btn-sm hidden" id="btn-monitor-api" type="button">Open API</button>
-                        <button class="btn btn-sm" id="btn-monitor-configure" type="button">Open Configure</button>
-                        <button class="btn btn-sm hidden" id="btn-monitor-review" type="button">Review changes</button>
+                        <button class="btn btn-sm" id="btn-monitor-configure" type="button">打开配置</button>
+                        <button class="btn btn-sm hidden" id="btn-monitor-review" type="button">查看更改</button>
                     </div>
                 </div>
                 <div class="monitor-runtime-details"><span id="monitor-runtime-build"></span><span id="monitor-runtime-endpoint"></span></div>
@@ -918,12 +918,12 @@
             <!-- Process output (moved here from Configure, IDs preserved) -->
             <div class="card monitor-section monitor-output-section" id="output-section">
                 <div class="output-header">
-                    <h3 id="monitor-output-title">Process Output</h3>
+                    <h3 id="monitor-output-title">详细日志</h3>
                     <div class="monitor-output-tools">
                         <span class="badge badge-neutral hidden" id="monitor-process-tool"></span>
-                        <span class="badge badge-green hidden" id="monitor-process-state">Running</span>
+                        <span class="badge badge-green hidden" id="monitor-process-state">运行中</span>
                         <span class="monitor-sep" aria-hidden="true"></span>
-                        <button class="btn btn-sm btn-ghost" id="btn-clear-output" type="button">Clear</button>
+                        <button class="btn btn-sm btn-ghost" id="btn-clear-output" type="button">清理</button>
                     </div>
                 </div>
 
@@ -934,44 +934,44 @@
                     Connected to an external llama-server. Inference readings come from that server; hardware readings describe this machine. Process output is unavailable because Llama GUI did not start that process.
                 </div>
 
-                <div id="output-terminal" class="terminal" aria-label="Process output log"></div>
+                <div id="output-terminal" class="terminal" aria-label="进程输出日志"></div>
                 <div id="input-row" class="input-row hidden">
-                    <input type="text" id="cli-input" placeholder="Type and press Enter..." />
-                    <button class="btn" id="btn-send-input" type="button">Send</button>
+                    <input type="text" id="cli-input" placeholder="在此输入并按回车..." />
+                    <button class="btn" id="btn-send-input" type="button">发送</button>
                 </div>
             </div>
 
             <!-- Shared visibility control. Process Output is the only fixed card. -->
             <details class="monitor-hidden-bar hidden" id="monitor-hidden-controls">
                 <summary>
-                    <span class="badge badge-neutral" id="monitor-hidden-count">1 card hidden</span>
-                    <span>Show</span>
+                    <span class="badge badge-neutral" id="monitor-hidden-count">1 张卡片已隐藏</span>
+                    <span>显示</span>
                 </summary>
                 <div class="monitor-restore-list">
                     <div id="monitor-restore-items"></div>
-                    <button class="btn btn-sm btn-ghost" id="btn-monitor-show-all" type="button">Show all</button>
+                    <button class="btn btn-sm btn-ghost" id="btn-monitor-show-all" type="button">显示全部</button>
                 </div>
             </details>
 
             <!-- Compact system cards plus the optional expanded inference card -->
             <div class="monitor-section" id="monitor-system-section">
-                <p class="help-text monitor-scope-note">CPU, memory, disk, and GPU readings cover this machine, including other applications. Inference readings come directly from llama-server and do not require vendor GPU monitoring tools.</p>
+                <p class="help-text monitor-scope-note">CPU、内存、磁盘 和 GPU 监测数据涵盖本机的整体情况（包括其它应用程序）。相关的监测数据直接来自 llama-server，无需依赖厂商的 GPU 监控工具。</p>
                 <div class="monitor-metrics-grid monitor-drag-container" id="monitor-card-grid">
                     <div class="card" data-monitor-key="system:cpu" data-monitor-label="CPU">
                         <div class="card-header">
                             <div>
-                                <div class="card-kicker">System</div>
+                                <div class="card-kicker">系统</div>
                                 <div class="card-title">CPU</div>
                             </div>
                             <div class="monitor-card-tools">
-                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="Drag to reorder; use arrow keys to move" aria-label="Move CPU monitor; use arrow keys">⠿</button>
-                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:cpu" aria-label="Hide CPU monitor">Hide</button>
+                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="拖动以重新排序；使用方向键移动" aria-label="Move CPU monitor; use arrow keys">⠿</button>
+                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:cpu" aria-label="隐藏处理器监控器">隐藏</button>
                                 <div class="card-icon icon-blue">
                                     <span class="icon icon-lg"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></span>
                                 </div>
                             </div>
                         </div>
-                        <div class="monitor-metric-value" id="monitor-cpu-value">Not available</div>
+                        <div class="monitor-metric-value" id="monitor-cpu-value">暂无数据</div>
                         <div id="monitor-cpu-bar"></div>
                         <div class="monitor-metric-sub" id="monitor-cpu-sub"></div>
                     </div>
@@ -979,31 +979,31 @@
                     <div class="card" data-monitor-key="system:memory" data-monitor-label="Memory">
                         <div class="card-header">
                             <div>
-                                <div class="card-kicker">System</div>
-                                <div class="card-title">Memory</div>
+                                <div class="card-kicker">系统</div>
+                                <div class="card-title">内存</div>
                             </div>
                             <div class="monitor-card-tools">
-                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="Drag to reorder; use arrow keys to move" aria-label="Move Memory monitor; use arrow keys">⠿</button>
-                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:memory" aria-label="Hide memory monitor">Hide</button>
+                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="拖动以重新排序；使用方向键移动" aria-label="移动内存监视器；使用方向键">⠿</button>
+                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:memory" aria-label="隐藏内存监控器">隐藏</button>
                                 <div class="card-icon icon-magenta">
                                     <span class="icon icon-lg"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></span>
                                 </div>
                             </div>
                         </div>
-                        <div class="monitor-metric-value" id="monitor-memory-value">Not available</div>
+                        <div class="monitor-metric-value" id="monitor-memory-value">暂无数据</div>
                         <div id="monitor-memory-bar"></div>
                         <div class="monitor-metric-sub" id="monitor-memory-sub"></div>
                     </div>
 
-                    <div class="card" data-monitor-key="system:disk" data-monitor-label="Disk activity">
+                    <div class="card" data-monitor-key="system:disk" data-monitor-label="硬盘状态">
                         <div class="card-header">
                             <div>
-                                <div class="card-kicker">System</div>
-                                <div class="card-title">Disk activity</div>
+                                <div class="card-kicker">系统</div>
+                                <div class="card-title">硬盘状态</div>
                             </div>
                             <div class="monitor-card-tools">
-                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="Drag to reorder; use arrow keys to move" aria-label="Move disk activity monitor; use arrow keys">⠿</button>
-                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:disk" aria-label="Hide disk monitor">Hide</button>
+                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="拖动以重新排序；使用方向键移动" aria-label="移动磁盘活动监视器；使用方向键">⠿</button>
+                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="system:disk" aria-label="隐藏硬盘监控器">隐藏</button>
                                 <div class="card-icon icon-cyan">
                                     <span class="icon icon-lg"><svg viewBox="0 0 24 24"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg></span>
                                 </div>
@@ -1011,80 +1011,80 @@
                         </div>
                         <div class="monitor-io-grid" id="monitor-disk-io">
                             <div class="monitor-io-cell">
-                                <span class="monitor-io-label">Read</span>
-                                <span class="monitor-io-value" id="monitor-disk-read">Not available</span>
+                                <span class="monitor-io-label">读取</span>
+                                <span class="monitor-io-value" id="monitor-disk-read">暂无数据</span>
                             </div>
                             <div class="monitor-io-cell">
-                                <span class="monitor-io-label">Write</span>
-                                <span class="monitor-io-value" id="monitor-disk-write">Not available</span>
+                                <span class="monitor-io-label">写入</span>
+                                <span class="monitor-io-value" id="monitor-disk-write">暂无数据</span>
                             </div>
                         </div>
-                        <div class="monitor-disk-activity" id="monitor-disk-activity">Collecting activity…</div>
+                        <div class="monitor-disk-activity" id="monitor-disk-activity">正在收集数据……</div>
                         <div class="monitor-metric-sub" id="monitor-disk-sub"></div>
                     </div>
 
                     <div class="card monitor-inference-card" id="monitor-inference-card" data-monitor-key="inference" data-monitor-label="Inference">
                         <div class="card-header">
                             <div>
-                                <div class="card-kicker" id="monitor-inference-kicker">Llama server</div>
-                                <div class="card-title">Inference</div>
+                                <div class="card-kicker" id="monitor-inference-kicker">Llama 服务</div>
+                                <div class="card-title">推理</div>
                             </div>
                             <div class="monitor-card-tools">
-                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="Drag to reorder; use arrow keys to move" aria-label="Move Inference monitor; use arrow keys">⠿</button>
-                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="inference" aria-label="Hide inference monitor">Hide</button>
-                                <span class="badge badge-dim" id="monitor-inference-state-badge">Unavailable</span>
+                                <button class="btn btn-sm btn-ghost monitor-drag-handle" type="button" draggable="true" title="拖动以重新排序；使用方向键移动" aria-label="移动推理监视器；使用方向键">⠿</button>
+                                <button class="btn btn-sm btn-ghost monitor-hide-btn" type="button" data-monitor-hide="inference" aria-label="隐藏推理监视器">隐藏</button>
+                                <span class="badge badge-dim" id="monitor-inference-state-badge">不可用</span>
                             </div>
                         </div>
 
                         <div id="monitor-inference-body" class="hidden">
                             <div class="monitor-inference-summary">
                                 <div class="monitor-inference-stat">
-                                    <span class="monitor-metric-label">Prompt</span>
+                                    <span class="monitor-metric-label">提示词</span>
                                     <span class="monitor-metric-reading" id="monitor-inference-prompt">--</span>
                                 </div>
                                 <div class="monitor-inference-stat">
-                                    <span class="monitor-metric-label">Generated</span>
+                                    <span class="monitor-metric-label">生成数</span>
                                     <span class="monitor-metric-reading" id="monitor-inference-generated">--</span>
                                 </div>
                                 <div class="monitor-inference-stat">
-                                    <span class="monitor-metric-label">Session total</span>
+                                    <span class="monitor-metric-label">会话总计</span>
                                     <span class="monitor-metric-reading" id="monitor-inference-total">--</span>
                                 </div>
                             </div>
 
                             <div class="monitor-metric-row">
-                                <span class="monitor-metric-label" id="monitor-inference-context-label">Context &middot; most-filled slot</span>
-                                <span class="monitor-metric-reading" id="monitor-inference-context-reading">Not available</span>
+                                <span class="monitor-metric-label" id="monitor-inference-context-label">上下文 &middot; 填充最多的槽位</span>
+                                <span class="monitor-metric-reading" id="monitor-inference-context-reading">暂无数据</span>
                             </div>
                             <div id="monitor-inference-context-bar"></div>
 
                             <div class="monitor-inference-details">
-                                <div class="monitor-io-cell" title="Live: average prompt throughput since the first observed batch, summed across active slots, excluding cached tokens. Updates when a batch completes and holds between batches. Average: completed session prompt tokens divided by prompt processing time."><span class="monitor-io-label" id="monitor-inference-prompt-speed-label">Avg prompt speed</span><span class="monitor-io-value" id="monitor-inference-prompt-speed">--</span></div>
-                                <div class="monitor-io-cell" title="Live: tokens generated between recent samples, summed across active slots. Average: completed session tokens divided by generation time."><span class="monitor-io-label" id="monitor-inference-gen-speed-label">Avg generation speed</span><span class="monitor-io-value" id="monitor-inference-gen-speed">--</span></div>
-                                <div class="monitor-io-cell"><span class="monitor-io-label">Requests</span><span class="monitor-io-value" id="monitor-inference-requests">--</span></div>
-                                <div class="monitor-io-cell"><span class="monitor-io-label">Slots</span><span class="monitor-io-value" id="monitor-inference-slots">--</span></div>
+                                <div class="monitor-io-cell" title="Live: average prompt throughput since the first observed batch, summed across active slots, excluding cached tokens. Updates when a batch completes and holds between batches. Average: completed session prompt tokens divided by prompt processing time."><span class="monitor-io-label" id="monitor-inference-prompt-speed-label">平均提示词速度</span><span class="monitor-io-value" id="monitor-inference-prompt-speed">--</span></div>
+                                <div class="monitor-io-cell" title="Live: tokens generated between recent samples, summed across active slots. Average: completed session tokens divided by generation time."><span class="monitor-io-label" id="monitor-inference-gen-speed-label">平均生成速度</span><span class="monitor-io-value" id="monitor-inference-gen-speed">--</span></div>
+                                <div class="monitor-io-cell"><span class="monitor-io-label">请求</span><span class="monitor-io-value" id="monitor-inference-requests">--</span></div>
+                                <div class="monitor-io-cell"><span class="monitor-io-label">插槽</span><span class="monitor-io-value" id="monitor-inference-slots">--</span></div>
                             </div>
                             <div class="form-row monitor-inference-reset-row">
-                                <button class="btn btn-sm" id="btn-reset-inference" type="button">Reset session counters</button>
+                                <button class="btn btn-sm" id="btn-reset-inference" type="button">重置会话计数</button>
                             </div>
                         </div>
 
                         <div id="monitor-inference-empty">
                             <div class="empty-state empty-state-sm">
-                                <div class="empty-state-title">No inference readings</div>
+                                <div class="empty-state-title">无推理读数</div>
                             </div>
                         </div>
-                        <p class="help-text" id="monitor-inference-note">Start or connect to a llama-server to view token, request, and context activity. GPU monitoring tools are not required.</p>
+                        <p class="help-text" id="monitor-inference-note">启动或连接到一个 llama-server，以便查看 Token、请求及上下文相关活动。无需使用 GPU 监控工具。</p>
                     </div>
                 </div>
             </div>
 
             <details class="monitor-gpu-help monitor-section" id="monitor-gpu-help">
-                <summary><strong id="monitor-gpu-summary">Checking GPU telemetry…</strong><span>Monitoring details &amp; optional setup</span></summary>
+                <summary><strong id="monitor-gpu-summary">正在检查 GPU 遥测数据…</strong><span>监控详情 &amp; 可选设置</span></summary>
                 <div class="monitor-gpu-help-body">
                     <div class="monitor-runtime-heading">
-                        <p class="help-text">GPU probes add utilization, VRAM, and temperature readings where supported. Process output, server inference, and available system readings work independently.</p>
-                        <button class="btn btn-sm" id="btn-monitor-recheck" type="button">Recheck GPU monitoring</button>
+                        <p class="help-text">在支持的情况下，程序会自动监测 GPU 利用率、显存 (VRAM) 和温度数据。进程输出、服务器推理以及系统可用数据均独立运行。</p>
+                        <button class="btn btn-sm" id="btn-monitor-recheck" type="button">重新检查 GPU 状态</button>
                     </div>
                     <!-- Detected GPUs join the metrics grid above; guidance stays secondary. -->
                     <div class="monitor-section" id="monitor-gpu-section">
@@ -1093,7 +1093,7 @@
 
                     <!-- Only the relevant failed provider gets a setup card. -->
                     <div class="monitor-section hidden" id="monitor-gpu-setup">
-                        <p class="help-text">Follow the guidance for your detected hardware. Copying a command does not run it.</p>
+                        <p class="help-text">请遵循针对你所检测硬件的指导。复制命令不会执行它。</p>
                         <div class="stacked-cards monitor-setup-cards monitor-drag-container" id="monitor-setup-cards"></div>
                     </div>
                 </div>
@@ -1104,36 +1104,36 @@
         <div class="section-panel" id="section-chat" style="display:none;">
             <div class="page-header chat-header-bar">
                 <div class="chat-header-title">
-                    <h1 class="page-title">Chat</h1>
-                    <span class="badge badge-green" id="chat-status-badge" style="display:none;"><span class="badge-dot"></span> Server Running</span>
-                    <span class="badge badge-neutral" id="chat-no-server-badge">No Server</span>
+                    <h1 class="page-title">聊天</h1>
+                    <span class="badge badge-green" id="chat-status-badge" style="display:none;"><span class="badge-dot"></span> 服务器运行中</span>
+                    <span class="badge badge-neutral" id="chat-no-server-badge">服务器未运行</span>
                     <div class="chat-runtime-indicators" aria-live="polite">
-                        <span class="chat-runtime-indicator"><span class="chat-runtime-label">Model</span><span id="chat-active-model">Not selected</span></span>
+                        <span class="chat-runtime-indicator"><span class="chat-runtime-label">模型</span><span id="chat-active-model">未选择</span></span>
                     </div>
                 </div>
                 <div class="page-actions chat-header-actions">
-                    <button class="btn btn-sm btn-ghost btn-history-open" id="btn-open-history" type="button" title="Show conversations" aria-label="Show conversations" aria-controls="chat-history-panel" aria-expanded="false">
+                    <button class="btn btn-sm btn-ghost btn-history-open" id="btn-open-history" type="button" title="展开对话历史" aria-label="展开对话历史" aria-controls="chat-history-panel" aria-expanded="false">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                        Conversations
+                        对话历史
                     </button>
-                    <button class="btn btn-sm btn-ghost btn-settings-open" id="btn-open-sidebar" type="button" title="Show settings" aria-label="Show settings" aria-controls="chat-sidebar" aria-expanded="false">
+                    <button class="btn btn-sm btn-ghost btn-settings-open" id="btn-open-sidebar" type="button" title="显示设置" aria-label="显示设置" aria-controls="chat-sidebar" aria-expanded="false">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-                        Settings
+                        设置
                     </button>
-                    <button class="btn btn-sm btn-ghost" id="btn-chat-focus" type="button" aria-pressed="false" title="Focus Chat">
+                    <button class="btn btn-sm btn-ghost" id="btn-chat-focus" type="button" aria-pressed="false" title="专注聊天">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></span>
-                        <span id="chat-focus-label">Focus</span>
+                        <span id="chat-focus-label">专注模式</span>
                     </button>
-                    <button class="btn btn-sm btn-ghost" id="btn-chat-popout" type="button" title="Open Chat in a separate window" aria-disabled="false">
+                    <button class="btn btn-sm btn-ghost" id="btn-chat-popout" type="button" title="在独立窗口中打开聊天" aria-disabled="false">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M14 3h7v7"/><path d="m21 3-9 9"/></svg></span>
-                        Pop out
+                        聊天对话框
                     </button>
-                    <button class="btn btn-sm btn-ghost" id="btn-chat-return" type="button" title="Return Chat to the main window" aria-disabled="false" hidden>
-                        Return to main window
+                    <button class="btn btn-sm btn-ghost" id="btn-chat-return" type="button" title="返回至聊天主窗口" aria-disabled="false" hidden>
+                        返回主窗口
                     </button>
                     <button class="btn btn-sm" id="btn-chat-new" type="button">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-                        New Chat
+                        新对话
                     </button>
                 </div>
             </div>
@@ -1141,37 +1141,37 @@
             <div id="chat-window-placeholder" class="chat-window-placeholder" role="region" aria-labelledby="chat-window-placeholder-heading" hidden>
                 <div class="chat-window-placeholder-card">
                     <span class="icon chat-window-placeholder-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M14 3h7v7"/><path d="m21 3-9 9"/></svg></span>
-                    <h3 id="chat-window-placeholder-heading">Chat is open in another window</h3>
-                    <p>Use the separate Chat window to continue this conversation.</p>
+                    <h3 id="chat-window-placeholder-heading">聊天窗口已在另一个窗口中打开</h3>
+                    <p>请使用独立的聊天窗口继续此对话</p>
                     <div class="chat-window-placeholder-actions">
-                        <button class="btn btn-sm" id="btn-chat-show-window" type="button" aria-disabled="false" hidden>Show window</button>
-                        <button class="btn btn-sm btn-ghost" id="btn-chat-return-here" type="button" aria-disabled="false" hidden>Return chat here</button>
-                        <a class="btn btn-sm btn-ghost" id="chat-window-open-full-gui" href="#" hidden>Open full GUI in this browser</a>
+                        <button class="btn btn-sm" id="btn-chat-show-window" type="button" aria-disabled="false" hidden>显示窗口</button>
+                        <button class="btn btn-sm btn-ghost" id="btn-chat-return-here" type="button" aria-disabled="false" hidden>返回到此处</button>
+                        <a class="btn btn-sm btn-ghost" id="chat-window-open-full-gui" href="#" hidden>在此浏览器中打开完整 GUI</a>
                     </div>
                 </div>
             </div>
             <div class="chat-layout" id="chat-layout">
                 <div class="chat-history-panel" id="chat-history-panel">
                     <div class="sidebar-header">
-                        <h3>Conversations</h3>
-                        <button class="btn-toggle-sidebar" id="btn-collapse-history" type="button" title="Collapse history" aria-label="Collapse history" aria-controls="chat-history-panel">
+                        <h3>对话历史</h3>
+                        <button class="btn-toggle-sidebar" id="btn-collapse-history" type="button" title="折叠对话历史" aria-label="折叠对话历史" aria-controls="chat-history-panel">
                             <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
                         </button>
                     </div>
                     <div class="chat-history-tools">
-                        <label class="chat-history-search-label" for="chat-history-search">Find a conversation</label>
-                        <input id="chat-history-search" class="chat-history-search" type="search" placeholder="Search conversations" autocomplete="off">
-                        <div id="chat-history-retention" class="chat-history-retention" role="status">Up to 50 conversations are saved.</div>
+                        <label class="chat-history-search-label" for="chat-history-search">查找对话</label>
+                        <input id="chat-history-search" class="chat-history-search" type="search" placeholder="搜索对话" autocomplete="off">
+                        <div id="chat-history-retention" class="chat-history-retention" role="status">最多可保存 50 条对话历史</div>
                     </div>
                     <div class="chat-history-list" id="chat-history-list"></div>
                     <div class="chat-history-footer">
-                        <button class="btn btn-xs btn-ghost" id="btn-chat-clear" type="button" title="Clear the current conversation">
+                        <button class="btn btn-xs btn-ghost" id="btn-chat-clear" type="button" title="清除当前对话">
                             <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"/></svg></span>
-                            Clear current chat
+                            清空当前对话
                         </button>
                         <button class="btn btn-xs btn-danger" id="btn-delete-all-history" type="button">
                             <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>
-                            Delete All
+                            全部删除
                         </button>
                     </div>
                 </div>
@@ -1181,135 +1181,135 @@
                             <div class="chat-empty-icon">
                                 <span class="icon chat-empty-glyph"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                             </div>
-                            <h3>Start a conversation</h3>
+                            <h3>开始对话</h3>
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-ghost chat-jump-latest" id="btn-chat-jump-latest" type="button" hidden aria-controls="chat-messages" title="Jump to the newest message">Jump to latest</button>
-                    <div id="chat-tools" class="chat-tools" role="group" aria-label="Conversation context" hidden>
+                    <button class="btn btn-sm btn-ghost chat-jump-latest" id="btn-chat-jump-latest" type="button" hidden aria-controls="chat-messages" title="跳转至最新消息">跳转至最新</button>
+                    <div id="chat-tools" class="chat-tools" role="group" aria-label="对话上下文" hidden>
                         <details id="chat-context-details">
-                            <summary>Context usage</summary>
+                            <summary>上下文使用情况</summary>
                             <div class="chat-context">
                                 <div id="chat-context-bar" class="chat-context-bar" role="progressbar" aria-label="Chat context including reply reserve" aria-valuemin="0" aria-valuemax="100" hidden>
                                     <span id="chat-context-prompt"></span><span id="chat-context-reserve"></span>
                                 </div>
-                                <div id="chat-context-label" role="status" aria-live="polite">Start or connect to a server to measure context.</div>
+                                <div id="chat-context-label" role="status" aria-live="polite">启动或连接到一个服务器，以便测量上下文大小。</div>
                             </div>
                         </details>
-                        <button id="btn-chat-compact" type="button" class="btn btn-xs" disabled>Compact conversation</button>
-                        <button id="btn-chat-view-summary" type="button" class="btn btn-xs" hidden>View summary</button>
-                        <button id="btn-chat-tools-undo-compaction" type="button" class="btn btn-xs" hidden>Undo compaction</button>
+                        <button id="btn-chat-compact" type="button" class="btn btn-xs" disabled>压缩对话</button>
+                        <button id="btn-chat-view-summary" type="button" class="btn btn-xs" hidden>查看摘要</button>
+                        <button id="btn-chat-tools-undo-compaction" type="button" class="btn btn-xs" hidden>撤销压缩</button>
                         <div id="chat-compaction-status" role="status" aria-live="polite" hidden></div>
                     </div>
                     <div class="chat-input-area">
                         <div id="chat-context-warning" class="chat-context-warning" role="status" hidden>
                             <span id="chat-context-warning-text"></span>
-                            <button id="btn-chat-context-details" class="btn btn-xs" type="button">Details</button>
+                            <button id="btn-chat-context-details" class="btn btn-xs" type="button">详情</button>
                         </div>
                         <div class="chat-no-server-note" id="chat-no-server-note" role="status">
-                            <span>Start llama-server, or connect to a running one on the API tab, before sending chat messages.</span>
-                            <button class="btn btn-xs" id="btn-chat-open-quick-launch" type="button">Open Quick Launch</button>
+                            <span>在发送聊天消息之前，请先启动 llama-server，或在 API 选项卡中连接到正在运行的服务。</span>
+                            <button class="btn btn-xs" id="btn-chat-open-quick-launch" type="button">快速启动</button>
                         </div>
                         <div class="chat-input-row">
-                            <textarea class="chat-input" id="chat-input" placeholder="Type a message..." rows="1"></textarea>
+                            <textarea class="chat-input" id="chat-input" placeholder="在此输入信息……" rows="1"></textarea>
                             <button class="btn btn-primary" id="btn-chat-send">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>
-                                Send
+                                发送
                             </button>
                             <button class="btn btn-danger" id="btn-chat-stop" style="display:none;">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
-                                Stop
+                                停止
                             </button>
                         </div>
                         <div class="chat-input-actions">
-                            <label class="chat-web-toggle" title="Search the web before answering">
+                            <label class="chat-web-toggle" title="回答前先上网搜索">
                                 <input type="checkbox" id="chat-web-search-toggle">
-                                <span>Web Search</span>
+                                <span>网络搜索</span>
                             </label>
-                            <button class="btn btn-xs" id="btn-chat-undo" title="Undo last message">
+                            <button class="btn btn-xs" id="btn-chat-undo" title="撤销上一条消息">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>
-                                Undo
+                                撤销
                             </button>
-                            <button class="btn btn-xs" id="btn-chat-regenerate" title="Regenerate last response">
+                            <button class="btn btn-xs" id="btn-chat-regenerate" title="重新生成上一次回答">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
-                                Regenerate
+                                重新生成
                             </button>
-                            <button class="btn btn-xs" id="btn-chat-tools" type="button" title="Context usage and compaction" aria-expanded="false" aria-controls="chat-tools">Context</button>
-                            <span class="chat-input-hint"><kbd>Enter</kbd> send &middot; <kbd>Shift+Enter</kbd> new line</span>
+                            <button class="btn btn-xs" id="btn-chat-tools" type="button" title="上下文的使用与压缩" aria-expanded="false" aria-controls="chat-tools">上下文</button>
+                            <span class="chat-input-hint"><kbd>使用</kbd> 键盘 &middot; <kbd>Shift+Enter</kbd> 换行</span>
                         </div>
                     </div>
                 </div>
                 <div class="chat-sidebar collapsed" id="chat-sidebar" aria-hidden="true">
                     <div class="sidebar-header">
-                        <h3>Settings</h3>
-                        <button class="btn-toggle-sidebar" id="btn-collapse-sidebar" type="button" title="Collapse settings" aria-label="Collapse settings" aria-controls="chat-sidebar">
+                        <h3>设置</h3>
+                        <button class="btn-toggle-sidebar" id="btn-collapse-sidebar" type="button" title="折叠设置" aria-label="折叠设置" aria-controls="chat-sidebar">
                             <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
                         </button>
                     </div>
                     <div class="sidebar-body">
                         <div class="sidebar-section">
-                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> System Prompt</div>
-                            <textarea class="sidebar-system-prompt" id="chat-system-prompt" aria-label="System prompt" placeholder="You are a helpful assistant..."></textarea>
-                            <div class="sidebar-char-count" id="chat-sys-char-count">0 chars</div>
+                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> 系统提示词</div>
+                            <textarea class="sidebar-system-prompt" id="chat-system-prompt" aria-label="System prompt" placeholder="你是个乐于助人的助手..."></textarea>
+                            <div class="sidebar-char-count" id="chat-sys-char-count">0 字符</div>
                         </div>
                         <div class="sidebar-section">
-                            <button class="btn btn-sm" id="btn-chat-load-character" type="button" aria-describedby="chat-character-help">Load character card</button>
+                            <button class="btn btn-sm" id="btn-chat-load-character" type="button" aria-describedby="chat-character-help">加载角色</button>
                             <input type="file" id="chat-character-file" accept=".json,.png,application/json,image/png" aria-label="Character card file" hidden>
-                            <div class="sidebar-field-desc" id="chat-character-help">JSON or PNG. Saves this conversation and starts a new chat with the character's prompt and greeting.</div>
+                            <div class="sidebar-field-desc" id="chat-character-help">支持 JSON 或 PNG 格式保存当前对话，并使用该角色提示词和问候语开启新的聊天。</div>
                             <div class="sidebar-field-desc chat-character-status" id="chat-character-status" role="status" aria-live="polite" hidden></div>
                         </div>
                         <div class="sidebar-section">
-                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.3 14 16.2 14 18h-4c0-1.8-.5-2.7-1.5-3.5z"/></svg></span> Thinking</div>
+                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.3 14 16.2 14 18h-4c0-1.8-.5-2.7-1.5-3.5z"/></svg></span> 思考</div>
                             <div class="sidebar-field">
-                                <label class="sidebar-field-label" for="chat-thinking-effort">Reasoning Effort</label>
+                                <label class="sidebar-field-label" for="chat-thinking-effort">推理程度</label>
                                 <select id="chat-thinking-effort">
-                                    <option value="auto">Auto (model default)</option>
-                                    <option value="off">Off</option>
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="xhigh">XHigh</option>
+                                    <option value="auto">自动「模型默认」</option>
+                                    <option value="off">关闭</option>
+                                    <option value="low">低</option>
+                                    <option value="medium">中</option>
+                                    <option value="high">高</option>
+                                    <option value="xhigh">超高</option>
                                 </select>
-                                <div class="sidebar-field-desc">Controls how much effort a supported model spends thinking. Auto uses the model default.</div>
+                                <div class="sidebar-field-desc">控制受支持的模型在思考上投入多少精力。「自动」将使用模型默认设置。</div>
                                 <details class="chat-reasoning-technical">
-                                    <summary>Compatibility details</summary>
-                                    <div>Some model templates ignore effort levels or use a different request field. Unsupported values may have no effect.</div>
+                                    <summary>兼容性详情</summary>
+                                    <div>某些模型模板会忽略以上推理设置等级，或者使用不同的请求字段。不受支持的值可能不会产生任何效果。</div>
                                 </details>
                                 <div id="chat-thinking-effort-cap-hint" class="chat-effort-cap-warning hidden"></div>
                             </div>
                         </div>
                         <div class="sidebar-section">
-                            <div class="sidebar-section-label">Tools</div>
+                            <div class="sidebar-section-label">工具</div>
                             <div class="sidebar-field">
                                 <label class="chat-web-toggle">
                                     <input type="checkbox" id="chat-datetime-enabled" aria-describedby="chat-datetime-help">
-                                    <span>Current Date &amp; Time</span>
+                                    <span>当前日期 &amp; 时间</span>
                                 </label>
-                                <div class="sidebar-field-desc" id="chat-datetime-help">Let the model check your local date, time, and timezone for time-sensitive questions. Requires tool support. Applies to your next message. Saved in this browser when storage is available; otherwise, applies only to this session.</div>
+                                <div class="sidebar-field-desc" id="chat-datetime-help">允许模型在处理时间敏感类问题时，读取你本地的日期、时间及时区信息。该功能需要工具支持，仅对下一条消息生效。若浏览器支持本地存储，该设置会被保存；否则仅在当前会话内有效。</div>
                             </div>
                         </div>
                         <div class="sidebar-section">
-                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Web Search</div>
+                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> 网络搜索</div>
                             <div class="sidebar-field">
-                                <label class="sidebar-field-label" for="chat-web-search-max-results">Result Count</label>
+                                <label class="sidebar-field-label" for="chat-web-search-max-results">结果数量</label>
                                 <input type="number" id="chat-web-search-max-results" min="1" max="10" step="1" value="5">
-                                <div class="sidebar-field-desc">More results add context but take longer to read.</div>
+                                <div class="sidebar-field-desc">更多结果会补充上下文，但读取耗时也会更长。</div>
                             </div>
                         </div>
                         <div class="sidebar-section">
-                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span> Samplers</div>
+                            <div class="sidebar-section-label"><span class="sidebar-icon"><svg viewBox="0 0 24 24" width="13" height="13"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span> 采样</div>
                             <div class="sidebar-sampler-control">
                                 <div class="sidebar-sampler-label">
-                                    <label class="sidebar-sampler-text" for="chat-slider-temp">Temperature</label>
+                                    <label class="sidebar-sampler-text" for="chat-slider-temp">温度</label>
                                     <span class="sidebar-sampler-value" id="chat-val-temp">0.80</span>
                                 </div>
                                 <div class="sidebar-sampler-input-row">
                                     <input type="range" id="chat-slider-temp" min="0" max="2" step="0.01" value="0.80">
-                                    <input type="number" class="chat-sampler-number" id="chat-num-temp" step="0.01" value="0.80" aria-label="Temperature exact value">
+                                    <input type="number" class="chat-sampler-number" id="chat-num-temp" step="0.01" value="0.80" aria-label="温度精确值">
                                 </div>
-                                <div class="sidebar-field-desc">Lower values make answers more focused; higher values add variety.</div>
+                                <div class="sidebar-field-desc">数值越低，回答的指向性越强；数值越高，内容的多样性越丰富。</div>
                             </div>
                             <details class="chat-advanced-samplers">
-                                <summary>Advanced sampling</summary>
+                                <summary>高级采样</summary>
                                 <div class="chat-advanced-sampler-body">
                                     <div class="sidebar-sampler-control">
                                         <div class="sidebar-sampler-label">
@@ -1320,7 +1320,7 @@
                                             <input type="range" id="chat-slider-top-p" min="0" max="1" step="0.01" value="0.95">
                                             <input type="number" class="chat-sampler-number" id="chat-num-top-p" step="0.01" value="0.95" aria-label="Top-P exact value">
                                         </div>
-                                        <div class="sidebar-field-desc">Keep only the most likely next tokens within this probability share.</div>
+                                        <div class="sidebar-field-desc">只保留此概率份额内最有可能出现的下一个 token</div>
                                     </div>
                                     <div class="sidebar-sampler-control">
                                         <div class="sidebar-sampler-label">
@@ -1331,7 +1331,7 @@
                                             <input type="range" id="chat-slider-top-k" min="1" max="200" step="1" value="40">
                                             <input type="number" class="chat-sampler-number" id="chat-num-top-k" step="1" value="40" aria-label="Top-K exact value">
                                         </div>
-                                        <div class="sidebar-field-desc">Limit each next token to the top K choices.</div>
+                                        <div class="sidebar-field-desc">将每个下一个 token 的候选范围限制在概率最高的 K 个选项</div>
                                     </div>
                                     <div class="sidebar-sampler-control">
                                         <div class="sidebar-sampler-label">
@@ -1342,7 +1342,7 @@
                                             <input type="range" id="chat-slider-min-p" min="0" max="1" step="0.01" value="0.05">
                                             <input type="number" class="chat-sampler-number" id="chat-num-min-p" step="0.01" value="0.05" aria-label="Min-P exact value">
                                         </div>
-                                        <div class="sidebar-field-desc">Ignore choices far below the most likely token.</div>
+                                        <div class="sidebar-field-desc">忽略远低于最高概率 token 选项</div>
                                     </div>
                                     <div class="sidebar-sampler-control">
                                         <div class="sidebar-sampler-label">
@@ -1353,7 +1353,7 @@
                                             <input type="range" id="chat-slider-repeat" min="1" max="2" step="0.01" value="1.00">
                                             <input type="number" class="chat-sampler-number" id="chat-num-repeat" step="0.01" value="1.00" aria-label="Repeat penalty exact value">
                                         </div>
-                                        <div class="sidebar-field-desc">Raise this gently to reduce repeated phrases.</div>
+                                        <div class="sidebar-field-desc">适当调高该参数以减少重复词组的出现</div>
                                     </div>
                                 </div>
                             </details>
@@ -1366,17 +1366,17 @@
                                     <input type="range" id="chat-slider-max-tokens" aria-label="Max Tokens" min="-1" max="32768" step="1" value="-1">
                                     <input type="number" class="chat-sampler-number" id="chat-num-max-tokens" step="1" value="-1" aria-label="Max Tokens exact value">
                                 </div>
-                                <div class="sidebar-field-desc">Maximum response length. Use -1 to inherit the server default.</div>
+                                <div class="sidebar-field-desc">设置最大响应长度， -1 表示使用服务器默认设置。</div>
                             </div>
                             <details class="chat-settings-help">
-                                <summary>Sampler reference</summary>
+                                <summary>采样参考</summary>
                                 <dl>
-                                    <dt>Temperature</dt><dd>Higher = more random, lower = more focused</dd>
-                                    <dt>Top-P</dt><dd>Nucleus sampling threshold</dd>
-                                    <dt>Top-K</dt><dd>Limits vocabulary to top K tokens</dd>
-                                    <dt>Min-P</dt><dd>Minimum probability relative to top token</dd>
-                                    <dt>Repeat Penalty</dt><dd>Penalize repeated tokens</dd>
-                                    <dt>Max Tokens</dt><dd>Maximum tokens per response; -1 uses the server default.</dd>
+                                    <dt>温度</dt><dd>更高 = 更随机，更低 = 更专注</dd>
+                                    <dt>Top-P</dt><dd>核采样阈值</dd>
+                                    <dt>Top-K</dt><dd>将词表限制为出现概率最高的 K 个 tokens</dd>
+                                    <dt>Min-P</dt><dd>相对于概率最高 token 的最低概率</dd>
+                                    <dt>重复惩罚</dt><dd>惩罚重复 tokens</dd>
+                                    <dt>Max Tokens</dt><dd>单次响应的最大 tokens 数；-1 表示使用服务器默认值。</dd>
                                 </dl>
                             </details>
                         </div>
@@ -1389,72 +1389,72 @@
         <div class="section-panel" id="section-api" style="display:none;">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">OpenAI-Compatible API</h1>
-                    <div class="page-title-sub">llama-server can expose OpenAI-style endpoints so other apps and services can connect directly.</div>
+                    <h1 class="page-title">OpenAI API 配置</h1>
+                    <div class="page-title-sub">llama-server 可以兼容 OpenAI 公开的 API 接口，以便其它应用程序和服务能够直接连接。</div>
                 </div>
             </div>
 
             <div class="api-connections">
                 <details class="card api-connection" id="api-external-details">
                     <summary>
-                        <span class="api-connection-heading"><span class="api-connection-title">Connect to a running server</span><span class="api-connection-hint">Use a llama-server on this machine started outside Llama GUI.</span></span>
-                        <span id="external-server-badge" class="remote-tunnel-badge">Not connected</span>
+                        <span class="api-connection-heading"><span class="api-connection-title">连接到正在运行的服务</span><span class="api-connection-hint">连接到这台机器其它兼容 llama-server，而非通过 Llama GUI 方式。</span></span>
+                        <span id="external-server-badge" class="remote-tunnel-badge">未连接</span>
                     </summary>
                     <div class="api-connection-body">
                         <div id="external-server-summary" class="api-base-row hidden">
-                            <span class="api-base-label">Target</span>
+                            <span class="api-base-label">目标</span>
                             <span id="external-server-target" class="server-link"></span>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label" for="external-server-host">Host</label>
+                                <label class="form-label" for="external-server-host">主机</label>
                                 <input type="text" id="external-server-host" value="127.0.0.1" placeholder="127.0.0.1" autocomplete="off" spellcheck="false" />
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="external-server-port">Port</label>
+                                <label class="form-label" for="external-server-port">端口</label>
                                 <input type="number" id="external-server-port" min="1" max="65535" value="8080" placeholder="8080" autocomplete="off" />
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="external-server-key">API Key</label>
-                                <input type="password" id="external-server-key" placeholder="Optional" autocomplete="off" spellcheck="false" />
+                                <label class="form-label" for="external-server-key">API 密钥</label>
+                                <input type="password" id="external-server-key" placeholder="可选" autocomplete="off" spellcheck="false" />
                             </div>
                         </div>
                         <div id="external-server-note" class="api-status-note"></div>
                         <div class="form-row">
-                            <button id="btn-connect-external-server" class="btn btn-primary" type="button">Connect</button>
-                            <button id="btn-disconnect-external-server" class="btn btn-danger hidden" type="button">Disconnect</button>
+                            <button id="btn-connect-external-server" class="btn btn-primary" type="button">连接</button>
+                            <button id="btn-disconnect-external-server" class="btn btn-danger hidden" type="button">断开连接</button>
                         </div>
                     </div>
                 </details>
                 <details class="card api-connection" id="api-remote-details">
                     <summary>
-                        <span class="api-connection-heading"><span class="api-connection-title">Remote access</span><span class="api-connection-hint">Share this session through a Cloudflare tunnel.</span></span>
-                        <span id="remote-tunnel-badge" class="remote-tunnel-badge">Idle</span>
+                        <span class="api-connection-heading"><span class="api-connection-title">远程访问</span><span class="api-connection-hint">通过 Cloudflare 隧道共享此会话</span></span>
+                        <span id="remote-tunnel-badge" class="remote-tunnel-badge">空闲</span>
                     </summary>
                     <div class="api-connection-body">
                         <div id="remote-tunnel-warning" class="remote-tunnel-warning">
-                            Anyone with the tunnel URL can access and control this Llama-GUI session and use the proxied OpenAI-compatible API until you stop the tunnel.
+                            在您关闭隧道之前，持有隧道 URL 的任何人都可以访问并控制此 Llama-GUI 会话，并使用代理的 OpenAI 兼容 API。
                         </div>
                         <div id="remote-tunnel-url-row" class="api-base-row hidden">
-                            <span class="api-base-label">Remote URL</span>
+                            <span class="api-base-label">远程 URL</span>
                             <a id="remote-tunnel-url" href="#" target="_blank" rel="noopener noreferrer" class="server-link"></a>
-                            <button id="btn-copy-remote-tunnel" class="btn btn-sm btn-ghost" type="button" title="Copy remote URL" aria-label="Copy remote URL">
+                            <button id="btn-copy-remote-tunnel" class="btn btn-sm btn-ghost" type="button" title="复制远程 URL" aria-label="复制远程 URL">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                                Copy
+                                复制
                             </button>
                         </div>
                         <div id="remote-openai-url-row" class="api-base-row hidden">
-                            <span class="api-base-label">Remote OpenAI Base URL</span>
+                            <span class="api-base-label">远程 OpenAI Base URL</span>
                             <a id="remote-openai-url" href="#" target="_blank" rel="noopener noreferrer" class="server-link"></a>
-                            <button id="btn-copy-remote-openai" class="btn btn-sm btn-ghost" type="button" title="Copy remote OpenAI base URL" aria-label="Copy remote OpenAI base URL">
+                            <button id="btn-copy-remote-openai" class="btn btn-sm btn-ghost" type="button" title="复制远程 OpenAI base URL" aria-label="复制远程 OpenAI base URL">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                                Copy
+                                复制
                             </button>
                         </div>
-                        <div id="remote-tunnel-status" class="api-status-note">Remote tunnel is not running.</div>
+                        <div id="remote-tunnel-status" class="api-status-note">远程隧道未运行</div>
                         <div class="form-row">
-                            <button id="btn-start-remote-tunnel" class="btn btn-primary" type="button">Start Tunnel</button>
-                            <button id="btn-stop-remote-tunnel" class="btn btn-danger hidden" type="button">Stop Tunnel</button>
+                            <button id="btn-start-remote-tunnel" class="btn btn-primary" type="button">启动隧道</button>
+                            <button id="btn-stop-remote-tunnel" class="btn btn-danger hidden" type="button">停止隧道</button>
                         </div>
                     </div>
                 </details>
@@ -1463,20 +1463,20 @@
                 <div class="api-base-row">
                     <span class="api-base-label">Base URL</span>
                     <a id="api-base-url" href="#" target="_blank" class="server-link"></a>
-                    <button id="btn-copy-api-base" class="btn btn-sm btn-ghost" type="button" title="Copy base URL" aria-label="Copy API base URL">
+                    <button id="btn-copy-api-base" class="btn btn-sm btn-ghost" type="button" title="复制 API base URL" aria-label="复制 API 基础地址 base URL">
                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                        Copy
+                        复制
                     </button>
                 </div>
 
                 <div id="api-status-note" class="api-status-note"></div>
 
-                <h2 id="api-endpoints-title">Endpoints</h2>
+                <h2 id="api-endpoints-title">端点</h2>
                 <ul id="api-endpoints-list" class="api-endpoints" aria-labelledby="api-endpoints-title"></ul>
 
                 <div class="section">
-                    <h2>Client snippets</h2>
-                    <p class="api-intro">Copy one of these templates and replace the prompt/model values as needed.</p>
+                    <h2>客户端代码片段</h2>
+                    <p class="api-intro">复制以下任一模板，并根据需要替换 prompt（提示词）或 model（模型）的值。</p>
                     <div id="api-snippets-list" class="api-snippets"></div>
                 </div>
             </div>
@@ -1486,8 +1486,8 @@
         <div class="section-panel" id="section-benchmarking" style="display:none;">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Benchmarking</h1>
-                    <div class="page-title-sub">Run llama.cpp throughput and perplexity checks using your current configuration or saved presets.</div>
+                    <h1 class="page-title">基准测试</h1>
+                    <div class="page-title-sub">使用当前配置或保存的预设，运行 llama.cpp 进行吞吐量（throughput）和困惑度（perplexity）测试。</div>
                 </div>
                 <div class="page-actions benchmark-readiness">
                     <span id="benchmark-bench-badge" class="badge badge-neutral">llama-bench: Checking</span>
@@ -1500,8 +1500,8 @@
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <div class="card-kicker">Benchmark</div>
-                                <div class="card-title">Run Setup</div>
+                                <div class="card-kicker">基准</div>
+                                <div class="card-title">运行程序</div>
                             </div>
                             <div class="card-icon icon-cyan">
                                 <span class="icon icon-lg"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16l3-5 4 3 4-8"/></svg></span>
@@ -1512,40 +1512,40 @@
 
                         <div class="benchmark-controls-grid">
                             <div class="form-group">
-                                <label class="form-label" for="benchmark-source">Source</label>
+                                <label class="form-label" for="benchmark-source">配置来源</label>
                                 <select id="benchmark-source">
-                                    <option value="current">Current Configure</option>
-                                    <option value="preset">Saved Preset</option>
-                                    <option value="manual">Manual Model</option>
+                                    <option value="current">当前配置</option>
+                                    <option value="preset">已保存的预设</option>
+                                    <option value="manual">手动选择模型</option>
                                 </select>
                                 <p id="benchmark-source-summary" class="help-text">Current Configure -> No model selected</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="benchmark-type">Benchmark Type</label>
+                                <label class="form-label" for="benchmark-type">测试项目</label>
                                 <select id="benchmark-type">
-                                    <option value="bench">Throughput (llama-bench)</option>
-                                    <option value="perplexity">Perplexity (llama-perplexity)</option>
+                                    <option value="bench">「Throughput」吞吐量 (llama-bench)</option>
+                                    <option value="perplexity">「Perplexity」困惑度 (llama-perplexity)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div id="benchmark-preset-row" class="form-group hidden">
-                            <label class="form-label" for="benchmark-preset-select">Saved Preset</label>
+                            <label class="form-label" for="benchmark-preset-select">已保存的预设</label>
                             <div class="input-row">
                                 <select id="benchmark-preset-select"></select>
-                                <button id="btn-refresh-benchmark-presets" class="btn btn-sm" type="button" title="Refresh presets" aria-label="Refresh benchmark presets">
+                                <button id="btn-refresh-benchmark-presets" class="btn btn-sm" type="button" title="刷新预设" aria-label="刷新基准测试预设">
                                     <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                                 </button>
                             </div>
                         </div>
 
                         <div id="benchmark-manual-row" class="form-group hidden">
-                            <label class="form-label" for="benchmark-manual-model">Manual Model</label>
+                            <label class="form-label" for="benchmark-manual-model">手动选择模型</label>
                             <div class="input-row">
                                 <select id="benchmark-manual-model">
-                                    <option value="">-- Select Model --</option>
+                                    <option value="">-- 选择模型 --</option>
                                 </select>
-                                <button id="btn-refresh-benchmark-models" class="btn btn-sm" type="button" title="Refresh models" aria-label="Refresh benchmark models">
+                                <button id="btn-refresh-benchmark-models" class="btn btn-sm" type="button" title="刷新模型" aria-label="刷新基准测试模型">
                                     <span class="icon icon-sm"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
                                 </button>
                             </div>
@@ -1554,104 +1554,104 @@
                         <div id="benchmark-bench-controls" class="benchmark-tool-controls">
                             <div class="benchmark-controls-grid">
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-repetitions">Repetitions</label>
+                                    <label class="form-label" for="benchmark-repetitions">重复次数</label>
                                     <input id="benchmark-repetitions" type="number" min="1" max="50" step="1" value="5">
-                                    <p class="help-text">Runs the same test multiple times and reports steadier performance numbers.</p>
+                                    <p class="help-text">多次运行相同的测试，并报告更稳定的性能数据。</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-output-format">Output Format</label>
+                                    <label class="form-label" for="benchmark-output-format">输出格式</label>
                                     <select id="benchmark-output-format">
                                         <option value="md">Markdown</option>
                                         <option value="json">JSON</option>
                                         <option value="csv">CSV</option>
                                         <option value="jsonl">JSONL</option>
                                     </select>
-                                    <p class="help-text">Markdown is easiest to read; JSON/CSV are better for saving or comparing runs.</p>
+                                    <p class="help-text">Markdown 最易于阅读；JSON/CSV 更适合保存或对比运行结果。</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-n-prompt">Prompt Tokens</label>
+                                    <label class="form-label" for="benchmark-n-prompt">提示 Token 数</label>
                                     <input id="benchmark-n-prompt" type="number" min="1" max="131072" step="1" value="512">
-                                    <p class="help-text">Measures prompt processing speed using this many input tokens.</p>
+                                    <p class="help-text">基于指定数量的输入 Token 来测量提示词处理速度。</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-n-gen">Generation Tokens</label>
+                                    <label class="form-label" for="benchmark-n-gen">生成 Token 数</label>
                                     <input id="benchmark-n-gen" type="number" min="1" max="131072" step="1" value="128">
-                                    <p class="help-text">Measures token generation speed using this many generated tokens.</p>
+                                    <p class="help-text">基于指定数量的生成 Token 来测量 Token 生成速度。</p>
                                 </div>
                             </div>
                         </div>
 
                         <div id="benchmark-ppl-controls" class="benchmark-tool-controls hidden">
                             <div class="form-group">
-                                <label class="form-label" for="benchmark-ppl-preset">Perplexity Preset</label>
+                                <label class="form-label" for="benchmark-ppl-preset">困惑度预设</label>
                                 <select id="benchmark-ppl-preset">
                                     <option value="clean" selected>llama.cpp clean run</option>
-                                    <option value="gui">Llama GUI default</option>
-                                    <option value="llamacpp">llama.cpp default</option>
-                                    <option value="custom">Custom</option>
+                                    <option value="gui">Llama GUI 默认</option>
+                                    <option value="llamacpp">llama.cpp 默认</option>
+                                    <option value="custom">自定义</option>
                                 </select>
-                                <p class="help-text">Clean run only passes the model and prompt/data file. It overrides all configuration fields below until you choose another preset or Custom.</p>
+                                <p class="help-text">干净运行仅传递模型和提示词/数据文件。它会覆盖下方所有配置字段，直到你选择其他预设或自定义。</p>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="benchmark-prompt-file">Prompt/Data File</label>
                                 <input id="benchmark-prompt-file" type="text" placeholder="Path to evaluation text file">
-                                <p class="help-text">Text dataset used to score perplexity. Larger, representative files give more useful results.</p>
+                                <p class="help-text">用于计算困惑度的文本数据集。更大、更具代表性的文件会给出更有用的结果。</p>
                                 <button id="btn-benchmark-wikitext-clean" class="btn btn-sm" type="button">
                                     Use WikiText-2 clean run
                                 </button>
-                                <p class="help-text">Downloads llama.cpp's WikiText-2 raw test file if needed and applies the llama.cpp default perplexity settings.</p>
+                                <p class="help-text">如有需要，下载 llama.cpp 的 WikiText-2 原始测试文件，并应用 llama.cpp 默认的困惑度设置。</p>
                             </div>
                             <div class="benchmark-controls-grid">
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-ppl-ctx">Context Size</label>
+                                    <label class="form-label" for="benchmark-ppl-ctx">上下文大小</label>
                                     <input id="benchmark-ppl-ctx" type="number" min="128" max="262144" step="128" value="4096">
-                                    <p class="help-text">Scoring window size. Smaller values are faster and avoid long-context setup issues.</p>
+                                    <p class="help-text">评分窗口大小。较小的值更快，并可避免长上下文设置问题。</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="benchmark-chunks">Chunks</label>
+                                    <label class="form-label" for="benchmark-chunks">分块数</label>
                                     <input id="benchmark-chunks" type="number" min="-1" step="1" value="5">
-                                    <p class="help-text">Limits how much of the file to evaluate. Start small, then increase for steadier scores.</p>
+                                    <p class="help-text">限制要评估的文件大小。从小开始，然后逐步增加以获得更稳定的分数。</p>
                                 </div>
                             </div>
                             <details class="benchmark-advanced">
                                 <summary>
                                     <span class="benchmark-advanced-chevron"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span>
-                                    Advanced settings
-                                    <span class="benchmark-advanced-hint">batch sizes, threads, GPU offload, cache types</span>
+                                    进阶设置
+                                    <span class="benchmark-advanced-hint">批次大小、线程、GPU 卸载、缓存类型</span>
                                 </summary>
                                 <div class="benchmark-advanced-body">
                                     <div class="benchmark-controls-grid">
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-batch">Batch Size</label>
+                                            <label class="form-label" for="benchmark-ppl-batch">批处理大小</label>
                                             <input id="benchmark-ppl-batch" type="number" min="1" max="131072" step="1" value="2048">
-                                            <p class="help-text">How many tokens llama.cpp processes per batch during evaluation.</p>
+                                            <p class="help-text">评估期间 llama.cpp 每个批次处理的 token 数量。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-ubatch">Micro Batch Size</label>
+                                            <label class="form-label" for="benchmark-ppl-ubatch">微批处理大小</label>
                                             <input id="benchmark-ppl-ubatch" type="number" min="1" max="131072" step="1" value="512">
-                                            <p class="help-text">Smaller micro batches can reduce memory pressure on large models.</p>
+                                            <p class="help-text">较小的微批次可以减轻大模型的内存压力。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-threads">Threads</label>
+                                            <label class="form-label" for="benchmark-ppl-threads">线程数</label>
                                             <input id="benchmark-ppl-threads" type="number" min="-1" max="256" step="1" value="-1">
-                                            <p class="help-text">CPU worker threads. Leave -1 to let llama.cpp choose.</p>
+                                            <p class="help-text">CPU 工作线程数。保留 -1 让 llama.cpp 自行选择。</p>
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="benchmark-ppl-gpu-layers">GPU Layers</label>
                                             <input id="benchmark-ppl-gpu-layers" type="text" value="auto">
-                                            <p class="help-text">Use auto for llama.cpp's default GPU offload choice, or enter a layer count.</p>
+                                            <p class="help-text">使用 auto 采用 llama.cpp 默认的 GPU 卸载选择，或输入层数。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-flash-attn">Flash Attention</label>
+                                            <label class="form-label" for="benchmark-ppl-flash-attn">Flash 注意力</label>
                                             <select id="benchmark-ppl-flash-attn">
-                                                <option value="auto">Auto</option>
-                                                <option value="on">On</option>
-                                                <option value="off">Off</option>
+                                                <option value="auto">自动</option>
+                                                <option value="on">开启</option>
+                                                <option value="off">关闭</option>
                                             </select>
-                                            <p class="help-text">Auto lets llama.cpp choose whether flash attention is supported.</p>
+                                            <p class="help-text">Auto 让 llama.cpp 选择是否支持 Flash Attention。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-cache-k">K Cache Type</label>
+                                            <label class="form-label" for="benchmark-ppl-cache-k">K 缓存类型</label>
                                             <select id="benchmark-ppl-cache-k">
                                                 <option value="f16">f16</option>
                                                 <option value="bf16">bf16</option>
@@ -1659,10 +1659,10 @@
                                                 <option value="q4_0">q4_0</option>
                                                 <option value="q4_1">q4_1</option>
                                             </select>
-                                            <p class="help-text">Lower precision can reduce memory use, but may affect scores.</p>
+                                            <p class="help-text">较低的精度可以减少内存使用，但可能影响分数。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-cache-v">V Cache Type</label>
+                                            <label class="form-label" for="benchmark-ppl-cache-v">V 缓存类型</label>
                                             <select id="benchmark-ppl-cache-v">
                                                 <option value="f16">f16</option>
                                                 <option value="bf16">bf16</option>
@@ -1670,24 +1670,24 @@
                                                 <option value="q4_0">q4_0</option>
                                                 <option value="q4_1">q4_1</option>
                                             </select>
-                                            <p class="help-text">Usually match K cache unless you are comparing memory tradeoffs.</p>
+                                            <p class="help-text">通常与 K 缓存一致，除非你在比较内存权衡。</p>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="benchmark-ppl-stride">PPL Stride</label>
+                                            <label class="form-label" for="benchmark-ppl-stride">困惑度步长</label>
                                             <input id="benchmark-ppl-stride" type="number" min="0" step="1" value="0">
-                                            <p class="help-text">Controls the overlap between scoring windows. Leave 0 for llama.cpp's default behavior.</p>
+                                            <p class="help-text">控制评分窗口之间的重叠。保留 0 以采用 llama.cpp 的默认行为。</p>
                                         </div>
                                     </div>
                                     <label class="toggle-row benchmark-toggle">
                                         <input id="benchmark-ppl-mmap" type="checkbox" checked>
-                                        <span>Memory map model</span>
+                                        <span>内存映射模型</span>
                                     </label>
-                                    <p class="help-text">Uses llama.cpp's default mmap loading. Turn this off to pass --no-mmap when testing model-load or tensor-placement issues.</p>
+                                    <p class="help-text">使用 llama.cpp 默认的 mmap 加载。在测试模型加载或张量放置问题时，关闭它以传递 --no-mmap。</p>
                                     <label class="toggle-row benchmark-toggle">
                                         <input id="benchmark-warmup" type="checkbox" checked>
-                                        <span>Warmup</span>
+                                        <span>预热</span>
                                     </label>
-                                    <p class="help-text">Runs a small warmup first so load/setup overhead is less likely to skew the score.</p>
+                                    <p class="help-text">先运行一次小预热，以减少加载/设置开销对分数的影响。</p>
                                 </div>
                             </details>
                         </div>
@@ -1695,18 +1695,18 @@
                         <div class="launch-bar benchmark-launch-bar">
                             <button id="btn-run-benchmark" class="btn btn-primary btn-lg" type="button">
                                 <span class="icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                                Run Benchmark
+                                运行基准测试
                             </button>
                             <button id="btn-stop-benchmark" class="btn btn-danger btn-lg hidden" type="button">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
-                                Stop
+                                停止
                             </button>
                             <div class="command-preview">
                                 <div class="command-preview-head">
-                                    <label class="form-label">Command Preview</label>
-                                    <button id="btn-copy-benchmark-command" class="btn btn-xs btn-ghost command-copy-btn" type="button" title="Copy command" aria-label="Copy benchmark command">
+                                    <label class="form-label">命令预览</label>
+                                    <button id="btn-copy-benchmark-command" class="btn btn-xs btn-ghost command-copy-btn" type="button" title="拷贝命令" aria-label="复制基准测试命令">
                                         <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-                                        Copy
+                                        复制
                                     </button>
                                 </div>
                                 <code id="benchmark-command-preview"></code>
@@ -1716,21 +1716,21 @@
 
                     <div class="card">
                         <div class="output-header">
-                            <h3>Benchmark Output</h3>
-                            <button class="btn btn-sm btn-ghost" id="btn-clear-benchmark-output" type="button">Clear</button>
+                            <h3>基准测试输出</h3>
+                            <button class="btn btn-sm btn-ghost" id="btn-clear-benchmark-output" type="button">清理</button>
                         </div>
-                        <div id="benchmark-summary" class="benchmark-summary">Summary appears here when benchmark output includes recognizable throughput data.</div>
+                        <div id="benchmark-summary" class="benchmark-summary">当基准测试输出包含可识别的吞吐量数据时，摘要会显示在这里。</div>
                         <div id="benchmark-output-terminal" class="terminal benchmark-terminal"></div>
                     </div>
                 </div>
 
                 <aside class="benchmark-side">
                     <div class="card">
-                        <h3>Applied Settings</h3>
+                        <h3>应用参数</h3>
                         <div id="benchmark-applied-list" class="benchmark-list"></div>
                     </div>
                     <div class="card">
-                        <h3>Excluded Settings</h3>
+                        <h3>排除选项</h3>
                         <div id="benchmark-excluded-list" class="benchmark-list"></div>
                     </div>
                 </aside>
@@ -1741,69 +1741,69 @@
         <div class="section-panel" id="section-presets" style="display:none;">
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Presets</h1>
-                    <div class="page-title-sub">Save, load, and manage preset configurations.</div>
+                    <h1 class="page-title">预设</h1>
+                    <div class="page-title-sub">保存、加载以及管理预设配置</div>
                 </div>
                 <div class="page-actions presets-header-actions">
-                    <button class="btn" id="btn-import-preset">Import JSON</button>
-                    <button class="btn" id="btn-export-all-presets">Export All</button>
+                    <button class="btn" id="btn-import-preset">导入 JSON</button>
+                    <button class="btn" id="btn-export-all-presets">导出全部</button>
                 </div>
             </div>
 
             <div id="preset-status" class="status-box"></div>
 
             <div class="presets-save-bar">
-                <label class="presets-save-label" for="preset-name-input">New preset</label>
-                <input type="text" id="preset-name-input" placeholder="Preset name..." aria-label="Preset name" />
-                <button class="btn btn-primary" id="btn-save-preset">Save new preset</button>
-                <span class="presets-save-hint">Saves your current edits under a new name</span>
+                <label class="presets-save-label" for="preset-name-input">新建预设</label>
+                <input type="text" id="preset-name-input" placeholder="预设名称..." aria-label="预设名称" />
+                <button class="btn btn-primary" id="btn-save-preset">保存新预设</button>
+                <span class="presets-save-hint">以新名称保存当前编辑</span>
             </div>
             <input type="file" id="preset-import" accept=".json" style="display:none" />
 
             <div class="presets-workspace">
-                <section class="presets-browser" id="presets-browser" aria-label="Saved presets">
+                <section class="presets-browser" id="presets-browser" aria-label="已保存的预设">
                     <div class="presets-browser-toolbar">
                         <div class="presets-search-wrap">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                            <input type="text" id="preset-search" placeholder="Search presets or models..." />
+                            <input type="text" id="preset-search" placeholder="搜索预设或模型..." />
                         </div>
-                        <select id="preset-sort" class="preset-sort-select" title="Sort presets" aria-label="Sort presets">
-                            <option value="name">Name</option>
-                            <option value="recent">Recently used</option>
-                            <option value="added">Date added</option>
+                        <select id="preset-sort" class="preset-sort-select" title="排序预设" aria-label="排序预设">
+                            <option value="name">名称</option>
+                            <option value="recent">最近使用</option>
+                            <option value="added">添加日期</option>
                         </select>
-                        <button id="btn-presets-expand-all" class="presets-icon-btn" type="button" title="Expand all model groups" aria-label="Expand all model groups">
+                        <button id="btn-presets-expand-all" class="presets-icon-btn" type="button" title="展开所有模型组" aria-label="展开所有模型组">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m7 8 5 5 5-5"/><path d="m7 14 5 5 5-5" opacity="0.4"/></svg>
                         </button>
-                        <button id="btn-presets-collapse-all" class="presets-icon-btn" type="button" title="Collapse all model groups" aria-label="Collapse all model groups">
+                        <button id="btn-presets-collapse-all" class="presets-icon-btn" type="button" title="折叠所有模型组" aria-label="折叠所有模型组">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m7 16 5-5 5 5"/><path d="m7 10 5-5 5 5" opacity="0.4"/></svg>
                         </button>
                     </div>
                     <div class="presets-filters">
-                        <button id="preset-filter-all" class="preset-chip active" type="button">All</button>
-                        <button id="preset-filter-warnings" class="preset-chip preset-chip-warn" type="button">&#9888; Warnings</button>
-                        <button id="preset-favorites-first" class="preset-chip preset-chip-favorite active" type="button" aria-pressed="true" title="Keep favorite presets and model groups above other results">&#9733; Favorites first</button>
-                        <button id="preset-archive-view" class="preset-chip" type="button" aria-pressed="false" title="Show presets hidden from the main list by archiving">&#128230; Archived</button>
+                        <button id="preset-filter-all" class="preset-chip active" type="button">全部</button>
+                        <button id="preset-filter-warnings" class="preset-chip preset-chip-warn" type="button">&#9888; 警告</button>
+                        <button id="preset-favorites-first" class="preset-chip preset-chip-favorite active" type="button" aria-pressed="true" title="将收藏的预设和模型组置于其他结果之上">&#9733; 收藏优先</button>
+                        <button id="preset-archive-view" class="preset-chip" type="button" aria-pressed="false" title="显示预设主列表中被归档隐藏的所有预设">&#128230; 存档</button>
                         <span id="presets-count-line" class="presets-count-line"></span>
                     </div>
                     <div id="presets-list" class="presets-browser-list"></div>
                     <div class="presets-bulk-bar">
-                        <span id="presets-selection-count" class="presets-selection-count">0 selected</span>
-                        <button id="btn-presets-select-all" class="btn btn-sm btn-ghost" type="button">Select All</button>
-                        <button id="btn-presets-select-none" class="btn btn-sm btn-ghost" type="button">Clear</button>
-                        <button id="btn-presets-favorite-selected" class="presets-icon-btn" type="button" title="Add selected presets to favorites" aria-label="Add selected presets to favorites">
+                        <span id="presets-selection-count" class="presets-selection-count">已选择 0 项</span>
+                        <button id="btn-presets-select-all" class="btn btn-sm btn-ghost" type="button">选择全部</button>
+                        <button id="btn-presets-select-none" class="btn btn-sm btn-ghost" type="button">清理</button>
+                        <button id="btn-presets-favorite-selected" class="presets-icon-btn" type="button" title="将所选预设加入收藏" aria-label="将所选预设加入收藏">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
                         </button>
-                        <button id="btn-presets-unfavorite-selected" class="presets-icon-btn" type="button" title="Remove selected presets from favorites" aria-label="Remove selected presets from favorites">
+                        <button id="btn-presets-unfavorite-selected" class="presets-icon-btn" type="button" title="将所选预设取消收藏" aria-label="将所选预设取消收藏">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
                         </button>
-                        <button id="btn-presets-archive-selected" class="btn btn-sm" type="button" title="Move selected presets to the archive">Archive</button>
-                        <button id="btn-presets-restore-selected" class="btn btn-sm" type="button" title="Restore selected presets from the archive">Restore</button>
-                        <button id="btn-presets-export-selected" class="btn btn-sm" type="button" title="Export selected presets as a JSON file">Export</button>
-                        <button id="btn-presets-delete-selected" class="btn btn-sm btn-danger" type="button">Delete</button>
+                        <button id="btn-presets-archive-selected" class="btn btn-sm" type="button" title="将所选预设移至归档">存档</button>
+                        <button id="btn-presets-restore-selected" class="btn btn-sm" type="button" title="从归档恢复所选预设">恢复</button>
+                        <button id="btn-presets-export-selected" class="btn btn-sm" type="button" title="导出选定的预设为 JSON 文件">导出</button>
+                        <button id="btn-presets-delete-selected" class="btn btn-sm btn-danger" type="button">删除</button>
                     </div>
                 </section>
-                <aside id="preset-detail-panel" class="preset-detail-panel" aria-label="Selected preset details"></aside>
+                <aside id="preset-detail-panel" class="preset-detail-panel" aria-label="所选预设详情"></aside>
             </div>
         </div>
 
@@ -1812,43 +1812,43 @@
 
 <div id="stats-bar" class="stats-bar hidden">
     <span class="stats-dot"></span>
-    <span class="stats-label">Running</span>
+    <span class="stats-label">运行中</span>
     <span class="stats-sep"></span>
-    <span class="stats-item"><span class="stats-value" id="stats-prompt-tokens">--</span> prompt tokens processed</span>
+    <span class="stats-item"><span class="stats-value" id="stats-prompt-tokens">--</span> Token · 提示词</span>
     <span class="stats-sep"></span>
-    <span class="stats-item"><span class="stats-value" id="stats-prompt-speed">--</span> <span id="stats-prompt-speed-label">tok/s prompt avg</span></span>
+    <span class="stats-item"><span class="stats-value" id="stats-prompt-speed">--</span> <span id="stats-prompt-speed-label"> tok/s · 提示词平均值</span></span>
     <span class="stats-sep"></span>
-    <span class="stats-item"><span class="stats-value" id="stats-gen-tokens">--</span> tokens generated</span>
+    <span class="stats-item"><span class="stats-value" id="stats-gen-tokens">--</span> tokens · 生成数</span>
     <span class="stats-sep"></span>
-    <span class="stats-item"><span class="stats-value" id="stats-gen-speed">--</span> <span id="stats-gen-speed-label">tok/s gen avg</span></span>
+    <span class="stats-item"><span class="stats-value" id="stats-gen-speed">--</span> <span id="stats-gen-speed-label"> tok/s · 生成平均值</span></span>
     <span class="stats-sep"></span>
-    <span class="stats-item">Session tokens <span class="stats-value" id="stats-context">--</span></span>
+    <span class="stats-item">会话总计 tokens · <span class="stats-value" id="stats-context">--</span></span>
     <span class="stats-sep"></span>
-    <span class="stats-item">Context (most-filled slot) <span class="stats-value" id="stats-kv-usage">--%</span></span>
+    <span class="stats-item">上下文（填充最多的槽位）· <span class="stats-value" id="stats-kv-usage">--%</span></span>
 </div>
 
 <dialog id="config-reset-dialog" class="modal-dialog config-reset-dialog" aria-labelledby="config-reset-title" aria-describedby="config-reset-description">
     <form method="dialog">
-        <h3 id="config-reset-title">Reset configuration to defaults?</h3>
-        <p id="config-reset-description">Restore all configuration settings to the app defaults and clear Custom Launch Args. Your selected model and tool, saved presets, and chats will be kept. Changes apply on your next launch; any running process will continue with its current settings.</p>
-        <div class="form-row"><button class="btn" value="cancel" autofocus>Cancel</button><button class="btn btn-primary" value="reset">Reset to defaults</button></div>
+        <h3 id="config-reset-title">确定要重置配置为默认吗？</h3>
+        <p id="config-reset-description">将所有配置设置恢复为应用默认值，并清除自定义启动参数。您选择的模型和工具、已保存的预设以及聊天记录都将保留。更改将在下次启动时生效；当前正在运行的进程将继续使用其当前设置。</p>
+        <div class="form-row"><button class="btn" value="cancel" autofocus>取消</button><button class="btn btn-primary" value="reset">重置为默认值</button></div>
     </form>
 </dialog>
 <dialog id="preset-update-dialog" class="modal-dialog preset-update-dialog" aria-labelledby="preset-update-title" aria-describedby="preset-update-description">
     <form method="dialog">
-        <h3 id="preset-update-title">Update preset?</h3>
-        <p id="preset-update-description">Replace this preset with the settings captured for this review. The running process will stay as it is. API keys are excluded; sensitive values and Custom Launch Args are hidden below.</p>
-        <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">Setting</th><th scope="col">Saved preset</th><th scope="col">Current edits</th></tr></thead><tbody></tbody></table></div>
-        <div class="form-row"><button class="btn" value="cancel" autofocus>Cancel</button><button class="btn btn-primary" value="update">Update preset</button></div>
+        <h3 id="preset-update-title">确定要更新预设?</h3>
+        <p id="preset-update-description">用本次检查所捕获的设置替换此预设。正在运行的进程将保持不变。API 密钥不包含在内；敏感值和自定义启动参数已在下方隐藏。</p>
+        <div class="preset-table-scroll"><table class="preset-comparison-table"><thead><tr><th scope="col">设置</th><th scope="col">保存预设</th><th scope="col">当前编辑</th></tr></thead><tbody></tbody></table></div>
+        <div class="form-row"><button class="btn" value="cancel" autofocus>取消</button><button class="btn btn-primary" value="update">更新预设</button></div>
     </form>
 </dialog>
 <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
     <div class="modal-dialog">
-        <h3 id="confirm-modal-title">Confirm Action</h3>
+        <h3 id="confirm-modal-title">确认操作</h3>
         <p id="confirm-modal-message"></p>
         <div class="form-row">
-            <button id="confirm-modal-cancel" class="btn">Cancel</button>
-            <button id="confirm-modal-ok" class="btn btn-primary">Confirm</button>
+            <button id="confirm-modal-cancel" class="btn">取消</button>
+            <button id="confirm-modal-ok" class="btn btn-primary">确定</button>
         </div>
     </div>
 </div>
@@ -1859,8 +1859,8 @@
         <p id="prompt-modal-message"></p>
         <input type="text" id="prompt-modal-input" class="prompt-modal-input" aria-labelledby="prompt-modal-title" />
         <div class="form-row">
-            <button id="prompt-modal-cancel" class="btn">Cancel</button>
-            <button id="prompt-modal-ok" class="btn btn-primary">Confirm</button>
+            <button id="prompt-modal-cancel" class="btn">取消</button>
+            <button id="prompt-modal-ok" class="btn btn-primary">确定</button>
         </div>
     </div>
 </div>

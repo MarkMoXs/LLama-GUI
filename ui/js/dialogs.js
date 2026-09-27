@@ -7,9 +7,9 @@
         const cancelBtn = document.getElementById("confirm-modal-cancel");
         const okBtn = document.getElementById("confirm-modal-ok");
 
-        titleEl.textContent = title || "Confirm Action";
+        titleEl.textContent = title || "确认操作";
         messageEl.textContent = message || "Are you sure you want to continue?";
-        okBtn.textContent = confirmText || "Confirm";
+        okBtn.textContent = confirmText || "确定";
 
         modal.classList.remove("hidden");
         okBtn.focus();
@@ -58,7 +58,7 @@
 
         titleEl.textContent = title || "Enter a Value";
         messageEl.textContent = message || "";
-        okBtn.textContent = confirmText || "Confirm";
+        okBtn.textContent = confirmText || "确定";
         input.value = defaultValue === undefined || defaultValue === null ? "" : String(defaultValue);
 
         modal.classList.remove("hidden");

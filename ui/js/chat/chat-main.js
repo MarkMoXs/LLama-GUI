@@ -68,7 +68,7 @@
         }
 
         if (thinkingEffort) {
-            thinkingEffort.title = "Auto lets the loaded model choose. Off asks for a direct answer; levels request more or less reasoning when supported.";
+            thinkingEffort.title = "Auto 让已加载的模型自行选择。Off 请求直接回答；级别在支持时请求更多或更少的推理。";
             I.setChatThinkingEffort(thinkingEffort.value);
             thinkingEffort.addEventListener("change", () => {
                 if (!I.workspaceMutationAllowed()) return;
@@ -129,7 +129,7 @@
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener("click", async () => {
                 if (I.getStoredConversations().length === 0) return;
-                const confirmed = await I.requestConfirmation("Delete All Conversations", "Delete all saved conversations? This cannot be undone.", "Delete All");
+                const confirmed = await I.requestConfirmation("删除所有对话", "确定要删除所有已保存的对话？此操作无法撤销。", "删除所有");
                 if (confirmed) {
                     await I.deleteAllConversations();
                 }
@@ -186,7 +186,7 @@
         const clearBtn = document.getElementById("btn-chat-clear");
         if (clearBtn) {
             clearBtn.addEventListener("click", async () => {
-                const confirmed = await I.requestConfirmation("Clear Current Chat", "Clear this chat, including its saved conversation and system prompt? This cannot be undone.", "Clear Chat");
+                const confirmed = await I.requestConfirmation("清空当前对话", "清空此聊天记录，包括已保存的对话和系统提示词？此操作无法撤销。", "清空聊天");
                 if (confirmed) await I.clearChat();
             });
         }

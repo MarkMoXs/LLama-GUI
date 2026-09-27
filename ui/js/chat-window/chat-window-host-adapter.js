@@ -35,7 +35,7 @@
         let hostUnsubscribe = null;
 
         function assertValid() {
-            if (!valid) throw new Error("Chat host session is no longer available.");
+            if (!valid) throw new Error("聊天主机会话不再可用。");
         }
 
         function readSettings() {
@@ -67,7 +67,7 @@
 
         function writeSettings(patch) {
             assertValid();
-            if (!isObject(patch)) throw new TypeError("Chat settings patch must be an object.");
+            if (!isObject(patch)) throw new TypeError("聊天设置补丁必须是对象。");
             const allowed = {};
             for (const [field, value] of Object.entries(patch)) {
                 if (!writableFields.includes(field) || SECRET_KEY.test(field)) {
@@ -81,7 +81,7 @@
             else if (core && typeof core.setFlagValue === "function") {
                 for (const [field, value] of Object.entries(allowed)) core.setFlagValue(field, value);
             } else {
-                throw new Error("Chat host settings writer is unavailable.");
+                throw new Error("聊天主机设置写入器不可用。");
             }
             notify({ type: "settings", fields: Object.keys(allowed) });
             return readSettings();

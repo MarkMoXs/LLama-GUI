@@ -379,9 +379,9 @@ function createMonitorHarness() {
                 memory: { available: true, used_bytes: 12884901888, total_bytes: 34359738368, percent: 37.5 },
                 disk: {
                     available: true,
-                    path_label: "Application disk",
+                    path_label: "应用盘",
                     io_available: true,
-                    io_label: "All physical disks",
+                    io_label: "所有物理磁盘",
                     used_bytes: 500000000000,
                     total_bytes: 1000000000000,
                     percent: 50,

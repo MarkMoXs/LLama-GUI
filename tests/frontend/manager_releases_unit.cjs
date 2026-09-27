@@ -220,7 +220,7 @@ for (const src of scripts) {
     assert.equal(backendSelect.value, "custom");
     assert.match(
         elements.get("installed-backend-summary").textContent,
-        /Installed backend: Custom/,
+        /后端类型：Custom/,
         "installed backend summary should render as read-only status"
     );
 
@@ -232,7 +232,7 @@ for (const src of scripts) {
         "vulkan",
         "pending install backend should survive status refresh while installed backend is still custom"
     );
-    assert.equal(elements.get("btn-install").textContent, "Activate Existing");
+    assert.equal(elements.get("btn-install").textContent, "激活现有");
     assert.equal(context.window.LlamaGui.manager._test.canActivateOfficialBackend(customStatus, "vulkan"), true);
     assert.equal(context.window.LlamaGui.manager._test.canActivateOfficialBackend(customStatus, "cpu"), false);
     assert.equal(
@@ -268,7 +268,7 @@ for (const src of scripts) {
     await context.window.LlamaGui.manager.checkStatus();
     assert.equal(elements.get("custom-backend-folder").textContent, "llama/custom-02/bin/");
     assert.equal(elements.get("custom-backend-title").textContent, "Custom 02 Setup:");
-    assert.equal(elements.get("installed-backend-summary").textContent, "Installed backend: Custom");
+    assert.equal(elements.get("installed-backend-summary").textContent, "后端类型：Custom");
     assert.equal(elements.get("btn-update").disabled, true);
     assert.equal(elements.get("release-group").style.display, "none");
     let activating = context.window.LlamaGui.manager._test.installRelease();
@@ -279,13 +279,13 @@ for (const src of scripts) {
     completeActivation({ ok: false, missing_required: ["llama-server"] });
     await activating;
     assert.match(elements.get("install-status").textContent, /custom-02\/bin\/.*llama-server/);
-    assert.equal(elements.get("installed-backend-summary").textContent, "Installed backend: Custom");
+    assert.equal(elements.get("installed-backend-summary").textContent, "后端类型：Custom");
     assert.equal(elements.get("btn-update").disabled, true, "failure must keep custom update restrictions");
     activating = context.window.LlamaGui.manager._test.installRelease();
     savedStatus = { ...customStatus, backend: "custom-02" };
     completeActivation({ ok: true, found: ["llama-cli", "llama-server"], missing: ["llama-bench"] });
     await activating;
-    assert.equal(elements.get("installed-backend-summary").textContent, "Installed backend: Custom 02");
+    assert.equal(elements.get("installed-backend-summary").textContent, "后端类型：Custom 02");
     assert.equal(elements.get("version-badge").textContent, "Custom 02");
     assert.equal(elements.get("btn-update").disabled, true);
     assert.equal(context.window.LlamaGui.manager._test.canActivateOfficialBackend(savedStatus, "custom"), false);
@@ -453,7 +453,7 @@ for (const src of scripts) {
     assert.equal(elements.get("app-update-status").className, "status-box error");
     assert.equal(
         elements.get("app-update-status").textContent,
-        "Failed to check app updates: network down"
+        "未检查到应用程序更新：network down"
     );
 
     // Discovery must not reset a pending selection, switch installations, or

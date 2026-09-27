@@ -1434,7 +1434,7 @@ class ProcessStateReapTests(unittest.TestCase):
         with mock.patch.object(process_manager.subprocess, "Popen") as popen:
             result = process_manager.launch_process(ctx, "llama-server", [])
 
-        self.assertIn("Installation in progress", result["error"])
+        self.assertIn("正在安装，请等待安装完成后再启动", result["error"])
         popen.assert_not_called()
 
     def test_active_llama_authorization_uses_launch_snapshot_and_safe_fallback(self):

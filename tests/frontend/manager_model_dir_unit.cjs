@@ -112,7 +112,7 @@ const customInfo = {
     await context.window.LlamaGui.manager.fetchReleases("cpu");
     fetchCalls.length = 0;
     context.window.LlamaGui.manager.initModelDirControls();
-    assert.equal(elements.get("models-folder-path").textContent, "Loading...");
+    assert.equal(elements.get("models-folder-path").textContent, "正在加载...");
     assert.equal(typeof elements.get("btn-change-models-folder").listeners.click, "function");
     assert.equal(typeof elements.get("btn-reset-models-folder").listeners.click, "function");
 

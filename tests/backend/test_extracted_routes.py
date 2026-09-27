@@ -900,7 +900,7 @@ class ExtractedRouteTests(unittest.TestCase):
                     "/api/presets",
                     "",
                     {},
-                    body={"name": "Protected", "data": {"api_key": "new-secret", "temperature": 0.8}},
+                    body={"name": "受保护 Protected", "data": {"api_key": "new-secret", "temperature": 0.8}},
                 ),
                 save_response,
                 ctx,
@@ -1724,7 +1724,7 @@ class ExtractedRouteTests(unittest.TestCase):
             ):
                 result = process_manager.launch_process(ctx, "llama-server", [])
 
-        self.assertIn("Installation in progress", result.get("error", ""))
+        self.assertIn("正在安装，请等待安装完成后再启动", result.get("error", ""))
 
     def test_process_send_input_does_not_hold_process_lock_while_writing(self):
         """llama-server never drains stdin, so a full pipe blocks write() forever.
@@ -1832,7 +1832,7 @@ class ExtractedRouteTests(unittest.TestCase):
             process.cleanup_llama(Request("POST", "/api/cleanup-llama", "", {}, body={}), response, ctx)
 
             self.assertEqual(response.status, 400)
-            self.assertEqual(response.payload["error"], "Stop running process first")
+            self.assertEqual(response.payload["error"], "请先停止运行中的进程")
 
     def test_process_cleanup_blocks_during_an_install(self):
         """Cleanup rmtree's the directories an install extracts into, so it must
@@ -1845,7 +1845,7 @@ class ExtractedRouteTests(unittest.TestCase):
             process.cleanup_llama(Request("POST", "/api/cleanup-llama", "", {}, body={}), response, ctx)
 
             self.assertEqual(response.status, 409)
-            self.assertEqual(response.payload["error"], "Installation already in progress")
+            self.assertEqual(response.payload["error"], "安装已在进行中")
             self.assertTrue(ctx.state.install_in_progress, "a refused claim must not clear the flag")
 
     def test_process_cleanup_releases_the_install_slot(self):
@@ -3616,7 +3616,7 @@ class ExtractedRouteTests(unittest.TestCase):
         self.assertIn("data: [DONE]", local_payload)
 
         tunnel_payload = run("https://example.trycloudflare.com")
-        self.assertIn("Chat request failed.", tunnel_payload)
+        self.assertIn("聊天请求失败。", tunnel_payload)
         self.assertNotIn("model exploded", tunnel_payload)
         self.assertIn("data: [DONE]", tunnel_payload)
 
@@ -4103,7 +4103,7 @@ class ExtractedRouteTests(unittest.TestCase):
 
             response.handler.wfile.seek(0)
             payload = response.handler.wfile.read().decode("utf-8")
-            self.assertIn("Add a text question", payload)
+            self.assertIn("请添加一个文本问题", payload)
             self.assertIn("data: [DONE]", payload)
             search.assert_not_called()
             open_pinned.assert_not_called()
@@ -4547,7 +4547,7 @@ class InstallRouteTests(unittest.TestCase):
                     self.ctx,
                 )
                 self.assertEqual(response.status, 400)
-                self.assertIn("tag and backend required", response.payload["error"])
+                self.assertIn("需要 tag 和后端", response.payload["error"])
 
     def test_install_validates_backend(self):
         response = DummyResponse()
@@ -4563,7 +4563,7 @@ class InstallRouteTests(unittest.TestCase):
             self.ctx,
         )
         self.assertEqual(response.status, 400)
-        self.assertIn("Unsupported backend", response.payload["error"])
+        self.assertIn("不支持的后端", response.payload["error"])
 
     def test_install_blocks_when_process_running(self):
         class FakeProcess:
@@ -4584,7 +4584,7 @@ class InstallRouteTests(unittest.TestCase):
             self.ctx,
         )
         self.assertEqual(response.status, 400)
-        self.assertIn("Stop running process first", response.payload["error"])
+        self.assertIn("请先停止运行中的进程", response.payload["error"])
 
     def test_install_blocks_when_already_in_progress(self):
         with self.ctx.state.install_lock:
@@ -4602,7 +4602,7 @@ class InstallRouteTests(unittest.TestCase):
             self.ctx,
         )
         self.assertEqual(response.status, 409)
-        self.assertIn("Installation already in progress", response.payload["error"])
+        self.assertIn("安装已在进行中", response.payload["error"])
 
     def test_install_starts_worker_and_clears_in_progress(self):
         response = DummyResponse()
@@ -4672,7 +4672,7 @@ class InstallRouteTests(unittest.TestCase):
             self.ctx,
         )
         self.assertEqual(response.status, 400)
-        self.assertIn("Nothing installed", response.payload["error"])
+        self.assertIn("没有可更新", response.payload["error"])
 
     def test_update_blocks_when_process_running(self):
         class FakeProcess:
@@ -4687,7 +4687,7 @@ class InstallRouteTests(unittest.TestCase):
             self.ctx,
         )
         self.assertEqual(response.status, 400)
-        self.assertIn("Stop running process first", response.payload["error"])
+        self.assertIn("请先停止运行中的进程", response.payload["error"])
 
     def test_update_returns_already_latest(self):
         fake_releases = [
@@ -4770,7 +4770,7 @@ class InstallRouteTests(unittest.TestCase):
             )
 
         self.assertEqual(response.status, 400)
-        self.assertIn("Stop running process first", response.payload["error"])
+        self.assertIn("请先停止运行中的进程", response.payload["error"])
         self.assertFalse(self.ctx.state.install_in_progress)
         thread.assert_not_called()
 
@@ -4785,7 +4785,7 @@ class InstallRouteTests(unittest.TestCase):
                 self.ctx,
             )
         self.assertEqual(response.status, 409)
-        self.assertIn("Installation already in progress", response.payload["error"])
+        self.assertIn("安装已在进行中", response.payload["error"])
         # The early reject must happen before the release lookup so a duplicate
         # request costs no GitHub rate-limit quota.
         gr.assert_not_called()
@@ -4925,7 +4925,7 @@ class InstallRouteTests(unittest.TestCase):
                 self.ctx,
             )
         self.assertEqual(response.status, 409)
-        self.assertIn("Installation already in progress", response.payload["error"])
+        self.assertIn("安装已在进行中", response.payload["error"])
         activate.assert_not_called()
         self.assertTrue(self.ctx.state.install_in_progress)
 
@@ -5284,7 +5284,7 @@ class TunnelRouteTests(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(response.payload["status"], "idle")
         self.assertEqual(response.payload["url"], "")
-        self.assertEqual(response.payload["message"], "Remote tunnel is not running.")
+        self.assertEqual(response.payload["message"], "远程隧道未运行。")
         self.assertFalse(response.payload["running"])
 
     def test_status_reflects_set_state(self):
@@ -5312,7 +5312,7 @@ class TunnelRouteTests(unittest.TestCase):
         response = DummyResponse()
         tunnel.get_status(Request("GET", "/api/remote-tunnel/status", "", {}), response, self.ctx)
         self.assertEqual(response.payload["status"], "error")
-        self.assertEqual(response.payload["message"], "Remote tunnel process exited.")
+        self.assertEqual(response.payload["message"], "远程隧道进程已退出。")
         self.assertFalse(response.payload["running"])
 
     def test_start_rejects_invalid_host(self):
@@ -5354,7 +5354,7 @@ class TunnelRouteTests(unittest.TestCase):
 
         self.assertEqual(response.status, 200)
         self.assertEqual(response.payload["status"], "preparing")
-        self.assertEqual(response.payload["message"], "Preparing Cloudflare tunnel...")
+        self.assertEqual(response.payload["message"], "正在准备 Cloudflare 隧道...")
         self.assertFalse(response.payload["running"])
         self.assertEqual(len(threads), 1)
         self.assertTrue(threads[0].kwargs.get("daemon"))
@@ -5368,7 +5368,7 @@ class TunnelRouteTests(unittest.TestCase):
         )
         self.assertEqual(response.status, 200)
         self.assertEqual(response.payload["status"], "stopped")
-        self.assertEqual(response.payload["message"], "Remote tunnel stopped.")
+        self.assertEqual(response.payload["message"], "远程隧道已停止。")
         self.assertFalse(response.payload["running"])
 
     def test_stop_clears_process(self):
@@ -6042,7 +6042,7 @@ class GitUpdateRouteTests(unittest.TestCase):
             status = srv.get_app_update_status(self.ctx)
         self.assertEqual(status["state"], "error")
         self.assertFalse(status["can_update"])
-        self.assertIn("No upstream branch found at origin/main", status["reason"])
+        self.assertIn("分支中未找到带标签的新发布版本", status["reason"])
         # The tag lookup must not run: it would fail with raw git jargon.
         self.assertEqual(self.git_calls(call_log, "tags"), [])
 
@@ -6073,7 +6073,7 @@ class GitUpdateRouteTests(unittest.TestCase):
         self.assertEqual(status["state"], "no_release")
         self.assertFalse(status["can_update"])
         self.assertEqual(status["release_tag"], "")
-        self.assertIn("No tagged release", status["reason"])
+        self.assertIn("未能查询到更新", status["reason"])
 
     def test_get_status_up_to_date(self):
         with self.patched_git(counts="0\t0"):
@@ -6266,7 +6266,7 @@ class GitUpdateRouteTests(unittest.TestCase):
                 self.assertTrue(pip_started.wait(5), "the first update never reached pip")
                 second = srv.update_app_from_git(self.ctx)
                 self.assertTrue(second.get("already_in_progress"))
-                self.assertEqual(second["error"], "App update already in progress.")
+                self.assertEqual(second["error"], "应用更新已在进行中。")
                 self.assertFalse(second["updated"])
             finally:
                 release_pip.set()
@@ -6365,7 +6365,7 @@ class GitUpdateRouteTests(unittest.TestCase):
         with mock.patch.object(srv, "update_app_from_git", return_value={
             "updated": False,
             "already_in_progress": True,
-            "error": "App update already in progress.",
+            "error": "应用更新已在进行中。",
         }):
             response = DummyResponse()
             git_update.start_update(
@@ -6374,7 +6374,7 @@ class GitUpdateRouteTests(unittest.TestCase):
                 self.ctx,
             )
         self.assertEqual(response.status, 409)
-        self.assertIn("already in progress", response.payload["error"])
+        self.assertIn("已在进行中", response.payload["error"])
 
     def test_app_update_route_returns_success(self):
         with mock.patch.object(srv, "update_app_from_git", return_value={

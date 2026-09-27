@@ -155,7 +155,7 @@ class CustomSlotsTests(unittest.TestCase):
         with mock.patch.object(process_manager, "is_process_running", return_value=True):
             result = self.activate("custom-02")
         self.assertEqual(result.status, 400)
-        self.assertIn("Stop running process", result.payload["error"])
+        self.assertIn("请先停止运行中的进程", result.payload["error"])
         self.assertEqual(self.ctx.services.load_config()["backend"], "cpu")
 
     def test_second_slot_is_excluded_from_official_download_and_update_routes(self):

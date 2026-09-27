@@ -68,18 +68,18 @@ assert.equal(results[0].role, "tool");
 assert.equal(results[0].tool_call_id, "call_1");
 assert.match(JSON.parse(results[0].content).result, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/);
 tools.setEnabled(false);
-assert.throws(() => tools.executeCalls(calls), /disabled/);
+assert.throws(() => tools.executeCalls(calls), /已禁用/);
 tools.setEnabled(true);
 for (const [name, args] of [["exec_shell_command", "{}"], ["get_datetime", "{"], ["get_datetime", "null"], ["get_datetime", "[]"], ["get_datetime", '{"format":"%Y"}']]) {
-    assert.throws(() => tools.executeCalls([{ id: "1", function: { name, arguments: args } }]), /only supports|arguments/);
+    assert.throws(() => tools.executeCalls([{ id: "1", function: { name, arguments: args } }]), /仅支持|参数/);
 }
-assert.throws(() => tools.executeCalls([calls[0], calls[0]]), /only supports/);
-assert.throws(() => tools.collectCalls([], [{ index: 4 }]), /invalid tool/);
-assert.throws(() => tools.collectCalls([], [{ index: -1 }]), /invalid tool/);
-assert.throws(() => tools.collectCalls([], [{ index: 0, function: { arguments: "x".repeat(4097) } }]), /oversized/);
-assert.throws(() => tools.executeCalls([, calls[0]]), /only supports/);
+assert.throws(() => tools.executeCalls([calls[0], calls[0]]), /仅支持/);
+assert.throws(() => tools.collectCalls([], [{ index: 4 }]), /无效的工具/);
+assert.throws(() => tools.collectCalls([], [{ index: -1 }]), /无效的工具/);
+assert.throws(() => tools.collectCalls([], [{ index: 0, function: { arguments: "x".repeat(4097) } }]), /过大/);
+assert.throws(() => tools.executeCalls([, calls[0]]), /仅支持/);
 for (const malformed of [{ id: "1" }, { id: "1", function: null }]) {
-    assert.throws(() => tools.executeCalls([malformed]), /Chat only supports/,
+    assert.throws(() => tools.executeCalls([malformed]), /聊天仅支持/,
         "missing function metadata gets a recoverable validation error");
 }
 
@@ -87,7 +87,7 @@ let clockReads = 0;
 const advancingClock = load({ instant: () => Date.parse("2026-09-10T12:34:59Z") + clockReads++ * 1000 });
 advancingClock.setEnabled(true);
 const batch = Array.from({ length: 4 }, (_, index) => ({ ...calls[0], id: `batch-${index}` }));
-assert.throws(() => advancingClock.executeCalls([...batch, { id: "bad" }]), /Chat only supports/);
+assert.throws(() => advancingClock.executeCalls([...batch, { id: "bad" }]), /聊天仅支持/);
 assert.equal(clockReads, 0, "validate the whole batch before reading the clock");
 const batchResults = advancingClock.executeCalls(batch);
 assert.deepEqual(Array.from(batchResults, result => result.tool_call_id), batch.map(call => call.id));

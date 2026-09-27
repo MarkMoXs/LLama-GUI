@@ -101,7 +101,7 @@ test("runtime and reset wiring", async (t) => {
     await wait(80);
 
     assert.equal(documentStub.getElementById("monitor-process-tool").textContent, "llama-server");
-    assert.equal(documentStub.getElementById("monitor-process-state").textContent, "Ready");
+    assert.equal(documentStub.getElementById("monitor-process-state").textContent, "就绪");
     assert.equal(documentStub.getElementById("monitor-process-state").classList.contains("badge-green"), true);
     const navLive = documentStub.getElementById("monitor-nav-live");
     assert.equal(navLive.classList.contains("hidden"), false);
@@ -111,7 +111,7 @@ test("runtime and reset wiring", async (t) => {
 
     // Transitional phases are named accurately and do not expose an empty
     // tool badge before the runtime identity exists.
-    for (const [phase, label] of [["starting", "Starting"], ["loading", "Loading"], ["stopping", "Stopping"]]) {
+    for (const [phase, label] of [["starting", "开始"], ["loading", "加载"], ["stopping", "停止"]]) {
         lifecycle = {
             activeRuntime: phase === "starting" ? null : { tool: "llama-server", generation: 5 },
             phase,
@@ -130,7 +130,7 @@ test("runtime and reset wiring", async (t) => {
     lifecycle = { activeRuntime: null, phase: "idle", busy: false };
     status = { external_chat_target: { connected: true, host: "10.0.0.5", port: 8080 } };
     monitorUi.updateProcessHeader();
-    assert.equal(documentStub.getElementById("monitor-process-tool").textContent, "external server");
+    assert.equal(documentStub.getElementById("monitor-process-tool").textContent, "外部服务器");
     assert.equal(documentStub.getElementById("monitor-external-note").classList.contains("hidden"), false);
     assert.equal(documentStub.getElementById("output-terminal").classList.contains("hidden"), true);
 
@@ -171,39 +171,39 @@ test("runtime and partial inference", async (t) => {
     assert.equal(el("monitor-runtime-model").textContent, "<img>.gguf");
     assert.equal(el("monitor-runtime-model").title, "folder/<img>.gguf");
     assert.match(el("monitor-runtime-build").textContent, /vulkan.*b123/);
-    assert.equal(el("monitor-runtime-endpoint").textContent, "Endpoint: 127.0.0.1:8090");
-    assert.equal(el("btn-monitor-review").textContent, "Review changes · 1");
+    assert.equal(el("monitor-runtime-endpoint").textContent, "端点：127.0.0.1:8090");
+    assert.equal(el("btn-monitor-review").textContent, "查看变更 · 1");
     assert.equal(el("monitor-cpu-value").textContent, "18.4%");
-    assert.equal(el("monitor-gpu-summary").textContent, "GPU telemetry is unavailable");
-    assert.match(el("monitor-live-badge").textContent, /System telemetry.*Live/);
+    assert.equal(el("monitor-gpu-summary").textContent, "GPU 遥测数据不可用");
+    assert.match(el("monitor-live-badge").textContent, /系统监控.*实时/);
     comparison = { available: true, changes: [], modelChanged: true };
     monitorUi.renderRuntime();
-    assert.equal(el("btn-monitor-review").textContent, "Review model change");
+    assert.equal(el("btn-monitor-review").textContent, "检查模型变更");
     comparison = { available: false, changes: [] };
     state = { phase: "failed", activeRuntime: state.activeRuntime, error: "Could not restart <img>" };
     monitorUi.updateProcessHeader();
-    assert.equal(el("monitor-runtime-state").textContent, "Process active · action failed");
+    assert.equal(el("monitor-runtime-state").textContent, "进程处于活动状态・操作失败");
     assert.equal(el("btn-monitor-review").classList.contains("hidden"), true);
     assert.equal(el("monitor-runtime-error").textContent, "Could not restart <img>");
     const engine = monitorUi.createInferenceStats({ onSnapshot: monitorUi.renderInferenceSnapshot });
     engine.setTarget("gui:10");
-    assert.match(el("monitor-inference-note").textContent, /first inference sample/);
+    assert.match(el("monitor-inference-note").textContent, /首条推理采样数据/);
     engine.applyPollResult({ metricsOk: false, slotsOk: true, slotsNormalized: slotsSample(0, 1000, 100), now: 1000 });
     assert.match(el("monitor-inference-note").textContent, /--metrics/);
-    assert.doesNotMatch(el("monitor-inference-note").textContent, /context unavailable/);
-    assert.notEqual(el("monitor-inference-context-reading").textContent, "Not available");
+    assert.doesNotMatch(el("monitor-inference-note").textContent, /上下文不可用/);
+    assert.notEqual(el("monitor-inference-context-reading").textContent, "暂无数据");
     engine.applyPollResult({ metricsOk: true, metricsValues: metricValues(), slotsOk: false, now: 2000 });
-    assert.match(el("monitor-inference-note").textContent, /context unavailable/);
-    assert.doesNotMatch(el("monitor-inference-note").textContent, /counters unavailable/);
+    assert.match(el("monitor-inference-note").textContent, /上下文不可用/);
+    assert.doesNotMatch(el("monitor-inference-note").textContent, /会话计数器不可用/);
     state = { phase: "idle", activeRuntime: null };
     monitorUi.appendOutputLine("last session");
     monitorUi.updateProcessHeader();
-    assert.equal(el("monitor-output-title").textContent, "Last run output");
+    assert.equal(el("monitor-output-title").textContent, "历史输出");
     monitorUi.clearTerminal();
     assert.equal(el("output-terminal").classList.contains("hidden"), true);
     status = { external_chat_target: { connected: true, host: "127.0.0.1", port: 9000 } };
     monitorUi.updateProcessHeader();
-    assert.equal(el("monitor-runtime-state").textContent, "External server");
+    assert.equal(el("monitor-runtime-state").textContent, "外部服务器");
     assert.equal(el("btn-monitor-api").classList.contains("hidden"), false);
     assert.match(el("monitor-runtime-endpoint").textContent, /9000/);
     monitorUi.onTabChanged("configure");

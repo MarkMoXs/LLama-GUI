@@ -112,7 +112,7 @@ def restart_gui_server(ctx):
                 RESTART_PORT_WAIT_SECONDS,
             )
             if not port_free:
-                print(f"WARNING: Port {gui_port} still in use after waiting, attempting restart anyway")
+                print(f"警告：端口 {gui_port} 仍在使用中，仍尝试重新启动")
 
             # The replacement has to outlive this process on both platforms.
             # Windows gets DETACHED_PROCESS; POSIX needs start_new_session, or the

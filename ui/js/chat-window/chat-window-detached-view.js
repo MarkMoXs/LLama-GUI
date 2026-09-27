@@ -24,7 +24,7 @@
             holder.coordinator?.dispose?.();
             debug({ window: target }, "Detached Chat bootstrap failed", error);
             try {
-                showDetachedError(target, "Chat window unavailable", "This Chat window could not connect to the main GUI. Close it, then choose Recover chat here in the main Chat window.");
+                showDetachedError(target, "聊天窗口不可用", "此聊天窗口无法连接到主 GUI。请关闭它，然后在主聊天窗口选择「在此恢复聊天」。");
             } catch (showError) {
                 debug({ window: target }, "Unable to show detached Chat error", showError);
             }
@@ -44,20 +44,20 @@
             debug({ window: target }, "Unable to inspect Chat opener", error);
         }
         if (!opener || !chatUi || !openerChatWindow) {
-            showDetachedError(target, "Chat window unavailable", "This page was opened without a verified connection to the main GUI. Open the full GUI in this browser, then choose Chat and Pop out; a GUI opened in another browser cannot share this Chat.", { fullGuiLink: true });
+            showDetachedError(target, "聊天窗口不可用", "此页面在未验证与主 GUI 的连接的情况下打开。请在此浏览器中打开完整 GUI，然后选择「聊天」并「弹出」；在另一个浏览器中打开的 GUI 无法共享此聊天。", { fullGuiLink: true });
             return result(false, "chat-host-unavailable");
         }
         let descriptor;
         try { descriptor = openerChatWindow.getBootstrapInfo(target); } catch (error) { descriptor = null; }
         if (!descriptor || descriptor.origin !== getOrigin({ window: target }) || !descriptor.proofKey || !descriptor.proofValue) {
-            showDetachedError(target, "Chat window unavailable", "Close this window, then choose Recover chat here in the main Chat window.");
+            showDetachedError(target, "聊天窗口不可用", "关闭此窗口，然后在主聊天窗口选择恢复聊天。");
             return result(false, "chat-host-unavailable");
         }
         const storage = getStorage({ window: target });
         let proofMatches = false;
         try { proofMatches = storage && storage.getItem(descriptor.proofKey) === descriptor.proofValue; } catch (error) { proofMatches = false; }
         if (!proofMatches) {
-            showDetachedError(target, "Chat window unavailable", "This window could not verify the main Chat storage partition.");
+            showDetachedError(target, "聊天窗口不可用", "此窗口无法验证主聊天存储分区。");
             return result(false, "storage-partition-mismatch");
         }
         const remoteState = { settings: {}, runtime: null, status: null, inference: null };
@@ -94,17 +94,17 @@
             } catch (error) {
                 target.console?.debug?.("Unable to verify current Chat host session", error);
             }
-            markHostUnavailable(new Error("The main Chat session changed or closed."));
+            markHostUnavailable(new Error("主聊天会话已更改或关闭。"));
             return false;
         }
         const remoteHost = {
             getSettings: () => hasCurrentHostSession() ? remoteAdapter.getSettings() : Object.assign({}, remoteState.settings),
             setSettings: patch => {
-                if (!hasCurrentHostSession()) throw new Error("Chat host is not connected.");
+                if (!hasCurrentHostSession()) throw new Error("聊天主机未连接");
                 return remoteAdapter.setSettings(patch);
             },
             getAuthorizationHeaders: (...args) => {
-                if (!hasCurrentHostSession()) throw new Error("Chat host is not connected.");
+                if (!hasCurrentHostSession()) throw new Error("聊天主机未连接");
                 return remoteAdapter.getAuthorizationHeaders(...args);
             },
             resetInferenceBaseline: () => hasCurrentHostSession() ? remoteAdapter.resetInferenceBaseline() : undefined,
@@ -136,7 +136,7 @@
             const disabled = !coordinator.isOwner() || allowed.allowed !== true;
             button.disabled = disabled;
             button.setAttribute("aria-disabled", String(disabled));
-            button.title = allowed.reason || "Return Chat to the main window";
+            button.title = allowed.reason || "返回至聊天主窗口";
         }
         const updateRemote = payload => {
             const next = payload && typeof payload === "object" ? payload : {};
@@ -190,7 +190,7 @@
         const initialized = await coordinator.initialize({ acquire: false, recover: false });
         if (!coordinator.getState().lockAvailable) {
             await whenDomReady(target);
-            showDetachedError(target, "Chat popout unavailable", "This browser does not support the exclusive lock required for a shared Chat.");
+            showDetachedError(target, "聊天弹窗不可用", "此浏览器不支持共享聊天所需的排他锁。");
             return result(false, "locks-unavailable");
         }
         // The popup starts as an observer like the host path above: revoke
@@ -212,13 +212,13 @@
         const verified = await waitForPeer(coordinator, 10000);
         if (!verified) {
             chatUi.setHostAvailable?.(false);
-            showDetachedError(target, "Chat host unavailable", "Return to the main window and open Chat again.");
+            showDetachedError(target, "聊天主机不可用", "请返回主窗口并重新打开聊天。");
             return result(false, "host-handshake-failed");
         }
         remoteAdapter = openerChatWindow.getPeerHostAdapter(target);
         if (!remoteAdapter) {
             chatUi.setHostAvailable?.(false);
-            showDetachedError(target, "Chat host unavailable", "Close this window, then choose Recover chat here in the main Chat window.");
+            showDetachedError(target, "聊天主机不可用", "关闭此窗口，然后在主聊天窗口选择恢复聊天。");
             return result(false, "host-adapter-unavailable");
         }
         updateRemote({

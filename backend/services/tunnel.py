@@ -113,7 +113,7 @@ def get_remote_tunnel_snapshot(ctx: AppContext) -> dict:
         }:
             ctx.state.remote_tunnel_process = None
             snapshot["status"] = "error"
-            snapshot["message"] = "Remote tunnel process exited."
+            snapshot["message"] = "远程隧道进程已退出。"
             ctx.state.remote_tunnel.replace(snapshot)
         snapshot["running"] = running
         return snapshot
@@ -138,7 +138,7 @@ def ensure_cloudflared(ctx: AppContext, generation: Optional[int] = None) -> Pat
         set_remote_tunnel_state(
             ctx,
             status="downloading",
-            message="Downloading Cloudflare tunnel helper...",
+            message="正在下载 Cloudflare 隧道助手...",
         )
     elif not _set_remote_tunnel_state_for_generation(
         ctx,
@@ -146,7 +146,7 @@ def ensure_cloudflared(ctx: AppContext, generation: Optional[int] = None) -> Pat
         status="downloading",
         message="Downloading Cloudflare tunnel helper...",
     ):
-        raise RuntimeError("Remote tunnel start was cancelled.")
+        raise RuntimeError("远程隧道启动已取消。")
     staging_dir = Path(tempfile.mkdtemp(prefix=".cloudflared-", dir=cloudflared_dir))
     try:
         staged_binary = staging_dir / spec["filename"]
@@ -230,7 +230,7 @@ def _start_remote_tunnel_worker(ctx: AppContext, generation: int) -> None:
             generation,
             status="preparing",
             url="",
-            message="Preparing Cloudflare tunnel...",
+            message="正在准备 Cloudflare 隧道...",
             log="",
         ):
             return
@@ -239,7 +239,7 @@ def _start_remote_tunnel_worker(ctx: AppContext, generation: int) -> None:
             ctx,
             generation,
             status="starting",
-            message="Starting Cloudflare tunnel...",
+            message="正在启动 Cloudflare 隧道...",
         ):
             return
 
@@ -291,7 +291,7 @@ def _start_remote_tunnel_worker(ctx: AppContext, generation: int) -> None:
                     generation,
                     status="running",
                     url=found.group(0),
-                    message="Remote tunnel is running.",
+                    message="远程隧道正在运行。",
                     log=log,
                 )
             else:
@@ -308,7 +308,7 @@ def _start_remote_tunnel_worker(ctx: AppContext, generation: int) -> None:
             ctx.state.remote_tunnel.update(
                 status="error",
                 url="",
-                message=f"Cloudflare tunnel exited with code {exit_code}.",
+                message=f"Cloudflare 隧道已退出，退出码 {exit_code}。",
                 log=log,
             )
     except Exception as exc:
@@ -339,7 +339,7 @@ def start_remote_tunnel(ctx: AppContext) -> dict:
         ctx.state.remote_tunnel.update(
             status="preparing",
             url="",
-            message="Preparing Cloudflare tunnel...",
+            message="正在准备 Cloudflare 隧道...",
             log="",
         )
     try:
@@ -367,7 +367,7 @@ def stop_remote_tunnel(ctx: AppContext) -> dict:
         ctx.state.remote_tunnel.update(
             status="stopped",
             url="",
-            message="Remote tunnel stopped.",
+            message="远程隧道已停止。",
         )
 
     _terminate_remote_tunnel_process(ctx, proc)

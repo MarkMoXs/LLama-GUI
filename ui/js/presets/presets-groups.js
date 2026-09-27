@@ -11,14 +11,14 @@ function renderPresetGroups(container, groups) {
         const empty = document.createElement("div");
         empty.className = "presets-empty";
         empty.textContent = presetSearchQuery
-            ? "No presets match your search."
+            ? "没有符合搜索条件的预设。"
             : presetArchiveViewActive
-                ? "The archive is empty. Archive a preset to move it out of the main list."
+                ? "归档为空。归档预设后，它们会从主列表中移出。"
                 : presetWarningFilterActive
-                    ? "No presets with warnings."
+                    ? "没有带警告的预设。"
                     : presetFavoritesMode === "only"
-                        ? "No favorite presets yet. Star a preset to keep it here."
-                        : "No saved presets yet. Save the current configuration above or import a JSON preset file.";
+                        ? "还没有收藏的预设。点击预设旁的星标即可收藏。"
+                        : "尚未保存预设。请在上方保存当前配置，或导入 JSON 预设文件。";
         container.appendChild(empty);
         renderPresetAuxiliaryPanels();
         return;
@@ -170,13 +170,13 @@ async function loadPresets() {
         renderPresetGroups(container, currentPresetGroups);
     } catch (e) {
         if (requestId !== loadPresetsRequestId) return;
-        console.warn("Failed to load preset library", e);
+        console.warn("加载预设库失败", e);
         currentPresetGroups = [];
         selectedPresetName = "";
         selectedPresetNames.clear();
         const error = document.createElement("div");
         error.className = "presets-empty presets-error";
-        error.textContent = "Failed to load presets.";
+        error.textContent = "加载预设失败";
         container.appendChild(error);
         renderPresetLoadErrorState();
     }
@@ -186,9 +186,9 @@ function renderPresetFavoritesChip() {
     const chip = document.getElementById("preset-favorites-first");
     if (!chip) return;
     const labels = {
-        all: { text: "★ Favorites", title: "Click to keep favorite presets and model groups above other results" },
-        first: { text: "★ Favorites first", title: "Favorites are sorted first. Click to show only favorites" },
-        only: { text: "★ Favorites only", title: "Showing only favorites. Click to show all presets" },
+        all: { text: "★ 收藏", title: "点击以将收藏的预设和模型组置于其他结果之上" },
+        first: { text: "★ 收藏优先", title: "收藏优先排序。点击以仅显示收藏" },
+        only: { text: "★ 仅收藏", title: "正在仅显示收藏。点击以显示全部预设" },
     };
     const label = labels[presetFavoritesMode] || labels.all;
     chip.textContent = label.text;

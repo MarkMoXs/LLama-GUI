@@ -447,7 +447,7 @@ def get_app_update_status(
     # "fatal: malformed object name" that means nothing to a user.
     if not remote_ref_exists(base_dir, upstream_ref):
         return error_status(
-            f"No upstream branch found at {upstream_ref}.",
+            f"{upstream_ref} 分支中未找到带标签的新发布版本",
             **common,
         )
 
@@ -463,7 +463,7 @@ def get_app_update_status(
             return {
                 "available": True,
                 "can_update": False,
-                "reason": f"No tagged release was found on {upstream_ref}.",
+                "reason": f"在 {upstream_ref} 未能查询到更新",
                 **common,
                 "ahead": 0,
                 "behind": 0,
@@ -527,7 +527,7 @@ def update_app_from_git(ctx: AppContext, channel: str = "stable") -> dict[str, A
             return {
                 "updated": False,
                 "already_in_progress": True,
-                "error": "App update already in progress.",
+                "error": "应用更新已在进行中。",
             }
         state.app_update_in_progress = True
     try:

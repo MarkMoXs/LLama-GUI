@@ -71,8 +71,8 @@
     function makeHideButton(key, label) {
         const button = I.dom.makeEl("button", "btn btn-sm btn-ghost monitor-hide-btn", "Hide");
         button.type = "button";
-        button.setAttribute("aria-label", `Hide ${label} monitor`);
-        button.title = `Hide ${label}`;
+        button.setAttribute("aria-label", `隐藏 ${label} 监视器`);
+        button.title = `隐藏 ${label}`;
         button.addEventListener("click", () => {
             // Resolve from the card at click time: in-place updates rewrite a
             // card's label (a GPU index or name) long after construction.
@@ -88,8 +88,8 @@
         const button = I.dom.makeEl("button", "btn btn-sm btn-ghost monitor-drag-handle", "⠿");
         button.type = "button";
         button.draggable = true;
-        button.title = "Drag to reorder; use arrow keys to move";
-        button.setAttribute("aria-label", `Move ${label} monitor; use arrow keys`);
+        button.title = "拖动以重新排序；使用方向键移动";
+        button.setAttribute("aria-label", `移动 ${label} 监视器；使用方向键`);
         return button;
     }
 
@@ -161,7 +161,7 @@
             row.appendChild(I.dom.makeEl("span", "", label));
             const restore = I.dom.makeEl("button", "btn btn-sm btn-ghost", "Show");
             restore.type = "button";
-            restore.setAttribute("aria-label", `Show ${label} monitor`);
+            restore.setAttribute("aria-label", `显示 ${label} 监视器`);
             restore.addEventListener("click", () => restoreCard(key, card));
             row.appendChild(restore);
             items.appendChild(row);

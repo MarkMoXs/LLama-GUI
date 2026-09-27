@@ -26,7 +26,7 @@
     }
 
     async function readSummary(response, signal) {
-        if (!response.ok || !response.body) throw new Error(`Summary request failed (HTTP ${response.status}).`);
+        if (!response.ok || !response.body) throw new Error(`摘要请求失败（HTTP ${response.status}）。`);
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "", content = "", finish = null, ended = false;
@@ -43,7 +43,7 @@
                     const data = line.trim().slice(5).trim();
                     if (data === "[DONE]") { ended = true; break; }
                     const event = JSON.parse(data);
-                    if (event.error) throw new Error(event.error.message || "Summary request failed.");
+                    if (event.error) throw new Error(event.error.message || "摘要请求失败。");
                     const choice = event.choices?.[0];
                     if (choice?.finish_reason) finish = choice.finish_reason;
                     if (typeof choice?.delta?.content === "string") content += choice.delta.content;
@@ -53,12 +53,12 @@
             signal.throwIfAborted();
             if (finish !== "stop" || !content.trim()) {
                 throw new Error(finish === "length"
-                    ? "The summary reached its output limit. Try again, or use a model with more context."
-                    : "The server did not return a complete summary. Try again.");
+                    ? "摘要达到了输出上限。请重试，或使用上下文更大的模型。"
+                    : "服务器未返回完整的摘要。请重试。");
             }
             // Some templates embed reasoning despite the request to turn it off.
             const split = window.LlamaGui.chatRendering.splitReasoningFromContent(content);
-            if (!split.content.trim()) throw new Error("The server returned reasoning without a summary. Try another model.");
+            if (!split.content.trim()) throw new Error("服务器返回了推理但没有摘要。请尝试其他模型。");
             return split.content.trim();
         } finally {
             await reader.cancel().catch(error => console.debug("Could not close summary stream", error));
@@ -68,17 +68,17 @@
     async function compact({ messages, previous, body, draft, signal, headers, onProgress }) {
         const end = boundary(messages);
         const start = valid(previous, messages) ? previous.end : 0;
-        if (end <= start) throw new Error("Keep chatting first; compaction keeps the last two turns unchanged.");
+        if (end <= start) throw new Error("请先继续聊天；压缩会保留最后两轮不变。");
         const post = async (url, request) => {
             signal.throwIfAborted();
             return fetch(url, { method: "POST", headers, body: JSON.stringify(request), signal });
         };
         const measure = async request => {
             const response = await post("/api/chat/context", request);
-            if (!response.ok) throw new Error("Could not measure context. Retry when the server is ready.");
+            if (!response.ok) throw new Error("无法测量上下文。请在服务器就绪后重试。");
             const budget = await response.json();
             if (!Number.isFinite(budget.prompt_tokens) || !(budget.capacity > 0)) {
-                throw new Error("Compaction needs token counting. Use a server that supports context counting, or start a new chat.");
+                throw new Error("压缩需要 token 计数。请使用支持上下文计数的服务器，或开始新的聊天。");
             }
             return budget;
         };
@@ -94,7 +94,7 @@
         };
         const before = await measure(requestFor(workingMessages(messages, previous), 0));
         const limit = Math.min(1024, Math.floor(before.capacity / 4));
-        if (limit < 128) throw new Error("The context window is too small to summarize safely. Increase context or start a new chat.");
+        if (limit < 128) throw new Error("上下文窗口太小，无法安全地摘要。请增大上下文或开始新的聊天。");
         let summary = start ? previous.summary : "";
         let cursor = start;
         while (cursor < end) {
@@ -112,10 +112,10 @@
                 };
                 const budget = await measure(request);
                 if (budget.remaining >= 0 && budget.prompt_tokens < budget.capacity) break;
-                if (count === 1) throw new Error("An older message and the summary instructions do not fit. Increase the model's context or start a new chat; your transcript is unchanged.");
+                if (count === 1) throw new Error("较早的消息和摘要指令放不下。请增大模型上下文或开始新的聊天；你的对话记录保持不变。");
                 count = Math.max(1, Math.floor(count / 2));
             }
-            onProgress(`Summarizing older messages ${cursor + 1}–${cursor + count} of ${end}…`);
+            onProgress(`正在摘要较早的消息 ${cursor + 1}–${cursor + count} / ${end}…`);
             summary = await readSummary(await post("/api/chat/completions", request), signal);
             cursor += count;
         }
@@ -123,12 +123,12 @@
         const working = workingMessages(messages, record);
         const after = await measure(requestFor(working, 0));
         if (after.prompt_tokens >= before.prompt_tokens) {
-            throw new Error("The summary did not save context. Your previous context is still active; try again after more conversation.");
+            throw new Error("摘要未节省上下文。你之前的上下文仍然有效；请在更多对话后再试。");
         }
         const withDraft = draft.trim() ? [...working, { role: "user", content: draft.trim() }] : working;
         const finalBudget = await measure(requestFor(withDraft));
         if (finalBudget.status === "overflow") {
-            throw new Error("The summary and recent messages still exceed context. Shorten the draft, lower Max Tokens, or increase context and try again.");
+            throw new Error("摘要和最近的消息仍然超出上下文。请缩短草稿、降低最大 Token 数，或增大上下文后重试。");
         }
         signal.throwIfAborted();
         return { ...record, savedTokens: before.prompt_tokens - after.prompt_tokens };

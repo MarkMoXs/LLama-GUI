@@ -33,7 +33,7 @@ test("snapshot rendering", async (t) => {
     monitorUi.renderInferenceSnapshot(null);
     assert.equal(documentStub.getElementById("monitor-inference-body").classList.contains("hidden"), true);
     assert.equal(documentStub.getElementById("monitor-inference-empty").classList.contains("hidden"), false);
-    assert.equal(documentStub.getElementById("monitor-inference-state-badge").textContent, "Unavailable");
+    assert.equal(documentStub.getElementById("monitor-inference-state-badge").textContent, "不可用");
 
     const engine = monitorUi.createInferenceStats({});
     engine.setTarget("gui:9", { zeroBaseline: true });
@@ -51,17 +51,17 @@ test("snapshot rendering", async (t) => {
     const contextBar = documentStub.getElementById("monitor-inference-context-bar")
         .querySelector(".progress-bar");
     assert.equal(body.classList.contains("hidden"), false);
-    assert.equal(documentStub.getElementById("monitor-inference-prompt").textContent, "1,000 tokens");
-    assert.equal(documentStub.getElementById("monitor-inference-total").textContent, "1,500 tokens");
+    assert.equal(documentStub.getElementById("monitor-inference-prompt").textContent, "1,000 个 Token");
+    assert.equal(documentStub.getElementById("monitor-inference-total").textContent, "1,500 个 Token");
     assert.ok(
-        documentStub.getElementById("monitor-inference-context-label").textContent.includes("(idle)"),
+        documentStub.getElementById("monitor-inference-context-label").textContent.includes("空闲"),
         "retained context on an idle slot is labeled honestly",
     );
     assert.ok(
         documentStub.getElementById("monitor-inference-context-reading").textContent.includes("3,072 / 8,192"),
     );
-    assert.equal(documentStub.getElementById("monitor-inference-requests").textContent, "1 active \u00b7 0 queued");
-    assert.equal(documentStub.getElementById("monitor-inference-slots").textContent, "0 / 1 busy");
+    assert.equal(documentStub.getElementById("monitor-inference-requests").textContent, "活动 1 \u00b7 排队 0");
+    assert.equal(documentStub.getElementById("monitor-inference-slots").textContent, "忙碌槽位：0 / 1");
 
     // Warning/critical bar classes.
     const critical = engine.applyPollResult({
@@ -86,12 +86,12 @@ test("snapshot rendering", async (t) => {
         slotsOk: false, slotsNormalized: null, now: 3000,
     });
     monitorUi.renderInferenceSnapshot(unknownActivity);
-    assert.match(documentStub.getElementById("monitor-inference-kicker").textContent, /Activity unknown/);
-    assert.equal(documentStub.getElementById("monitor-inference-state-badge").textContent, "Activity unknown");
+    assert.match(documentStub.getElementById("monitor-inference-kicker").textContent, /活动状态未知/);
+    assert.equal(documentStub.getElementById("monitor-inference-state-badge").textContent, "活动状态未知");
     const unavailableBar = documentStub.getElementById("monitor-inference-context-bar").querySelector(".progress-bar");
     assert.equal(unavailableBar.hasAttribute("aria-valuenow"), false,
         "unavailable meters must not announce zero");
-    assert.equal(unavailableBar.getAttribute("aria-valuetext"), "Not available");
+    assert.equal(unavailableBar.getAttribute("aria-valuetext"), "暂无数据");
 
     monitorUi.renderInferenceSnapshot(engine.applyPollResult({
         metricsOk: false, metricsValues: null,

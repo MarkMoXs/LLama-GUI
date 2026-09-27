@@ -20,6 +20,7 @@ class DiagnosticsTests(unittest.TestCase):
         return subprocess.run(
             [sys.executable, "-c", setup + textwrap.dedent(source)],
             cwd=ROOT, capture_output=True, text=True, timeout=30,
+            errors="replace",
         )
 
     def read_log(self, directory):

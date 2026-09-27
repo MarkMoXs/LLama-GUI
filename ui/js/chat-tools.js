@@ -84,11 +84,11 @@
 
     // Tool arguments, names and IDs can span multiple SSE chunks.
     function collectCalls(calls, deltas) {
-        if (!Array.isArray(deltas)) throw new Error("The server returned invalid tool calls.");
+        if (!Array.isArray(deltas)) throw new Error("服务器返回了无效的工具调用。");
         for (const delta of deltas) {
             if (!Number.isInteger(delta?.index) || delta.index < 0 || delta.index >= 4
                 || (delta.type && delta.type !== "function")) {
-                throw new Error("The server returned invalid tool calls.");
+                throw new Error("服务器返回了无效的工具调用。");
             }
             const call = calls[delta.index] || { id: "", type: "function", function: { name: "", arguments: "" } };
             for (const [target, key, fragment, limit] of [
@@ -98,7 +98,7 @@
             ]) {
                 if (fragment === undefined || fragment === null) continue;
                 if (typeof fragment !== "string" || target[key].length + fragment.length > limit) {
-                    throw new Error("The server returned an invalid or oversized tool call.");
+                    throw new Error("服务器返回了无效或过大的工具调用。");
                 }
                 target[key] += fragment;
             }
@@ -107,12 +107,12 @@
     }
 
     function executeCalls(calls) {
-        if (!enabled) throw new Error("Current Date & Time is disabled. Enable it in Chat Settings to retry.");
+        if (!enabled) throw new Error("「Current Date & Time」已禁用。请在聊天设置中启用以重试。");
         const ids = new Set();
         // Validate the entire batch before executing anything. No server/shell tools are dispatched here.
         for (const call of calls) {
             if (!call?.id || ids.has(call.id) || call.function?.name !== "get_datetime") {
-                throw new Error("Chat only supports the Current Date & Time tool.");
+                throw new Error("聊天仅支持「Current Date & Time」工具。");
             }
             ids.add(call.id);
             let args;
@@ -120,10 +120,10 @@
                 args = JSON.parse(call.function.arguments || "{}");
             } catch (error) {
                 console.debug("Invalid date/time tool arguments", error);
-                throw new Error("The model returned invalid date/time tool arguments. Retry the reply.");
+                throw new Error("模型返回了无效的日期/时间工具参数。请重试回复。");
             }
             if (!args || typeof args !== "object" || Array.isArray(args) || Object.keys(args).length) {
-                throw new Error("Current Date & Time does not accept arguments. Retry the reply.");
+                throw new Error("「Current Date & Time」不接受参数。请重试回复。");
             }
         }
         const content = JSON.stringify(currentDateTime());
@@ -150,7 +150,7 @@
         if (!results.length) return;
         const details = document.createElement("details");
         const summary = document.createElement("summary");
-        summary.textContent = `Used ${LABEL}`;
+        summary.textContent = `已使用 ${LABEL}`;
         details.appendChild(summary);
         for (const message of results) {
             const value = document.createElement("p");
@@ -159,7 +159,7 @@
                 value.textContent = `${result.result} (${result.timezone || "local timezone"})`;
             } catch (error) {
                 console.debug("Could not display a stored date/time result", error);
-                value.textContent = "Saved date/time result is unavailable.";
+                value.textContent = "已保存的日期/时间结果不可用。";
             }
             details.appendChild(value);
         }

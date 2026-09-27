@@ -71,7 +71,7 @@ function compact(extra = {}) {
     assert.equal(JSON.stringify(transcript), original);
     assert.equal(requests.at(-1).messages.at(-1).content, "Unsent question");
     assert.equal(requests.at(-1).max_tokens, 128);
-    await assert.rejects(compact({ previous: result }), /Keep chatting/);
+    await assert.rejects(compact({ previous: result }), /请先继续聊天/);
 
     setup();
     const extended = [...transcript, { role: "user", content: "New question" }, { role: "assistant", content: "New answer" }];
@@ -92,9 +92,9 @@ function compact(extra = {}) {
     assert.deepEqual(generations.flatMap(body => JSON.parse(body.messages[1].content).messages).find(msg => msg.toolMessages).toolMessages, toolMessages,
         "older tool results are included in summary data");
 
-    for (const [failure, message] of [["unavailable", /token counting/], ["too-small", /do not fit/],
-        ["length", /output limit/], ["empty", /complete summary/], ["eof", /complete summary/],
-        ["error", /Server unavailable/], ["no-savings", /do not fit|did not save/]]) {
+    for (const [failure, message] of [["unavailable", /token 计数/], ["too-small", /放不下/],
+        ["length", /输出上限/], ["empty", /完整的摘要/], ["eof", /完整的摘要/],
+        ["error", /Server unavailable/], ["no-savings", /放不下|未节省/]]) {
         setup(failure);
         await assert.rejects(compact(), message);
         assert.equal(JSON.stringify(transcript), original);

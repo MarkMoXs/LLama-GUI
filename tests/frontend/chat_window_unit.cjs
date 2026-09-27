@@ -235,11 +235,11 @@ test("flag bridge reads live settings and isolates subscriptions and failures", 
     const unavailable = [];
     const host = {
         getSettings() {
-            if (failRead) throw new Error("host read failed");
+            if (failRead) throw new Error("host 主机读取失败");
             return settings;
         },
         setSettings(patch) {
-            if (failWrite) throw new Error("host write failed");
+            if (failWrite) throw new Error("Host 主机写入失败");
             writes.push(clone(patch));
             settings = Object.assign({}, settings, patch);
             return settings;
@@ -277,7 +277,7 @@ test("flag bridge reads live settings and isolates subscriptions and failures", 
     valid = true;
     failWrite = true;
     bridge.setFlagValue("temperature", 0.9);
-    assert.deepEqual(unavailable, ["Chat host is not connected.", "host write failed"]);
+    assert.deepEqual(unavailable, ["聊天主机未连接", "Host 主机写入失败"]);
     assert.equal(other.getFlagValues().temperature, 0.3);
     assert.equal(bridge.getCurrentTool(), "llama-server");
 });
@@ -439,8 +439,8 @@ test("adapter subscriptions and authentication respect session validity", async 
     assert.equal(adapter.invalidateSession(), true);
     assert.equal(adapter.invalidateSession(), false);
     assert.deepEqual(changes.at(-1), { type: "session-invalidated" });
-    assert.throws(() => adapter.getAuthorizationHeaders(), /no longer available/);
-    assert.throws(() => adapter.setSettings({ temperature: 1 }), /no longer available/);
+    assert.throws(() => adapter.getAuthorizationHeaders(), /不再可用/);
+    assert.throws(() => adapter.setSettings({ temperature: 1 }), /不再可用/);
     assert.equal(authCalls, 1);
     assert.equal(other.isSessionValid(), true);
     const beforeDispose = changes.length;
@@ -479,7 +479,7 @@ test("adapter settings preserve unset values and reject forbidden writes", async
     assert.throws(() => adapter.setSettings({ api_key: "bad" }), /not writable/);
     adapter.invalidateSession();
     assert.equal(adapter.isSessionValid(), false);
-    assert.throws(() => adapter.getSettings(), /no longer available/);
+    assert.throws(() => adapter.getSettings(), /不再可用/);
     assert.equal(Object.prototype.hasOwnProperty.call(adapter, "reviveSession"), false);
 });
 
@@ -877,7 +877,7 @@ test("owner initialization is idempotent and abort rejection is acknowledged", a
     await flush();
     assert.equal((await pair.b.acquireOwnership({ activate: true })), true);
     pair.uiB.abortActiveStream = () => Promise.reject(new Error("synthetic abort failure"));
-    await assert.rejects(pair.a.abortActiveStream(), /active Chat stream could not be stopped/);
+    await assert.rejects(pair.a.abortActiveStream(), /无法停止正在进行的聊天流/);
     const negativeAck = pair.sent.find(item => item.from === "B" && item.message.type === "abort-ack");
     assert.equal(negativeAck?.message.payload?.ok, false, "remote abort failure is sent as a negative acknowledgment");
 });

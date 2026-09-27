@@ -4,7 +4,7 @@ async function savePreset() {
     const name = nameInput.value.trim();
     if (!name) {
         nameInput.focus();
-        showPresetActionStatus("Enter a name for the new preset", "error", 3200);
+        showPresetActionStatus("请输入新预设的名称", "error", 3200);
         return;
     }
     if (await savePresetAsNew(name)) nameInput.value = "";
@@ -34,26 +34,26 @@ async function savePresetAsNew(name) {
     try {
         const data = buildCurrentPresetData();
         if (name === undefined) {
-            name = await presetDependencies.promptAction("Save as new preset", "Save the settings being edited under a new name. Existing presets will be kept.", "", "Save new preset");
+            name = await presetDependencies.promptAction("另存为新预设", "将当前正在编辑的所有设置以全新的名称保存，你之前已有的全部预设都将完整保留，不会被覆盖或修改。", "", "另存为新预设");
         }
         if (name === null) return false;
         name = name.trim();
-        if (!name) throw new Error("Preset name cannot be empty");
+        if (!name) throw new Error("预设名称不能为空");
         const result = await presetDependencies.fetchJson("/api/presets", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, data, overwrite: false }),
         });
-        if (!result.saved) throw new Error("The preset could not be saved");
+        if (!result.saved) throw new Error("无法保存预设");
         const savedName = result.name || name;
         setLoadedPreset(savedName, data);
         selectedPresetName = savedName;
         await loadPresets();
-        showPresetActionStatus(`Saved new preset "${savedName}"`, "success");
+        showPresetActionStatus(`另存为新预设 "${savedName}"`, "success");
         return true;
     } catch (e) {
-        showPresetActionStatus(e.message || "Failed to save preset", "error", 5000);
-        console.warn("Failed to save preset", e);
+        showPresetActionStatus(e.message || "保存预设失败", "error", 5000);
+        console.warn("保存预设失败", e);
         return false;
     } finally {
         setPresetSavePending(false);
@@ -63,7 +63,7 @@ async function savePresetAsNew(name) {
 
 function reviewPresetUpdate(name, changes) {
     const dialog = document.getElementById("preset-update-dialog");
-    document.getElementById("preset-update-title").textContent = `Update "${name}"?`;
+    document.getElementById("preset-update-title").textContent = `要更新“${name}”吗？`;
     renderPresetChangeRows(dialog.querySelector("tbody"), changes);
     dialog.returnValue = "cancel";
     return new Promise(resolve => {
@@ -82,10 +82,10 @@ async function updatePreset(name) {
         const entries = await fetchPresetEntries();
         reconcileLoadedPreset(entries);
         const preset = findPresetByName(entries, name);
-        if (!preset) throw new Error(`Preset "${name}" no longer exists. Save your edits as a new preset.`);
+        if (!preset) throw new Error(`预设“${name}”已不存在。请将修改另存为新预设。`);
         const { changes } = comparePresetToCurrent(preset.data, data);
         if (!changes.length) {
-            showPresetActionStatus(`Current settings already match "${name}"`, "success");
+            showPresetActionStatus(`当前设置已与“${name}”一致`, "success");
             return;
         }
         if (!await reviewPresetUpdate(name, changes)) return;
@@ -93,20 +93,20 @@ async function updatePreset(name) {
         const latest = findPresetByName(latestEntries, name);
         if (!latest || JSON.stringify(latest.data) !== JSON.stringify(preset.data)) {
             reconcileLoadedPreset(latestEntries);
-            throw new Error("The saved preset changed while this review was open. Review it again before updating.");
+            throw new Error("审核期间保存的预设已发生变化。请重新审核后再更新。");
         }
         const result = await presetDependencies.fetchJson("/api/presets", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, data }),
         });
-        if (!result.saved) throw new Error("The preset could not be updated");
+        if (!result.saved) throw new Error("无法更新预设");
         setLoadedPreset(result.name || name, data, latestEntries.some(entry => entry.name === name && entry.archived));
         await loadPresets();
-        showPresetActionStatus(`Updated preset "${name}"`, "success");
+        showPresetActionStatus(`已更新预设“${name}”`, "success");
     } catch (e) {
-        showPresetActionStatus(e.message || "Failed to update preset", "error", 5000);
-        console.warn("Failed to update preset", e);
+        showPresetActionStatus(e.message || "更新预设失败", "error", 5000);
+        console.warn("更新预设失败", e);
     } finally {
         setPresetSavePending(false);
         restorePresetActionFocus(trigger);
@@ -118,7 +118,7 @@ async function duplicatePreset(name) {
         const presets = await fetchPresetEntries();
         const source = presets.find((preset) => preset.name === name);
         if (!source) {
-            showPresetStatus(`Preset "${name}" not found.`, "error", 3200);
+            showPresetStatus(`找不到预设“${name}”。`, "error", 3200);
             return;
         }
         // duplicates the saved preset, not the live Configure state, so the current
@@ -140,12 +140,12 @@ async function duplicatePreset(name) {
         if (result.saved) {
             selectedPresetName = result.name || duplicateName;
             await loadPresets();
-            showPresetStatus(`Duplicated to "${result.name || duplicateName}"`, "success");
+            showPresetStatus(`已复制为“${result.name || duplicateName}”`, "success");
         }
     } catch (e) {
         const message = e && e.message === SENSITIVE_CUSTOM_ARG_MESSAGE
             ? SENSITIVE_CUSTOM_ARG_MESSAGE
-            : "Failed to duplicate preset";
+            : "复制预设失败";
         showPresetStatus(message, "error", 5000);
         console.warn("Failed to duplicate preset", e);
     }
@@ -153,14 +153,14 @@ async function duplicatePreset(name) {
 
 async function renamePreset(name) {
     const nextName = await presetDependencies.promptAction(
-        "Rename Preset",
-        `Enter a new name for "${name}".`,
+        "重命名预设",
+        `请输入“${name}”的新名称。`,
         name,
-        "Rename"
+        "重命名"
     );
     if (nextName === null) return;
     if (!nextName) {
-        showPresetActionStatus("Preset name cannot be empty", "error", 3200);
+        showPresetActionStatus("预设名称不能为空", "error", 3200);
         return;
     }
     if (nextName === name) return;
@@ -181,10 +181,10 @@ async function renamePreset(name) {
                 selectedPresetNames.add(savedName);
             }
             await loadPresets();
-            showPresetActionStatus(`Renamed to "${savedName}"`, "success");
+            showPresetActionStatus(`已重命名为“${savedName}”`, "success");
         }
     } catch (e) {
-        const message = e && e.message ? e.message : "Failed to rename preset";
+        const message = e && e.message ? e.message : "重命名预设失败";
         showPresetActionStatus(message, "error", 5000);
         console.warn("Failed to rename preset", e);
     }
@@ -201,36 +201,36 @@ async function loadPreset(name) {
             setLoadedPreset(name, presetData, presets.some(item => item.name === name && item.archived));
             markPresetUsed(name);
             if (warnings.length > 0) {
-                showPresetStatus(`Loaded "${name}" with warning: ${warnings[0]}`, "warning", 5000);
+                showPresetStatus(`已加载“${name}”，但有警告：${warnings[0]}`, "warning", 5000);
             } else {
-                showPresetStatus(`Loaded preset "${name}"`, "success");
+                showPresetStatus(`已加载预设“${name}”`, "success");
             }
             return { ok: true, name, data: presetData, warnings };
         } else {
-            showPresetStatus(`Preset "${name}" not found.`, "error", 3200);
-            return { ok: false, error: `Preset "${name}" no longer exists.` };
+            showPresetStatus(`找不到预设“${name}”。`, "error", 3200);
+            return { ok: false, error: `预设“${name}”已不存在。` };
         }
     } catch (e) {
-        showPresetStatus("Failed to load preset", "error", 3200);
-        console.warn("Failed to load preset", e);
-        return { ok: false, error: "Could not load this preset. Try again from the preset library." };
+        showPresetStatus("加载预设失败", "error", 3200);
+        console.warn("加载预设失败", e);
+        return { ok: false, error: "无法加载此预设。请在预设库中重试。" };
     }
 }
 
 async function deletePreset(name) {
     const ok = await presetDependencies.confirmAction(
-        "Delete Preset",
-        `Delete preset "${name}"? This cannot be undone.`,
-        "Delete"
+        "删除预设",
+        `确定删除预设“${name}”吗？此操作无法撤销。`,
+        "删除"
     );
     if (!ok) return;
     try {
         await presetDependencies.fetchJson("/api/presets/" + encodeURIComponent(name), { method: "DELETE" });
         deletePresetLocalState(name);
         loadPresets();
-        showPresetActionStatus(`Deleted preset \"${name}\"`, "success");
+        showPresetActionStatus(`已删除预设“${name}”`, "success");
     } catch (e) {
-        showPresetActionStatus("Failed to delete preset", "error", 3200);
+        showPresetActionStatus("删除预设失败", "error", 3200);
         console.warn("Failed to delete preset", e);
     }
 }
@@ -252,12 +252,12 @@ async function setPresetArchived(names, archived) {
         }
         await loadPresets();
         showPresetActionStatus(
-            `${archived ? "Archived" : "Restored"} ${list.length} preset${list.length === 1 ? "" : "s"}`,
+            `${archived ? "已归档" : "已恢复"} ${list.length} 个预设`,
             "success"
         );
     } catch (e) {
         showPresetActionStatus(
-            archived ? "Failed to archive presets" : "Failed to restore presets",
+            archived ? "归档预设失败" : "恢复预设失败",
             "error",
             3200
         );
@@ -268,7 +268,7 @@ async function setPresetArchived(names, archived) {
 function archiveSelectedPresets(archived) {
     const names = Array.from(selectedPresetNames);
     if (names.length === 0) {
-        showPresetActionStatus("No presets selected", "error", 3200);
+        showPresetActionStatus("请先选择预设", "error", 3200);
         return;
     }
     setPresetArchived(names, archived);
@@ -277,22 +277,22 @@ function archiveSelectedPresets(archived) {
 async function favoriteSelectedPresets(favorite) {
     const names = Array.from(selectedPresetNames);
     if (names.length === 0) {
-        showPresetStatus("No presets selected", "error", 3200);
+        showPresetStatus("请先选择预设", "error", 3200);
         return;
     }
     const changed = setPresetsFavorite(names, favorite);
     if (!changed) {
         showPresetStatus(
             favorite
-                ? `Already favorited (${names.length} selected)`
-                : `No favorites in the selection (${names.length} selected)`,
+                ? `所选 ${names.length} 个预设均已收藏`
+                : `所选 ${names.length} 个预设中没有收藏项`,
             "success"
         );
         return;
     }
     await loadPresets();
     showPresetStatus(
-        `${favorite ? "Favorited" : "Unfavorited"} ${changed} preset${changed === 1 ? "" : "s"}`,
+        `${favorite ? "已收藏" : "已取消收藏"} ${changed} 个预设`,
         "success"
     );
 }
@@ -300,14 +300,14 @@ async function favoriteSelectedPresets(favorite) {
 async function deleteSelectedPresets() {
     const names = Array.from(selectedPresetNames);
     if (names.length === 0) {
-        showPresetActionStatus("No presets selected", "error", 3200);
+        showPresetActionStatus("请先选择预设", "error", 3200);
         return;
     }
 
     const ok = await presetDependencies.confirmAction(
-        "Delete Selected Presets",
-        `Delete ${names.length} selected preset${names.length === 1 ? "" : "s"}? This cannot be undone.`,
-        "Delete"
+        "删除所选预设",
+        `确定删除选中的 ${names.length} 个预设吗？此操作无法撤销。`,
+        "删除"
     );
     if (!ok) return;
 
@@ -321,9 +321,9 @@ async function deleteSelectedPresets() {
             selectedPresetName = "";
         }
         await loadPresets();
-        showPresetActionStatus(`Deleted ${names.length} preset${names.length === 1 ? "" : "s"}`, "success");
+        showPresetActionStatus(`已删除 ${names.length} 个预设`, "success");
     } catch (e) {
-        showPresetActionStatus("Failed to delete selected presets", "error", 3200);
+        showPresetActionStatus("删除所选预设失败", "error", 3200);
         console.warn("Failed to delete selected presets", e);
         loadPresets();
     }
@@ -348,7 +348,7 @@ function exportPreset(name) {
             URL.revokeObjectURL(url);
         })
         .catch((e) => {
-            showPresetStatus("Failed to export preset", "error", 3200);
+            showPresetStatus("导出预设失败", "error", 3200);
             console.warn("Failed to export preset", e);
         });
 }
@@ -373,7 +373,7 @@ async function exportPresetShortcut(name) {
         URL.revokeObjectURL(url);
         showPresetStatus(`Exported shortcut for "${name}"`, "success");
     } catch (e) {
-        showPresetStatus("Failed to export shortcut", "error", 3200);
+        showPresetStatus("导出快捷方式失败", "error", 3200);
         console.warn("Failed to export preset shortcut", e);
     }
 }
@@ -381,14 +381,14 @@ async function exportPresetShortcut(name) {
 function exportSelectedPresets() {
     const names = new Set(selectedPresetNames);
     if (names.size === 0) {
-        showPresetStatus("No presets selected", "error", 3200);
+        showPresetStatus("未选择预设", "error", 3200);
         return;
     }
     presetDependencies.fetchJson("/api/presets")
         .then((presets) => {
             const selected = (presets || []).filter((p) => names.has(p.name));
             if (selected.length === 0) {
-                showPresetStatus("Selected presets not found", "error", 3200);
+                showPresetStatus("未找到所选预设", "error", 3200);
                 return;
             }
             const exportData = { presets: selected.map(p => ({
@@ -405,7 +405,7 @@ function exportSelectedPresets() {
             showPresetStatus(`Exported ${selected.length} preset(s)`, "success");
         })
         .catch((e) => {
-            showPresetStatus("Failed to export selected presets", "error", 3200);
+            showPresetStatus("导出所选预设失败", "error", 3200);
             console.warn("Failed to export selected presets", e);
         });
 }
@@ -414,7 +414,7 @@ function exportAllPresets() {
     presetDependencies.fetchJson("/api/presets")
         .then((presets) => {
             if (!presets || presets.length === 0) {
-                showPresetStatus("No presets to export", "error", 3200);
+                showPresetStatus("没有可导出的预设", "error", 3200);
                 return;
             }
             const exportData = { presets: presets.map(p => ({
@@ -431,7 +431,7 @@ function exportAllPresets() {
             showPresetStatus(`Exported ${presets.length} preset(s)`, "success");
         })
         .catch((e) => {
-            showPresetStatus("Failed to export presets", "error", 3200);
+            showPresetStatus("导出预设失败", "error", 3200);
             console.warn("Failed to export presets", e);
         });
 }
@@ -452,7 +452,7 @@ async function handlePresetImport(file) {
             for (const entry of bulkPresets) {
                 const name = sanitizeImportedPresetName(entry.name || "Imported-" + (++unnamedIdx));
                 if (!name) {
-                    showPresetActionStatus("Preset import contains an invalid name.", "error", 3200);
+                    showPresetActionStatus("预设导入包含无效的名称。", "error", 3200);
                     return;
                 }
                 const normalized = normalizeImportedPresetData(entry.data || {});
@@ -462,7 +462,7 @@ async function handlePresetImport(file) {
             const existingPresets = await fetchPresetEntries();
             const collision = findPresetImportNameCollision(existingPresets, pendingImports);
             if (collision) {
-                showPresetActionStatus(`Preset "${collision}" already exists. Rename or delete it before importing.`, "error", 5000);
+                showPresetActionStatus(`预设 "${collision}" 已存在。请在导入前重命名或删除。`, "error", 5000);
                 return;
             }
             try {
@@ -480,25 +480,25 @@ async function handlePresetImport(file) {
             } catch (e) {
                 console.warn("Preset import failed mid-loop", e);
                 loadPresets();
-                showPresetActionStatus("Failed to import some presets.", "error", 3200);
+                showPresetActionStatus("导入部分预设失败。", "error", 3200);
             }
             return;
         }
 
         const normalized = normalizeImportedPresetData(parsed);
         if (!hasUsablePresetData(normalized)) {
-            showPresetActionStatus("Preset file contains no usable data.", "error", 3200);
+            showPresetActionStatus("预设文件不包含可用数据。", "error", 3200);
             return;
         }
         const name = sanitizeImportedPresetName(file.name.replace(/\.json$/i, ""));
         if (!name) {
-            showPresetActionStatus("Preset import contains an invalid name.", "error", 3200);
+            showPresetActionStatus("预设导入包含无效的名称。", "error", 3200);
             return;
         }
         const existingPresets = await fetchPresetEntries();
         const collision = findPresetImportNameCollision(existingPresets, [{ name }]);
         if (collision) {
-            showPresetActionStatus(`Preset "${collision}" already exists. Rename or delete it before importing.`, "error", 5000);
+            showPresetActionStatus(`预设 "${collision}" 已存在。请在导入前重命名或删除。`, "error", 5000);
             return;
         }
         await presetDependencies.fetchJson("/api/presets", {
@@ -511,7 +511,7 @@ async function handlePresetImport(file) {
     } catch (err) {
         const message = err && err.message === SENSITIVE_CUSTOM_ARG_MESSAGE
             ? SENSITIVE_CUSTOM_ARG_MESSAGE
-            : "Failed to import preset";
+            : "导入预设失败";
         showPresetActionStatus(message, "error", 5000);
         console.warn("Failed to import preset", err);
     }

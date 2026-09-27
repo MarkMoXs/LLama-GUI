@@ -58,9 +58,9 @@
                 if (!processOutputCursor.isCurrent(request.epoch)) return;
                 pollOutputFailCount++;
                 if (pollOutputFailCount <= 5) {
-                    appendOutput("Output polling error (retry " + pollOutputFailCount + "/5): " + e.message);
+                    appendOutput("输出轮询错误（重试 " + pollOutputFailCount + "/5）：" + e.message);
                 } else {
-                    appendOutput("Connection to server lost: " + e.message);
+                    appendOutput("与服务器的连接已断开：" + e.message);
                     stopOutputPolling();
                     onConnectionLost();
                 }

@@ -10,7 +10,7 @@
 
     const POPUP_NAME = "llama-gui-chat";
     const POPUP_FEATURES = "popup=yes,width=960,height=760,resizable=yes,scrollbars=yes";
-    const DEFAULT_POPOUT_TITLE = "Open Chat in a separate window";
+    const DEFAULT_POPOUT_TITLE = "在独立窗口中打开聊天";
 
     function startHostView(options = {}, api) {
         const target = options.window || (typeof window !== "undefined" ? window : null);
@@ -163,13 +163,13 @@
                 if (detached) setButtonDisabled(returnHere, Boolean(state.transfer
                     && !isClosedWindow(popup) && state.transfer.phase !== "complete"));
             }
-            if (returnHere && !detached) returnHere.textContent = "Return chat here";
+            if (returnHere && !detached) returnHere.textContent = "返回到此处";
             if (showWindow) showWindow.hidden = !detached;
             if (!detached) {
                 const heading = placeholder?.querySelector("h3");
                 const message = placeholder?.querySelector("p");
-                if (heading) heading.textContent = "Chat is open in another window";
-                if (message) message.textContent = "Use the separate Chat window to continue this conversation.";
+                if (heading) heading.textContent = "聊天窗口已在另一个窗口中打开";
+                if (message) message.textContent = "请使用独立的聊天窗口继续此对话";
             }
             notifyDetachedChange();
             if (detached) focusPlaceholderAction();
@@ -195,13 +195,13 @@
             const showWindow = target.document.getElementById("btn-chat-show-window");
             const returnHere = target.document.getElementById("btn-chat-return-here");
             const focusWasOnShowWindow = target.document.activeElement === showWindow;
-            if (heading) heading.textContent = "The Chat window was closed";
-            if (message) message.textContent = "Recover the saved Chat workspace here when you are ready.";
+            if (heading) heading.textContent = "聊天窗口已关闭";
+            if (message) message.textContent = "准备好后，在此恢复已保存的聊天工作区。";
             if (showWindow) showWindow.hidden = true;
             if (returnHere) {
                 returnHere.hidden = false;
                 setButtonDisabled(returnHere, false);
-                returnHere.textContent = "Recover chat here";
+                returnHere.textContent = "点击此处恢复聊天";
             }
             if (focusWasOnShowWindow) focusPlaceholderAction();
         }
@@ -215,13 +215,13 @@
             const returnHere = target.document.getElementById("btn-chat-return-here");
             if (layout) layout.hidden = true;
             if (placeholder) placeholder.hidden = false;
-            if (heading) heading.textContent = "Chat is open in another window";
-            if (message) message.textContent = reason || "Close the other Chat window, then recover the saved workspace here.";
+            if (heading) heading.textContent = "聊天窗口已在另一个窗口中打开";
+            if (message) message.textContent = reason || "关闭另一个聊天窗口，然后在此恢复已保存的工作区。";
             if (showWindow) showWindow.hidden = true;
             if (returnHere) {
                 returnHere.hidden = false;
                 setButtonDisabled(returnHere, false);
-                returnHere.textContent = "Recover chat here";
+                returnHere.textContent = "点击此处恢复聊天";
             }
         }
 
@@ -260,20 +260,20 @@
             const state = coordinator.getState();
             const transferState = coordinator.getTransferState();
             if (!state.popoutAvailable || !coordinator.isOwner() || transferState.allowed !== true) {
-                setDetachedUi(false, transferState.reason || state.reason || "Chat popout is unavailable in this browser.");
+                setDetachedUi(false, transferState.reason || state.reason || "此浏览器不支持聊天弹窗。");
                 return false;
             }
             if (!storage || typeof storage.setItem !== "function") {
-                setDetachedUi(false, "Chat popout requires available same-origin storage.");
-                setHostStatus("Chat remains available in this window. Separate Chat windows require available same-origin storage.");
+                setDetachedUi(false, "聊天弹窗需要可用的同源存储。");
+                setHostStatus("聊天在此窗口中仍然可用。单独的聊天窗口需要可用的同源存储。");
                 return false;
             }
             const key = `llama-gui:chat-window-probe:${randomId("probe", { window: target })}`;
             const value = randomId("partition", { window: target });
             try { storage.setItem(key, value); } catch (error) {
                 logger?.debug?.("Chat popout storage probe failed", error);
-                setDetachedUi(false, "Chat popout requires available same-origin storage.");
-                setHostStatus("Chat remains available in this window. Separate Chat windows require available same-origin storage.");
+                setDetachedUi(false, "聊天弹窗需要可用的同源存储。");
+                setHostStatus("聊天在此窗口中仍然可用。单独的聊天窗口需要可用的同源存储。");
                 return false;
             }
             popupProof = { key, value };
@@ -291,8 +291,8 @@
                 try { storage.removeItem(key); } catch (error) { logger?.debug?.("Chat popout probe cleanup failed", error); }
                 popupProof = null;
                 originalFocus = null;
-                setDetachedUi(false, "Allow popups for this page to open Chat in a separate window.");
-                setHostStatus("Chat remains available in this window. Allow popups for this page to open Chat in a separate window.");
+                setDetachedUi(false, "请允许此页面的弹窗，以在单独窗口中打开聊天。");
+                setHostStatus("聊天在此窗口中仍然可用。请允许此页面的弹窗，以在单独窗口中打开聊天。");
                 return false;
             }
             popup = opened;
@@ -317,20 +317,20 @@
                 }
                 popup = null;
                 restoreSourceAfterFailure();
-                setHostStatus("Chat remains available in this window. The separate Chat window could not connect, so the current workspace was preserved.");
+                setHostStatus("聊天在此窗口中仍然可用。单独的聊天窗口无法连接，因此保留了当前工作区。");
                 return false;
             }
             try { storage.removeItem(key); } catch (error) { logger?.debug?.("Chat popout probe cleanup failed", error); }
             if (!await coordinator.beginTransfer({ timeoutMs: 10000 })) {
                 popupProof = null;
                 if (coordinator.getState().status === "recovery-required") {
-                    setDetachedUi(true, "Chat ownership needs explicit recovery from the saved workspace.");
+                    setDetachedUi(true, "聊天所有权需要从已保存的工作区显式恢复。");
                     try { target.focus(); } catch (error) { logger?.debug?.("Main Chat focus failed", error); }
                 } else {
                     try { popup?.close?.(); } catch (error) { logger?.debug?.("Failed Chat popup close", error); }
                     popup = null;
                     restoreSourceAfterFailure();
-                    setHostStatus("Chat remains available in this window. The separate Chat window could not take ownership, so the current workspace was preserved.");
+                    setHostStatus("聊天在此窗口中仍然可用。单独的聊天窗口无法取得所有权，因此保留了当前工作区。");
                 }
                 return false;
             }
@@ -424,11 +424,11 @@
                 const recovered = await (detached ? requestReturn() : recoverMain());
                 if (recovered) setHostStatus("");
                 else if (coordinator.getState().reason !== "lock-busy") {
-                    setHostStatus("Chat could not be restored. Check that browser storage is available, then reload this page and try again.");
+                    setHostStatus("无法恢复聊天。请检查浏览器存储是否可用，然后重新加载此页面重试。");
                 }
             } catch (error) {
                 logger?.warn?.("Chat recovery failed", error);
-                setHostStatus("Chat recovery failed. Reload this page and try again.");
+                setHostStatus("聊天恢复失败。请重新加载此页面重试。");
             } finally {
                 recoveryPending = false;
             }
@@ -461,11 +461,11 @@
                     || outcome.reason === "invalid-recovery" || outcome.reason === "recovery-reset-failed"
                     || outcome.reason === "lock-error" || outcome.reason === "activation-failed")) {
                     showObserverRecovery(outcome.reason === "lock-busy"
-                        ? "Chat is active in another window. Close it, then recover the saved workspace here."
-                        : "The saved Chat workspace needs recovery. Choose Recover chat here to start with a safe workspace.");
+                        ? "聊天在另一个窗口中处于活动状态。请关闭它，然后在此恢复已保存的工作区。"
+                        : "已保存的聊天工作区需要恢复。请选择「在此恢复聊天」以使用安全的工作区开始。");
                     if (outcome.reason !== "lock-busy") {
                         const heading = target.document.getElementById("chat-window-placeholder-heading");
-                        if (heading) heading.textContent = "Chat needs recovery";
+                        if (heading) heading.textContent = "聊天需要恢复";
                     }
                 }
                 return outcome;
@@ -473,9 +473,9 @@
                 try { coordinator.dispose(); } catch (disposeError) {
                     logger?.debug?.("Unable to dispose Chat coordinator after startup failure", disposeError);
                 }
-                setHostStatus("Chat is unavailable in this window. Reload this page to restore Chat.");
+                setHostStatus("聊天在此窗口中不可用。请重新加载此页面以恢复聊天。");
                 try {
-                    showDetachedError(target, "Chat unavailable", "Chat could not start in this window. Other GUI sections remain available; reload this page to restore Chat and runtime controls.");
+                    showDetachedError(target, "聊天不可用", "聊天无法在此窗口中启动。其他 GUI 部分仍然可用；请重新加载此页面以恢复聊天和运行时控制。");
                 } catch (showError) {
                     logger?.warn?.("Unable to show Chat startup failure", showError);
                 }

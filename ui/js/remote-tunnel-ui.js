@@ -6,6 +6,16 @@
     let remoteTunnelTimer = null;
     let deps = {};
 
+    const TUNNEL_STATUS_LABELS = {
+        idle: "空闲",
+        preparing: "准备中",
+        downloading: "下载中",
+        starting: "启动中",
+        running: "运行中",
+        error: "错误",
+        stopped: "已停止",
+    };
+
     function configure(nextDeps) {
         deps = Object.assign({}, deps, nextDeps || {});
     }
@@ -30,7 +40,7 @@
     function renderStatus(state) {
         const status = state && state.status ? state.status : "idle";
         const url = state && state.url ? state.url : "";
-        const message = state && state.message ? state.message : "Remote tunnel is not running.";
+        const message = state && state.message ? state.message : "远程隧道未运行";
         const startBtn = document.getElementById("btn-start-remote-tunnel");
         const stopBtn = document.getElementById("btn-stop-remote-tunnel");
         const badge = document.getElementById("remote-tunnel-badge");
@@ -45,7 +55,7 @@
         const isError = status === "error";
 
         if (badge) {
-            badge.textContent = status.replace(/-/g, " ");
+            badge.textContent = TUNNEL_STATUS_LABELS[status] || status.replace(/-/g, " ");
             badge.classList.toggle("running", isRunning);
             badge.classList.toggle("working", isWorking);
             badge.classList.toggle("error", isError);
@@ -78,7 +88,7 @@
         }
         if (startBtn) {
             startBtn.disabled = isWorking || isRunning;
-            startBtn.textContent = isWorking ? "Starting..." : "Start Tunnel";
+            startBtn.textContent = isWorking ? "运行中..." : "启动隧道";
         }
         if (stopBtn) {
             stopBtn.classList.toggle("hidden", !(isWorking || isRunning));
@@ -95,10 +105,10 @@
             renderStatus(state);
             return state;
         } catch (e) {
-            const message = "Failed to read remote tunnel status: " + e.message;
+            const message = "读取远程隧道状态失败：" + e.message;
             if (remoteTunnelTimer) {
                 const statusEl = document.getElementById("remote-tunnel-status");
-                if (statusEl) statusEl.textContent = message + " Retrying...";
+                if (statusEl) statusEl.textContent = message + " 正在重试...";
             } else {
                 renderStatus({ status: "error", message });
             }
@@ -110,7 +120,7 @@
         const fetchJson = requireDependency("fetchJson");
         const getServerEndpointConfig = requireDependency("getServerEndpointConfig");
 
-        renderStatus({ status: "starting", message: "Starting Cloudflare tunnel..." });
+        renderStatus({ status: "starting", message: "正在启动 Cloudflare 隧道..." });
         try {
             const endpoint = getServerEndpointConfig();
             const state = await fetchJson("/api/remote-tunnel/start", {
@@ -124,7 +134,7 @@
             renderStatus(state);
             setPolling(true);
         } catch (e) {
-            renderStatus({ status: "error", message: "Failed to start remote tunnel: " + e.message });
+            renderStatus({ status: "error", message: "启动远程隧道失败：" + e.message });
         }
     }
 
@@ -138,7 +148,7 @@
             });
             renderStatus(state);
         } catch (e) {
-            renderStatus({ status: "error", message: "Failed to stop remote tunnel: " + e.message });
+            renderStatus({ status: "error", message: "停止远程隧道失败：" + e.message });
         }
     }
 

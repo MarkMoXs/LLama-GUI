@@ -1,24 +1,19 @@
-"""Read-only system and GPU telemetry for the Monitor tab.
+"""Monitor 标签页使用的只读系统与 GPU 遥测。
 
-Design rules:
+设计规则：
 
-* Read-only. Never installs anything, never elevates, never runs a package
-  manager. GPU probes are bounded calls against tools already on the machine
-  (``all-smi``, ``nvidia-smi``, ``amd-smi``) or an explicitly configured
-  loopback all-smi API.
-* Missing vendor tools and unsupported fields are normal capability states:
-  ``gpu_setup`` entries and per-field ``null`` values, never page-level errors.
-  Optional numerics are ``null`` when unavailable; zero is never invented.
-* CPU and disk throughput are deltas between cumulative counter samples. The
-  monotonic and wall-clock timestamps are captured immediately beside the
-  counter reads, and the (slow) GPU probes run afterwards, so probes can
-  neither distort the sample interval nor change ``sampled_at``.
-* ``state.system_stats_lock`` guards the previous sample, the response cache,
-  the cache generation, and the all-smi/AMD probe caches. The state lock is
-  never held while a GPU subprocess runs. ``state.system_stats_collection_lock``
-  serialises cold/forced collections; waiters compare the cache generation
-  around the lock so concurrent polls share one collection and repeated
-  Recheck clicks coalesce instead of queueing serial forced probes.
+* 只读操作。不会安装任何内容、提权或运行包管理器。GPU 探测仅限于调用
+    机器上已有的工具（``all-smi``、``nvidia-smi``、``amd-smi``），或显式配置的
+    回环 all-smi API。
+* 缺少厂商工具和不支持的字段属于正常能力状态：通过 ``gpu_setup`` 条目和各字段
+    的 ``null`` 表示，不产生页面级错误。可选数值不可用时为 ``null``，绝不臆造为零。
+* CPU 和磁盘吞吐量是累计计数器采样之间的差值。单调时钟与墙上时钟时间戳会紧邻
+    计数器读取立即采集，较慢的 GPU 探测随后执行，因此探测既不会扭曲采样间隔，
+    也不会改变 ``sampled_at``。
+* ``state.system_stats_lock`` 保护上一次采样、响应缓存、缓存代数以及 all-smi/AMD
+    探测缓存。GPU 子进程运行期间不会持有状态锁。``state.system_stats_collection_lock``
+    串行化冷启动/强制采集；等待者在锁前后比较缓存代数，使并发轮询共享一次采集，
+    连续点击“重新检查”也会合并，而不是排队执行多个强制探测。
 """
 
 import csv
@@ -44,16 +39,15 @@ from .subprocess_utils import get_no_window_creationflags
 
 
 # --------------------------------------------------------------------------
-# Tuning constants
+# 调优常量
 # --------------------------------------------------------------------------
 
-# Short-lived response cache, about the Monitor UI poll interval, so a cold
-# probe (including a slow all-smi/``amd-smi`` launch) is paid at most once per
-# cycle.
+# 短生命周期响应缓存，时长接近 Monitor UI 的轮询间隔，因此每个周期最多执行一次
+# 冷探测（包括启动缓慢的 all-smi/``amd-smi``）。
 CACHE_TTL_SECONDS = 2.0
 
-# Rate windows. The upper bound intentionally discards the first average after
-# suspension or a long polling gap; the next normal sample restores the rate.
+# 速率窗口。上限会有意丢弃系统挂起或长时间轮询间隔后的第一次平均值；下一次正常
+# 采样会恢复速率计算。
 MIN_RATE_INTERVAL_SECONDS = 0.1
 MAX_RATE_INTERVAL_SECONDS = 30.0
 
@@ -62,9 +56,8 @@ AMD_PROBE_TIMEOUT_SECONDS = 5.0
 ALL_SMI_PROBE_TIMEOUT_SECONDS = 5.0
 ALL_SMI_HTTP_TIMEOUT_SECONDS = 3.0
 ALL_SMI_MAX_RESPONSE_BYTES = 1024 * 1024
-# ``amd-smi`` starts a Python interpreter and is much slower than nvidia-smi;
-# all-smi also performs a full multi-vendor scan. Reuse either parsed result
-# briefly instead of relaunching it on every sample.
+# ``amd-smi`` 会启动 Python 解释器，比 nvidia-smi 慢得多；all-smi 也会执行完整的
+# 多厂商扫描。短时间复用已解析的结果，避免每次采样都重新启动工具。
 AMD_PROBE_CACHE_TTL_SECONDS = 5.0
 ALL_SMI_PROBE_CACHE_TTL_SECONDS = 5.0
 
@@ -93,7 +86,7 @@ _UNSET = ("", "N/A", "[N/A]", "n/a")
 # --------------------------------------------------------------------------
 
 def finite_non_negative(value):
-    """Return ``float(value)`` when finite and non-negative, else ``None``."""
+    """有限且非负时返回 ``float(value)``，否则返回 ``None``。"""
     if isinstance(value, bool):
         return None
     try:
@@ -113,7 +106,7 @@ def finite_non_negative_int(value):
 
 
 def clamp_percent(value):
-    """Constrain a percentage to its documented 0-100 range."""
+    """将百分比限制在规定的 0-100 范围内。"""
     number = finite_non_negative(value)
     if number is None:
         return None
@@ -121,7 +114,7 @@ def clamp_percent(value):
 
 
 def usage_percent(used, total):
-    """Used/total percentage; requires a positive total before dividing."""
+    """计算已用/总量百分比；相除前要求总量为正数。"""
     used = finite_non_negative(used)
     total = finite_non_negative(total)
     if used is None or total is None or total <= 0:
@@ -136,10 +129,9 @@ def valid_rate_interval(seconds):
 
 
 def compute_cpu_percent(prev_total, prev_idle, curr_total, curr_idle):
-    """CPU busy percentage from cumulative counter deltas.
+    """根据累计计数器差值计算 CPU 忙碌百分比。
 
-    Returns ``None`` on counter rollback or a non-positive total delta; the
-    caller replaces the baseline in that case by storing the current sample.
+    计数器回退或总量差值非正时返回 ``None``；调用方会保存当前采样并替换基线。
     """
     values = [finite_non_negative(v) for v in (prev_total, prev_idle, curr_total, curr_idle)]
     if any(value is None for value in values):
@@ -156,7 +148,7 @@ def compute_cpu_percent(prev_total, prev_idle, curr_total, curr_idle):
 
 
 def compute_bytes_per_second(previous, current, interval_seconds):
-    """Byte rate from cumulative counters; ``None`` on rollback."""
+    """根据累计计数器计算字节速率；计数器回退时返回 ``None``。"""
     previous = finite_non_negative(previous)
     current = finite_non_negative(current)
     if previous is None or current is None or not valid_rate_interval(interval_seconds):
@@ -168,7 +160,7 @@ def compute_bytes_per_second(previous, current, interval_seconds):
 
 
 def _normalize_uuid(raw):
-    """Bounded canonical GPU UUID, or ``None``."""
+    """返回有长度限制的规范 GPU UUID，否则返回 ``None``。"""
     value = str(raw or "").strip()
     if value.upper() in _UNSET or len(value) > 80:
         return None
@@ -178,7 +170,7 @@ def _normalize_uuid(raw):
 
 
 def _normalize_bdf(raw):
-    """Bounded canonical PCI bus/BDF identity, or ``None``."""
+    """返回有长度限制的规范 PCI 总线/BDF 标识，否则返回 ``None``。"""
     value = str(raw or "").strip()
     if value.upper() in _UNSET or len(value) > 32:
         return None
@@ -189,7 +181,7 @@ def _normalize_bdf(raw):
 
 
 def _optional_number(raw):
-    """Vendor-tool numeric field; N/A and invalid values become ``None``."""
+    """厂商工具的数值字段；N/A 和无效值转换为 ``None``。"""
     value = str(raw or "").strip()
     if value.upper() in _UNSET:
         return None
@@ -204,11 +196,11 @@ def _optional_name(raw):
 
 
 # --------------------------------------------------------------------------
-# Linux parsers (pure functions; exercised directly by the test suite)
+# Linux 解析器（纯函数；由测试套件直接测试）
 # --------------------------------------------------------------------------
 
 def parse_proc_stat(text):
-    """Aggregate CPU counters from ``/proc/stat`` as ``(total, idle)``."""
+    """将 ``/proc/stat`` 中的 CPU 计数器聚合为 ``(total, idle)``。"""
     for line in str(text or "").splitlines():
         if not line.startswith("cpu "):
             continue
@@ -227,7 +219,7 @@ def parse_proc_stat(text):
 
 
 def parse_proc_meminfo(text):
-    """System RAM as ``(used_bytes, total_bytes)`` from ``/proc/meminfo``."""
+    """从 ``/proc/meminfo`` 获取系统 RAM，返回 ``(used_bytes, total_bytes)``。"""
     fields = {}
     for line in str(text or "").splitlines():
         key, sep, rest = line.partition(":")
@@ -258,12 +250,11 @@ _WHOLE_DISK_RE = re.compile(
 
 
 def parse_proc_diskstats(text):
-    """Per-device cumulative I/O counters from ``/proc/diskstats``."""
+    """从 ``/proc/diskstats`` 获取各设备的累计 I/O 计数器。"""
     entries = []
     for line in str(text or "").splitlines():
         parts = line.split()
-        # Modern kernels have 18+ fields; require the classic 14 minimum that
-        # includes the sectors-read/sectors-written columns this code uses.
+        # 现代内核有 18 个以上字段；这里要求包含本代码所用读写扇区列的经典 14 字段。
         if len(parts) < 14:
             continue
         try:
@@ -288,12 +279,11 @@ def parse_proc_diskstats(text):
 
 
 def select_disk_counters(entries, device):
-    """Pick the I/O counters for the device holding the application root.
+    """选择承载应用根目录的设备的 I/O 计数器。
 
-    Returns ``(source_identity, bytes_read, bytes_written)`` or ``None``.
-    Preference: exact major:minor (a partition counts its own I/O), then the
-    whole disk of that major, then the sum of all whole-disk devices. The
-    source identity keys the delta baseline so a device change discards rates.
+    返回 ``(source_identity, bytes_read, bytes_written)`` 或 ``None``。
+    优先级为：精确的 major:minor（分区统计自身 I/O），然后是该 major 对应的整盘，
+    最后是所有整盘设备之和。源标识用于关联差值基线，因此设备变化会丢弃速率。
     """
     if device is not None:
         major, minor = device
@@ -322,7 +312,7 @@ def select_disk_counters(entries, device):
 
 
 def resolve_root_device(root_path):
-    """``(major, minor)`` of the filesystem holding *root_path*, or ``None``."""
+    """返回承载 *root_path* 的文件系统的 ``(major, minor)``，否则返回 ``None``。"""
     try:
         stat_result = os.stat(root_path)
     except OSError:
@@ -334,7 +324,7 @@ def resolve_root_device(root_path):
 
 
 # --------------------------------------------------------------------------
-# Windows collectors (ctypes, no extra packages)
+# Windows 采集器（ctypes，无需额外包）
 # --------------------------------------------------------------------------
 
 class _FILETIME(ctypes.Structure):
@@ -346,9 +336,9 @@ def _filetime_ticks(ft):
 
 
 def collect_windows_cpu():
-    """Cumulative CPU counters via ``GetSystemTimes``.
+    """通过 ``GetSystemTimes`` 获取累计 CPU 计数器。
 
-    Kernel time already includes idle time, so total = kernel + user.
+    内核时间已经包含空闲时间，因此 total = kernel + user。
     """
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     idle = _FILETIME()
@@ -380,7 +370,7 @@ class _MEMORYSTATUSEX(ctypes.Structure):
 
 
 def collect_windows_memory():
-    """``(used_bytes, total_bytes)`` via ``GlobalMemoryStatusEx``."""
+    """通过 ``GlobalMemoryStatusEx`` 获取 ``(used_bytes, total_bytes)``。"""
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     status = _MEMORYSTATUSEX()
     status.dwLength = ctypes.sizeof(_MEMORYSTATUSEX)
@@ -405,11 +395,10 @@ class _PDH_RAW_COUNTER(ctypes.Structure):
 
 
 def collect_windows_disk_counters():
-    """Cumulative physical-disk bytes via language-neutral Windows PDH counters.
+    """通过与语言无关的 Windows PDH 计数器获取累计物理磁盘字节数。
 
-    Read raw values so the shared sampler handles warmup, gaps and rollbacks.
-    Query handles are local to one collection and always closed, including on
-    counter failures. No subprocess, administrator prompt or vendor tool.
+    读取原始值，以便共享采样器处理预热、间隔和回退。查询句柄仅属于一次采集，
+    即使计数器失败也始终关闭。不启动子进程、不弹出管理员提示，也不依赖厂商工具。
     """
     pdh = ctypes.WinDLL("pdh")
     handle = ctypes.c_void_p
@@ -443,20 +432,20 @@ def collect_windows_disk_counters():
         for counter in handles:
             raw = _PDH_RAW_COUNTER()
             check(pdh.PdhGetRawCounterValue(counter, None, ctypes.byref(raw)))
-            # VALID_DATA and NEW_DATA are both usable, even on the first query.
+            # VALID_DATA 和 NEW_DATA 均可使用，包括第一次查询。
             if raw.CStatus not in (0, 1):
                 check(raw.CStatus)
             if raw.FirstValue < 0:
                 raise ValueError("Disk performance counter returned a negative byte count")
             values.append(raw.FirstValue)
-        return {"source": "disk:pdh:physical-total", "label": "All physical disks",
+        return {"source": "disk:pdh:physical-total", "label": "所有物理磁盘",
                 "bytes_read": values[0], "bytes_written": values[1]}
     finally:
         pdh.PdhCloseQuery(query)
 
 
 # --------------------------------------------------------------------------
-# macOS collectors (Mach host statistics through ctypes, I/O Registry)
+# macOS 采集器（通过 ctypes 获取 Mach 主机统计和 I/O Registry 数据）
 # --------------------------------------------------------------------------
 
 _HOST_CPU_LOAD_INFO = 3
@@ -520,10 +509,10 @@ def collect_macos_cpu():
 
 
 def collect_macos_memory():
-    """``(used_bytes, total_bytes)`` from hw.memsize + ``host_statistics64``.
+    """通过 hw.memsize 和 ``host_statistics64`` 获取 ``(used_bytes, total_bytes)``。
 
-    "Used" is active + wired + compressor pages — the same buckets Activity
-    Monitor counts as app memory pressure.
+    “已用”是 active + wired + compressor 页面之和，即 Activity Monitor 作为应用内存
+    压力统计的同一组分类。
     """
     libc = _macos_libc()
     total_size = ctypes.c_uint64(0)
@@ -555,7 +544,7 @@ def collect_macos_memory():
 
 
 # --------------------------------------------------------------------------
-# Platform-neutral counter collection
+# 平台无关的计数器采集
 # --------------------------------------------------------------------------
 
 def _log_probe_failure(tool, exc):
@@ -563,14 +552,12 @@ def _log_probe_failure(tool, exc):
 
 
 def _probe_details(reason, executable=None, exit_code=None, stderr_text=None):
-    """Serializable probe diagnostics for the Monitor UI.
+    """供 Monitor UI 使用的可序列化探测诊断信息。
 
-    Only facts the probe actually observed are emitted, under a fixed key set:
-    ``reason`` is one of ``not_found`` / ``timeout`` / ``exit_code`` /
-    ``parse_error`` / ``no_devices`` / ``launch_failed``; ``exit_code`` and
-    ``stderr`` are omitted
-    when unknown; stderr is cut to its first line and 200 chars so a noisy
-    vendor tool cannot bloat the payload.
+    只输出探测实际观察到的事实，并使用固定键集合：``reason`` 是 ``not_found`` /
+    ``timeout`` / ``exit_code`` / ``parse_error`` / ``no_devices`` /
+    ``launch_failed`` 之一；未知时省略 ``exit_code`` 和 ``stderr``。``stderr``
+    会截取第一行的前 200 个字符，避免嘈杂的厂商工具撑大载荷。
     """
     details = {"reason": reason}
     if executable is not None:
@@ -585,7 +572,7 @@ def _probe_details(reason, executable=None, exit_code=None, stderr_text=None):
 
 
 def parse_macos_disk_counters(payload):
-    """Aggregate IOBlockStorageDriver byte counters from an ioreg plist."""
+    """从 ioreg plist 聚合 IOBlockStorageDriver 的字节计数器。"""
     roots = plistlib.loads(payload)
     stack = list(roots) if isinstance(roots, list) else [roots]
     devices = {}
@@ -606,8 +593,8 @@ def parse_macos_disk_counters(payload):
             devices[str(identity)] = (read, written)
     if not devices:
         return None
-    # A device appearing/disappearing starts a fresh delta baseline.
-    return {"source": "disk:ioreg:" + ",".join(sorted(devices)), "label": "All physical disks",
+    # 设备出现或消失时，重新建立差值基线。
+    return {"source": "disk:ioreg:" + ",".join(sorted(devices)), "label": "所有物理磁盘",
             "bytes_read": sum(values[0] for values in devices.values()),
             "bytes_written": sum(values[1] for values in devices.values())}
 
@@ -640,23 +627,21 @@ def collect_linux_memory():
 
 
 def collect_linux_disk_counters(root_path):
-    """Disk source and byte counters in the shared sample format, or ``None``."""
+    """以共享采样格式返回磁盘来源和字节计数器，否则返回 ``None``。"""
     entries = parse_proc_diskstats(_read_text_file("/proc/diskstats"))
     selected = select_disk_counters(entries, resolve_root_device(root_path))
     if selected is None:
         return None
     source, bytes_read, bytes_written = selected
-    label = "All physical disks" if source == "disk:all" else "Application filesystem device"
+    label = "所有物理磁盘" if source == "disk:all" else "应用文件系统设备"
     return {"source": source, "label": label, "bytes_read": bytes_read, "bytes_written": bytes_written}
 
 
 def collect_system_counters(ctx, platform_name):
-    """One snapshot of cumulative system counters plus its timestamps.
+    """获取一份累计系统计数器及其时间戳快照。
 
-    The monotonic and wall-clock timestamps are captured *before* the reads so
-    they sit immediately beside them; GPU probes run later and must not
-    influence either value. Every collector failure degrades to ``None`` for
-    that metric only.
+    单调时钟和墙上时钟时间戳会在读取前采集，使其紧邻计数器读取；GPU 探测随后执行，
+    不得影响这两个值。任何采集器失败都只会让对应指标降级为 ``None``。
     """
     counters = {
         "monotonic": time.monotonic(),
@@ -688,8 +673,7 @@ def collect_system_counters(ctx, platform_name):
     else:
         collectors = {}
 
-    # Each metric degrades independently: one collector failure must not fail
-    # the whole endpoint or its sibling metrics.
+    # 各指标独立降级：一个采集器失败不能导致整个端点或其他指标失败。
     for key, collector in collectors.items():
         try:
             counters[key] = collector()
@@ -713,15 +697,14 @@ def collect_system_counters(ctx, platform_name):
 
 
 # --------------------------------------------------------------------------
-# Optional all-smi probe
+# 可选的 all-smi 探测
 # --------------------------------------------------------------------------
 
 def resolve_all_smi():
-    """Locate an optional all-smi executable.
+    """定位可选的 all-smi 可执行文件。
 
-    ``LLAMA_GUI_ALL_SMI_PATH`` wins over PATH so portable installs do not
-    require a machine-wide PATH edit. A configured missing path is returned
-    to the caller as an observed setup error rather than silently ignored.
+    ``LLAMA_GUI_ALL_SMI_PATH`` 优先于 PATH，因此便携安装不需要修改全局 PATH。
+    已配置但不存在的路径会作为已观察到的设置错误返回给调用方，而不会静默忽略。
     """
     configured = os.environ.get("LLAMA_GUI_ALL_SMI_PATH", "").strip()
     if configured:
@@ -730,7 +713,7 @@ def resolve_all_smi():
 
 
 def normalize_all_smi_url(raw_url):
-    """Canonical loopback all-smi snapshot URL, or ``None`` when unset."""
+    """返回规范的回环 all-smi 快照 URL；未设置时返回 ``None``。"""
     value = str(raw_url or "").strip()
     if not value:
         return None
@@ -752,8 +735,8 @@ def normalize_all_smi_url(raw_url):
         raise ValueError("all-smi URL has an invalid port") from exc
     if parsed.path.rstrip("/") not in ("", "/snapshot"):
         raise ValueError("all-smi URL path must be /snapshot")
-    # Avoid a DNS lookup for the friendly localhost spelling. This keeps a
-    # modified hosts file from sending the explicitly local probe elsewhere.
+    # 避免对友好的 localhost 写法执行 DNS 查询，防止修改后的 hosts 文件将显式的
+    # 本地探测发送到其他位置。
     netloc = parsed.netloc
     if host == "localhost":
         netloc = "127.0.0.1"
@@ -770,7 +753,7 @@ class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
 
 
 def _read_all_smi_snapshot_url(url):
-    """Read one bounded snapshot without proxies or redirects."""
+    """在不使用代理或重定向的情况下读取一份有大小限制的快照。"""
     request = urllib.request.Request(url, headers={"Accept": "application/json"})
     opener = urllib.request.build_opener(
         urllib.request.ProxyHandler({}), _NoRedirectHandler()
@@ -806,9 +789,8 @@ def parse_all_smi_device(node, fallback_index):
         gpu_id = f"all-smi:uuid:{normalized_uuid}"
         persistent = True
     elif raw_uuid:
-        # Windows all-smi may use a PNP device identifier containing slashes,
-        # ampersands, and other UI-hostile characters. Hash it into a stable,
-        # bounded card identity rather than exposing the raw identifier.
+        # Windows all-smi 可能使用包含斜杠、和号及其他不适合 UI 的字符的 PNP 设备标识。
+        # 将其哈希为稳定且有长度限制的显卡标识，而不是暴露原始标识。
         digest = hashlib.sha256(raw_uuid.encode("utf-8", errors="replace")).hexdigest()[:24]
         gpu_id = f"all-smi:uuid-sha256:{digest}"
         persistent = True
@@ -838,7 +820,7 @@ def parse_all_smi_device(node, fallback_index):
 
 
 def parse_all_smi_json(text):
-    """Normalize a schema-1 all-smi snapshot into Monitor GPU records."""
+    """将 schema-1 all-smi 快照规范化为 Monitor GPU 记录。"""
     data = json.loads(text)
     if (
         not isinstance(data, dict)
@@ -858,7 +840,7 @@ def parse_all_smi_json(text):
 
 
 def probe_all_smi():
-    """Probe an explicit loopback API or a local optional all-smi binary."""
+    """探测显式回环 API 或本地可选的 all-smi 二进制文件。"""
     configured_url = os.environ.get("LLAMA_GUI_ALL_SMI_URL", "").strip()
     executable = None
     source = configured_url
@@ -920,13 +902,13 @@ def probe_all_smi():
 
 
 # --------------------------------------------------------------------------
-# NVIDIA probe
+# NVIDIA 探测
 # --------------------------------------------------------------------------
 
 def resolve_nvidia_smi(platform_name):
-    """Locate ``nvidia-smi`` on PATH plus known driver locations.
+    """在 PATH 及已知驱动位置中定位 ``nvidia-smi``。
 
-    It ships with the NVIDIA driver environment; never download it separately.
+    它随 NVIDIA 驱动环境提供；绝不单独下载。
     """
     found = shutil.which("nvidia-smi")
     if found:
@@ -947,10 +929,9 @@ def resolve_nvidia_smi(platform_name):
 
 
 def parse_nvidia_smi_row(row, fallback_index):
-    """One ``nvidia-smi`` CSV row into a GPU dict; ``None`` when malformed.
+    """将一行 ``nvidia-smi`` CSV 转为 GPU 字典；格式错误时返回 ``None``。
 
-    Individual rows are rejected on their own; a bad row never discards the
-    good devices around it. ``N/A`` fields stay ``null`` per field.
+    各行独立拒绝；错误行不会丢弃其周围的正常设备。``N/A`` 字段逐字段保留为 ``null``。
     """
     if len(row) != 8:
         return None
@@ -973,8 +954,7 @@ def parse_nvidia_smi_row(row, fallback_index):
     memory_total_mib = _optional_number(mem_total_raw)
     temperature = _optional_number(temp_raw)
 
-    # A row with neither an identity nor a readable name carries nothing the
-    # card could render; treat it as malformed.
+    # 既没有标识也没有可读名称的行无法提供显卡可显示的信息，将其视为格式错误。
     if uuid is None and bdf is None and name is None:
         return None
 
@@ -1006,10 +986,10 @@ def parse_nvidia_smi_row(row, fallback_index):
 
 
 def parse_nvidia_smi_csv(text):
-    """All GPUs from one bounded selective ``nvidia-smi`` CSV query."""
+    """从一次有界的选择性 ``nvidia-smi`` CSV 查询中获取所有 GPU。"""
     devices = []
-    # nvidia-smi separates fields with ", "; skipinitialspace lets quoted
-    # names (which may contain commas) parse as single fields.
+    # nvidia-smi 使用“逗号+空格”分隔字段；skipinitialspace 允许包含逗号的带引号名称
+    # 作为单个字段解析。
     for row in csv.reader(io.StringIO(str(text or "")), skipinitialspace=True):
         if not row or all(not field.strip() for field in row):
             continue
@@ -1020,12 +1000,11 @@ def parse_nvidia_smi_csv(text):
 
 
 def probe_nvidia(platform_name):
-    """Return ``(status, devices, details)`` with status ``ok`` / ``missing`` / ``error``.
+    """返回 ``(status, devices, details)``，状态为 ``ok`` / ``missing`` / ``error``。
 
-    ``details`` is ``None`` when the probe produced usable devices; otherwise it
-    carries the reason (``not_found`` / ``timeout`` / ``exit_code`` /
-    ``no_devices``) plus any observed facts (tool path, exit code, first stderr
-    line).
+    探测产生可用设备时 ``details`` 为 ``None``；否则包含原因（``not_found`` /
+    ``timeout`` / ``exit_code`` / ``no_devices``）及观察到的事实（工具路径、退出码、
+    stderr 第一行）。
     """
     executable = resolve_nvidia_smi(platform_name)
     if executable is None:
@@ -1076,7 +1055,7 @@ def probe_nvidia(platform_name):
 
 
 # --------------------------------------------------------------------------
-# AMD probe
+# AMD 探测
 # --------------------------------------------------------------------------
 
 def is_wsl_environment():
@@ -1090,11 +1069,11 @@ def is_wsl_environment():
 
 
 def resolve_amd_smi():
-    """Locate ``amd-smi`` on PATH plus the standard ROCm locations.
+    """在 PATH 及标准 ROCm 位置中定位 ``amd-smi``。
 
-    ``/opt/rocm/core-*/bin`` entries are ordered by *parsed* version, not by
-    lexical path order, so ``core-10.0`` wins over ``core-6.3``. The standalone
-    ``amdrocm-amdsmi`` package does not put the binary on PATH by default.
+    ``/opt/rocm/core-*/bin`` 条目按解析后的版本排序，而非按路径字典序排序，因此
+    ``core-10.0`` 会优先于 ``core-6.3``。独立的 ``amdrocm-amdsmi`` 包默认不会将
+    二进制文件加入 PATH。
     """
     found = shutil.which("amd-smi")
     if found:
@@ -1162,7 +1141,7 @@ _AMD_UNIT_MULTIPLIERS = {
 
 
 def _amd_walk(node, depth):
-    """Breadth-first ``(key, value)`` pairs so shallow matches win."""
+    """按广度优先生成 ``(key, value)`` 对，使较浅层的匹配优先。"""
     queue = [(node, depth)]
     while queue:
         current, remaining = queue.pop(0)
@@ -1175,7 +1154,7 @@ def _amd_walk(node, depth):
 
 
 def amd_number(value):
-    """Normalize plain numerics and unit-bearing values from AMD SMI JSON."""
+    """规范化 AMD SMI JSON 中的普通数值和带单位的值。"""
     if isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
@@ -1192,7 +1171,7 @@ def amd_number(value):
 
 
 def amd_bytes(value):
-    """Bytes from a number or a unit-bearing string like ``"4.0 GB"``."""
+    """将数字或类似 ``"4.0 GB"`` 的带单位字符串转换为字节数。"""
     if isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
@@ -1242,7 +1221,7 @@ def _amd_find_raw(node, keys, depth=3):
 
 
 def _amd_memory_usage(node):
-    """``(used_bytes, total_bytes)`` from whichever nesting a release uses."""
+    """从不同版本采用的嵌套结构中获取 ``(used_bytes, total_bytes)``。"""
     usage = _amd_find_raw(node, _AMD_MEM_KEYS)
     if isinstance(usage, dict):
         used = usage.get(_AMD_USED_KEYS[0], usage.get(_AMD_USED_KEYS[1]))
@@ -1252,7 +1231,7 @@ def _amd_memory_usage(node):
 
 
 def _amd_device_nodes(data):
-    """Device dicts from AMD SMI metric output, across release shapes."""
+    """从不同版本形态的 AMD SMI 指标输出中提取设备字典。"""
     if isinstance(data, list):
         return [item for item in data if isinstance(item, dict)]
     if isinstance(data, dict):
@@ -1274,7 +1253,7 @@ def _amd_device_nodes(data):
 
 
 def parse_amd_device(node, fallback_index):
-    """Normalize one AMD device; every field is independent."""
+    """规范化一个 AMD 设备；各字段彼此独立。"""
     raw_index = node.get("gpu")
     has_reported_index = (
         isinstance(raw_index, int) and not isinstance(raw_index, bool) and raw_index >= 0
@@ -1318,11 +1297,10 @@ def parse_amd_device(node, fallback_index):
 
 
 def parse_amd_smi_json(text):
-    """All GPUs from one bounded ``amd-smi metric --json`` probe.
+    """从一次有界的 ``amd-smi metric --json`` 探测中获取所有 GPU。
 
-    The parser is deliberately isolated and permissive: AMD SMI field names and
-    nesting have changed between releases, so only actually supplied fields are
-    normalized and absent values stay ``null``.
+    解析器特意保持隔离且宽松：AMD SMI 的字段名称和嵌套结构在不同版本间发生过变化，
+    因此只规范化实际提供的字段，缺失值保留为 ``null``。
     """
     data = json.loads(text)
     devices = []
@@ -1334,14 +1312,12 @@ def parse_amd_smi_json(text):
 
 
 def probe_amd(platform_name):
-    """Return ``(status, devices, details)``.
+    """返回 ``(status, devices, details)``。
 
-    Status is ``ok`` / ``missing`` / ``error`` / ``unsupported_platform``.
-    Native Windows and macOS never execute an incidental ``amd-smi`` found on
-    PATH; WSL may use an already-working one but gets no install guidance.
-    ``details`` is ``None`` when the probe produced usable devices; otherwise
-    it carries the reason plus any observed facts (tool path, exit code, first
-    stderr line).
+    状态为 ``ok`` / ``missing`` / ``error`` / ``unsupported_platform``。原生 Windows
+    和 macOS 不会执行 PATH 中偶然找到的 ``amd-smi``；WSL 可以使用已正常工作的工具，
+    但不会提供安装指导。探测产生可用设备时 ``details`` 为 ``None``；否则包含原因
+    及观察到的事实（工具路径、退出码、stderr 第一行）。
     """
     if platform_name == "win32" or platform_name == "darwin" or not platform_name.startswith("linux"):
         return "unsupported_platform", [], None
@@ -1393,14 +1369,14 @@ def probe_amd(platform_name):
 
 
 # --------------------------------------------------------------------------
-# Setup-state generation (evidence-gated, per provider)
+# 设置状态生成（按提供方、以探测证据为准）
 # --------------------------------------------------------------------------
 
 def provider_hints(backend_name):
-    """``(nvidia, amd)`` hints from the installed backend only.
+    """仅根据已安装后端返回 ``(nvidia, amd)`` 提示。
 
-    ``cuda`` implies NVIDIA; ``hip``/``rocm``/Lemonade imply AMD. Other
-    backends, including both custom slots, imply no vendor or setup rows.
+    ``cuda`` 表示 NVIDIA；``hip``/``rocm``/Lemonade 表示 AMD。其他后端（包括两个
+    自定义槽位）不表示任何厂商，也不生成设置行。
     """
     backend = str(backend_name or "").strip().lower()
     nvidia = backend.startswith("cuda")
@@ -1413,7 +1389,7 @@ def provider_hints(backend_name):
 
 
 def detect_package_manager(os_release_text):
-    """Allowlisted package manager from ``/etc/os-release``, or ``None``."""
+    """根据 ``/etc/os-release`` 返回允许列表中的包管理器，否则返回 ``None``。"""
     if os_release_text is None:
         return None
     values = {}
@@ -1449,13 +1425,12 @@ def _nvidia_setup_entry(nvidia_status, details=None):
             "package_manager": None,
             "docs_url": NVIDIA_DOCS_URL,
             "message": (
-                "nvidia-smi was not found. It ships with the NVIDIA driver "
-                "environment - install or update the driver using the official "
-                "documentation, then recheck."
+                "未找到 nvidia-smi。它随 NVIDIA 驱动环境提供，请按照官方文档安装或更新驱动，"
+                "然后重新检查。"
             ),
         }
     else:
-        # Probe failed or exited successfully without a usable device.
+        # 探测失败，或虽正常退出但没有可用设备。
         entry = {
             "provider": "nvidia",
             "state": "error",
@@ -1464,8 +1439,8 @@ def _nvidia_setup_entry(nvidia_status, details=None):
             "package_manager": None,
             "docs_url": NVIDIA_DOCS_URL,
             "message": (
-                "nvidia-smi ran but returned no usable GPU data. Check the NVIDIA "
-                "driver installation, then recheck."
+                "nvidia-smi 已运行，但没有返回可用的 GPU 数据。请检查 NVIDIA 驱动安装，"
+                "然后重新检查。"
             ),
         }
     if details is not None:
@@ -1483,14 +1458,13 @@ def _amd_setup_entry(amd_status, is_wsl, os_release_text, details=None):
             "package_manager": None,
             "docs_url": AMD_INSTALL_DOCS_URL,
             "message": (
-                "AMD SMI telemetry is available only on Linux bare metal. On "
-                "Windows, the optional cross-vendor all-smi tool can provide AMD "
-                "GPU telemetry; WSL and macOS can also use all-smi where their "
-                "hardware is supported. Models can still run normally."
+                "AMD SMI 遥测仅在 Linux 裸机上可用。在 Windows 上，可选的跨厂商 all-smi 工具"
+                "可以提供 AMD GPU 遥测；在硬件受支持的情况下，WSL 和 macOS 也可以使用"
+                "all-smi。模型仍可正常运行。"
             ),
         }
     if amd_status == "missing":
-        # WSL was already excluded above, so normal distribution rules apply.
+        # WSL 已在上方排除，因此这里采用普通发行版规则。
         manager = detect_package_manager(os_release_text)
         command = AMD_SETUP_COMMANDS.get(manager)
         entry = {
@@ -1501,16 +1475,13 @@ def _amd_setup_entry(amd_status, is_wsl, os_release_text, details=None):
             "package_manager": manager,
             "docs_url": AMD_INSTALL_DOCS_URL,
             "message": (
-                "amd-smi was not found. The AMD repository and a compatible "
-                "amdgpu driver must already be configured; "
+                "未找到 amd-smi。必须先配置 AMD 软件源和兼容的 amdgpu 驱动；"
                 + (
-                    "then install AMD SMI with the command shown. "
+                    "然后使用所示命令安装 AMD SMI。"
                     if command
-                    else "then install the amdrocm-amdsmi package using your "
-                    "distribution's package manager. "
+                    else "然后使用发行版的包管理器安装 amdrocm-amdsmi 包。"
                 )
-                + "Llama GUI shows installation guidance but never runs "
-                "package-manager commands."
+                + "Llama GUI 会显示安装指导，但绝不运行包管理器命令。"
             ),
         }
         if details is not None:
@@ -1524,8 +1495,7 @@ def _amd_setup_entry(amd_status, is_wsl, os_release_text, details=None):
         "package_manager": None,
         "docs_url": AMD_INSTALL_DOCS_URL,
         "message": (
-            "amd-smi ran but returned no usable GPU data. Check the ROCm "
-            "installation, then recheck."
+            "amd-smi 已运行，但没有返回可用的 GPU 数据。请检查 ROCm 安装，然后重新检查。"
         ),
     }
     if details is not None:
@@ -1536,36 +1506,32 @@ def _amd_setup_entry(amd_status, is_wsl, os_release_text, details=None):
 def _generic_gpu_state_entry(platform_name, is_wsl):
     if platform_name == "win32":
         message = (
-            "No supported GPU telemetry tool was detected. On Windows, NVIDIA "
-            "monitoring can use nvidia-smi from the NVIDIA driver. AMD SMI itself "
-            "supports Linux only, but the optional cross-vendor all-smi tool can "
-            "provide Windows AMD telemetry. Models can still run normally, and "
-            "system metrics keep updating."
+            "未检测到受支持的GPU遥测工具，在Windows系统上，"
+            "NVIDIA 监控可直接使用NVIDIA驱动自带的nvidia-smi工具；"
+            "AMD SMI本身仅支持Linux系统，但可选用跨厂商的all-smi工具，"
+            "在Windows上实现AMD GPU的遥测采集。大模型仍可正常运行，"
+            "系统基础指标也会持续更新。"
         )
     elif is_wsl:
         message = (
-            "No supported GPU telemetry tool was detected in WSL. NVIDIA monitoring "
-            "can use all-smi or nvidia-smi inside WSL. AMD SMI support under WSL is "
-            "experimental; Monitor can use an already-working all-smi or amd-smi but "
-            "does not provide distribution setup guidance for it."
+            "在 WSL 中未检测到受支持的 GPU 遥测工具。NVIDIA 监控可在 WSL 内使用 all-smi "
+            "或 nvidia-smi。WSL 下的 AMD SMI 支持仍处于实验阶段；Monitor 可以使用已正常"
+            "工作的 all-smi 或 amd-smi，但不会为其提供发行版设置指导。"
         )
     elif platform_name.startswith("linux"):
         message = (
-            "No supported GPU telemetry tool was detected. Install the optional "
-            "cross-vendor all-smi tool, or use nvidia-smi from the NVIDIA driver / "
-            "amd-smi from AMD SMI, then Recheck."
+            "未检测到受支持的 GPU 遥测工具。请安装可选的跨厂商 all-smi 工具，或使用 NVIDIA "
+            "驱动提供的 nvidia-smi / AMD SMI 提供的 amd-smi，然后重新检查。"
         )
     elif platform_name == "darwin":
         message = (
-            "No supported GPU telemetry tool was detected. The optional all-smi tool "
-            "can provide Apple Silicon GPU telemetry on macOS. Models can still run "
-            "normally, and system metrics keep updating."
+            "未检测到受支持的 GPU 遥测工具。可选的 all-smi 工具可以在 macOS 上提供 Apple "
+            "Silicon GPU 遥测。模型仍可正常运行，系统指标也会持续更新。"
         )
     else:
         message = (
-            "No supported GPU telemetry tool was detected. Try the optional all-smi "
-            "tool for cross-vendor monitoring. System metrics keep updating; Recheck "
-            "after changing the installed backend or driver environment."
+            "未检测到受支持的 GPU 遥测工具。请尝试使用可选的 all-smi 工具进行跨厂商监控。"
+            "系统指标会持续更新；更改已安装的后端或驱动环境后，请重新检查。"
         )
     return {"provider": "", "state": "unavailable", "message": message}
 
@@ -1576,14 +1542,12 @@ def _all_smi_state_entry(status, details):
         "provider": "all-smi",
         "state": "error",
         "message": (
-            "all-smi returned no usable GPU devices. Existing vendor probes were "
-            "also tried; run an all-smi snapshot directly to inspect its output, "
-            "then Recheck."
+            "all-smi 未返回可用的 GPU 设备。也已尝试现有的厂商探测；请直接运行 all-smi "
+            "快照检查其输出，然后重新检查。"
             if no_devices
             else
-            "all-smi was detected or configured but its GPU snapshot could not be "
-            "read. Existing vendor probes were also tried; check the probe details "
-            "and the all-smi installation, then Recheck."
+            "已检测到或配置了 all-smi，但无法读取其 GPU 快照。也已尝试现有的厂商探测；"
+            "请检查探测详情和 all-smi 安装，然后重新检查。"
         ),
         "details": details,
     }
@@ -1601,20 +1565,18 @@ def build_gpu_setup_entries(
     nvidia_details=None,
     amd_details=None,
 ):
-    """Relevant setup/error/unsupported rows only.
+    """仅生成相关的设置、错误或不支持状态行。
 
-    A working probe suppresses only its own provider's row; provider states are
-    independent, so mixed success/failure states coexist. When no provider is
-    identified, one platform-specific generic state explains the available
-    options. Probe diagnostics are attached as ``details`` when the probe
-    observed a failure or found no usable devices.
+    正常工作的探测只会隐藏自身提供方的状态行；提供方状态相互独立，因此成功和失败
+    状态可以同时存在。未识别出提供方时，用一条平台特定的通用状态说明可用选项。
+    探测观察到失败或未找到可用设备时，将诊断信息作为 ``details`` 附加。
     """
     nvidia_hint, amd_hint = provider_hints(backend_name)
     entries = []
 
     if nvidia_hint:
         if nvidia_status == "ok" and nvidia_device_count == 0:
-            # Exited successfully but yielded no valid devices.
+            # 已正常退出，但没有产生有效设备。
             entries.append(_nvidia_setup_entry("error", details=nvidia_details))
         elif nvidia_status != "ok":
             entries.append(_nvidia_setup_entry(nvidia_status, details=nvidia_details))
@@ -1624,8 +1586,7 @@ def build_gpu_setup_entries(
             entries.append(_amd_setup_entry(amd_status, is_wsl, os_release_text))
         elif amd_status == "ok" and amd_device_count == 0:
             if is_wsl:
-                # WSL without an already-working probe gets the platform
-                # limitation message, not Linux package guidance.
+                # 没有已正常工作的探测时，WSL 显示平台限制消息，而不是 Linux 包安装指导。
                 entries.append(
                     _amd_setup_entry("unsupported_platform", is_wsl, os_release_text)
                 )
@@ -1723,12 +1684,12 @@ def _build_disk_metric(previous, counters, interval_seconds, interval_ok):
     used, total = usage if usage is not None else (None, None)
     return {
         "available": usage is not None,
-        "path_label": "Application disk",
+        "path_label": "应用磁盘",
         "used_bytes": int(used) if used is not None else None,
         "total_bytes": int(total) if total is not None else None,
         "percent": usage_percent(used, total),
         "io_available": current_disk is not None,
-        "io_label": current_disk.get("label", "Application filesystem device") if current_disk else "",
+        "io_label": current_disk.get("label", "应用文件系统设备") if current_disk else "",
         "read_bytes_per_second": read_rate,
         "write_bytes_per_second": write_rate,
     }
@@ -1748,7 +1709,7 @@ def get_backend_name(ctx):
 
 
 def _cached_amd_probe(state, allow_cache):
-    """Freshness-checked AMD probe result, or ``None`` when a probe is needed."""
+    """经过新鲜度检查的 AMD 探测结果；需要探测时返回 ``None``。"""
     if not allow_cache:
         return None
     with state.system_stats_lock:
@@ -1785,10 +1746,10 @@ def _store_all_smi_probe(state, probe_result):
 
 
 def collect_sample(ctx, previous, allow_probe_cache=True):
-    """One full response payload plus the next ``previous`` record.
+    """获取一份完整响应载荷及下一条 ``previous`` 记录。
 
-    Counter reads happen first with their timestamps; the slow GPU probes
-    run afterwards and cannot influence ``sampled_at`` or ``interval_seconds``.
+    计数器会先连同时间戳读取；较慢的 GPU 探测随后运行，不能影响 ``sampled_at`` 或
+    ``interval_seconds``。
     """
     services = ctx.services
     platform_name = getattr(services, "current_platform", "") or sys.platform
@@ -1863,13 +1824,11 @@ def collect_sample(ctx, previous, allow_probe_cache=True):
 
 
 def get_system_stats(ctx, force_refresh=False):
-    """The Monitor payload, served from a short-lived cache when possible.
+    """返回 Monitor 载荷，可能时从短生命周期缓存提供。
 
-    Cache miss or forced refresh records the observed cache generation, claims
-    the collection lock, and checks again: if another request advanced the
-    generation while waiting, that completed sample is returned even for
-    ``refresh=1``. Repeated Recheck clicks therefore coalesce instead of
-    queueing serial forced probes.
+    缓存未命中或强制刷新会记录观察到的缓存代数、获取采集锁并再次检查：如果等待期间
+    另一个请求推进了代数，即使是 ``refresh=1`` 也会返回已完成的采样。因此连续点击
+    “重新检查”会合并，而不是排队执行多个强制探测。
     """
     state = ctx.state
     now = time.monotonic()

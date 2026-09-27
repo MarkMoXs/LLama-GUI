@@ -53,7 +53,7 @@
 
     function subscribe(listener, options = {}) {
         if (typeof listener !== "function") {
-            throw new TypeError("Process lifecycle subscriber must be a function");
+            throw new TypeError("进程生命周期订阅者必须是一个函数");
         }
         listeners.add(listener);
         if (options.emitCurrent !== false) {
@@ -167,7 +167,7 @@
             status = await deps.fetchJson("/api/status");
         }
         if (!status || typeof status !== "object" || Array.isArray(status)) {
-            throw new Error("Could not obtain authoritative process status.");
+            throw new Error("无法获取权威进程状态。");
         }
         return status;
     }
@@ -231,7 +231,7 @@
     async function waitForReady(id, runtime, options = {}) {
         const generation = runtimeGeneration(runtime);
         if (generation === null) {
-            return settleAsFailed(id, "Launch did not provide a runtime generation.", options);
+            return settleAsFailed(id, "启动未提供运行时代数。", options);
         }
         const waitStartedAt = Date.now();
         let slowLoadWarningShown = false;
@@ -253,7 +253,7 @@
                 }
                 if (!isCurrent(id)) return result(false, { cancelled: true });
                 if (!statusIsRunning(status) || !statusMatchesGeneration(status, generation)) {
-                    return settleAsFailed(id, errorMessage(error, "The launched process exited before it became ready."), options);
+                    return settleAsFailed(id, errorMessage(error, "已启动的进程在就绪前已退出。"), options);
                 }
                 updateSnapshot({ phase: "starting", ready: false }, id);
                 await delay(healthPollDelay());
@@ -268,7 +268,7 @@
                 && healthGeneration >= 1
                 && healthGeneration !== generation
             ) {
-                return settleAsFailed(id, "Another runtime replaced the launched process.", options);
+                return settleAsFailed(id, "另一个运行时替换了已启动的进程。", options);
             }
             if (state === "ready" && health.ready !== false) {
                 let status = null;
@@ -280,7 +280,7 @@
                 if (!isCurrent(id)) return result(false, { cancelled: true });
                 const authoritativeRuntime = runtimeFromStatus(status) || runtime;
                 if (runtimeGeneration(authoritativeRuntime) !== generation || (status && !statusIsRunning(status))) {
-                    return settleAsFailed(id, "The launched runtime changed before readiness was confirmed.", options);
+                    return settleAsFailed(id, "已启动的运行时在确认就绪前发生了变化。", options);
                 }
                 updateSnapshot({
                     phase: "ready",
@@ -306,8 +306,8 @@
                 const message = health && (health.error || health.message)
                     ? String(health.error || health.message)
                     : state === "superseded"
-                        ? "Another runtime replaced the launched process."
-                        : "The launched process exited before it became ready.";
+                        ? "另一个运行时替换了已启动的进程。"
+                        : "已启动的进程在就绪前已退出。";
                 return settleAsFailed(id, message, options);
             }
 
@@ -348,7 +348,7 @@
         }
         const builder = getHook(options, "buildLaunchRequest");
         if (typeof builder !== "function") {
-            throw new Error("Process lifecycle launch request is missing");
+            throw new Error("缺少进程生命周期启动请求");
         }
         return builder(source);
     }
@@ -380,11 +380,11 @@
         try {
             request = await resolveLaunchRequest(requestSource, options);
         } catch (error) {
-            return settleAsFailed(id, errorMessage(error, "Could not build launch request."), options);
+            return settleAsFailed(id, errorMessage(error, "无法构建启动请求。"), options);
         }
         if (!isCurrent(id)) return result(false, { cancelled: true });
         if (!request || typeof request !== "object" || !request.tool || !Array.isArray(request.args)) {
-            return settleAsFailed(id, "Launch request is invalid.", options);
+            return settleAsFailed(id, "启动请求无效。", options);
         }
 
         updateSnapshot({ phase: "starting", ready: false, error: "" }, id);
@@ -404,7 +404,7 @@
             });
         } catch (error) {
             if (!isCurrent(id)) return result(false, { cancelled: true });
-            return settleAsFailed(id, errorMessage(error, "Launch failed."), options);
+            return settleAsFailed(id, errorMessage(error, "启动失败。"), options);
         }
 
         if (!isCurrent(id)) {
@@ -412,7 +412,7 @@
             return result(false, { cancelled: true });
         }
         if (!launchResult || launchResult.error) {
-            return settleAsFailed(id, String(launchResult && launchResult.error || "Launch failed."), options);
+            return settleAsFailed(id, String(launchResult && launchResult.error || "启动失败。"), options);
         }
 
         let status = null;
@@ -422,14 +422,14 @@
                 status = await refreshStatus();
                 runtime = runtimeFromStatus(status);
             } catch (error) {
-                return settleAsFailed(id, errorMessage(error, "Could not confirm the launched runtime."), options);
+                return settleAsFailed(id, errorMessage(error, "无法确认已启动的运行时。"), options);
             }
         }
         if (!isCurrent(id)) {
             await stopUnexpectedLaunch(launchResult);
             return result(false, { cancelled: true });
         }
-        if (!runtime) return settleAsFailed(id, "Launch succeeded without an active runtime.", options);
+        if (!runtime) return settleAsFailed(id, "启动成功但没有活动运行时。", options);
 
         updateSnapshot({ activeRuntime: runtime, phase: "starting", ready: false }, id);
         await callOptionalHook(options, "startOutput", launchResult.output_cursor, runtime, getSnapshot(), launchResult);
@@ -451,7 +451,7 @@
 
     async function launch(requestSource, options = {}) {
         const id = beginTransition(options.operation || "manual-launch", { phase: "starting", ready: false });
-        if (id === null) return result(false, { busy: true, error: "Another process action is already in progress." });
+        if (id === null) return result(false, { busy: true, error: "另一项进程操作正在进行中" });
         await callOptionalHook(options, "invalidateOutput", getSnapshot());
         await callOptionalHook(options, "invalidateStats", getSnapshot());
         return launchWithin(id, requestSource, options);
@@ -480,7 +480,7 @@
             });
         } catch (error) {
             if (!isCurrent(id)) return result(false, { cancelled: true });
-            return settleAsFailed(id, errorMessage(error, "Stop request failed."), options);
+            return settleAsFailed(id, errorMessage(error, "停止请求失败。"), options);
         }
         if (!isCurrent(id)) return result(false, { cancelled: true });
 
@@ -488,7 +488,7 @@
         try {
             status = await refreshStatus();
         } catch (error) {
-            return settleAsFailed(id, errorMessage(error, "Could not confirm that the process stopped."), options);
+            return settleAsFailed(id, errorMessage(error, "无法确认进程已停止。"), options);
         }
         if (!isCurrent(id)) return result(false, { cancelled: true });
 
@@ -499,10 +499,10 @@
                 && currentGeneration !== null
                 && currentGeneration !== expectedGeneration;
             const message = changed
-                ? "Another runtime replaced the process before it could be stopped."
+                ? "在停止前，另一个运行时替换了该进程。"
                 : stopResult && stopResult.stopped === false
-                    ? "The running process refused to stop."
-                    : "The process is still running after the stop request.";
+                    ? "正在运行的进程拒绝停止。"
+                    : "进程在停止请求后仍在运行。";
             finishTransition(id, {
                 phase: "failed",
                 activeRuntime: currentRuntime || expectedRuntime,
@@ -536,7 +536,7 @@
 
     function normalizePreparedTarget(value) {
         if (value && value.ok === false) {
-            throw new Error(String(value.error || "Target preflight failed."));
+            throw new Error(String(value.error || "（Target 目标）预检失败"));
         }
         return value && Object.prototype.hasOwnProperty.call(value, "target") ? value.target : value;
     }
@@ -546,21 +546,21 @@
             phase: snapshot.phase,
             ready: snapshot.ready,
         });
-        if (id === null) return result(false, { busy: true, error: "Another process action is already in progress." });
+        if (id === null) return result(false, { busy: true, error: "另一项进程操作正在进行中" });
 
         let target;
         try {
             const resolveTarget = getHook(options, "resolveTarget");
-            if (typeof resolveTarget !== "function") throw new Error("Target resolver is missing.");
+            if (typeof resolveTarget !== "function") throw new Error("无法获取（Target 目标）解析器");
             target = await resolveTarget(options.slot);
             if (!isCurrent(id)) return result(false, { cancelled: true });
             const prepareTarget = getHook(options, "prepareTarget");
             if (typeof prepareTarget === "function") target = await prepareTarget(target);
             target = normalizePreparedTarget(target);
-            if (!target) throw new Error("Target preflight did not return a launch target.");
+            if (!target) throw new Error("（Target 目标）预检未返回可用 （launch 启动） 目标");
         } catch (error) {
             if (!isCurrent(id)) return result(false, { cancelled: true });
-            const message = errorMessage(error, "Target preflight failed.");
+            const message = errorMessage(error, "（Target 目标）预检失败");
             finishTransition(id, { error: message });
             await callOptionalHook(options, "onFailed", message, getSnapshot(), null);
             return result(false, { error: message, preflight: true });
@@ -570,7 +570,7 @@
         try {
             status = await refreshStatus();
         } catch (error) {
-            return settleAsFailed(id, errorMessage(error, "Could not read the active runtime."), options);
+            return settleAsFailed(id, errorMessage(error, "无法读取活动运行时。"), options);
         }
         if (!isCurrent(id)) return result(false, { cancelled: true });
         const activeRuntime = runtimeFromStatus(status);
@@ -578,7 +578,7 @@
             !statusIsRunning(status)
             || runtimeGeneration(activeRuntime) !== Number(options.expectedGeneration)
         )) {
-            const message = "The running process changed before restart. Review the current process and try again.";
+            const message = "正在运行的进程在重启前发生了变化。请检查当前进程并重试。";
             finishTransition(id, { error: message });
             await callOptionalHook(options, "onFailed", message, getSnapshot(), status);
             return result(false, { error: message, conflict: true, status });
@@ -608,10 +608,10 @@
 
         try {
             const applyTarget = getHook(options, "applyTarget");
-            if (typeof applyTarget !== "function") throw new Error("Target apply hook is missing.");
+            if (typeof applyTarget !== "function") throw new Error("（Target 目标）apply hook 缺失");
             await applyTarget(target);
         } catch (error) {
-            return settleAsFailed(id, errorMessage(error, "Could not apply the target configuration."), options);
+            return settleAsFailed(id, errorMessage(error, "无法应用目标配置。"), options);
         }
         if (!isCurrent(id)) return result(false, { cancelled: true });
 
@@ -625,7 +625,7 @@
 
     async function reconcile(status, options = {}) {
         if (!status || typeof status !== "object" || Array.isArray(status)) {
-            return result(false, { error: "Authoritative process status is invalid." });
+            return result(false, { error: "权威进程状态无效。" });
         }
         if (snapshot.busy) return result(false, { busy: true });
 

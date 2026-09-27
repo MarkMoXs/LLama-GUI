@@ -189,7 +189,7 @@ processLifecycle.configure({
         const stopped = typeof window.LlamaGui.chatWindow?.abortActiveStream === "function"
             ? await window.LlamaGui.chatWindow.abortActiveStream()
             : await chatUi.abortActiveStream();
-        if (stopped === false) throw new Error("The active Chat stream could not be stopped.");
+        if (stopped === false) throw new Error("无法停止正在进行的聊天流。");
         return stopped;
     },
     invalidateOutput: processOutput.stop,
@@ -302,7 +302,7 @@ async function resolveModelSwitchTarget(slotId) {
         }),
     });
     if (!preflight || !preflight.ok || !preflight.preset_fingerprint) {
-        throw new Error("The target preset could not be validated.");
+        throw new Error("无法验证目标预设。");
     }
 
     return {
@@ -777,12 +777,12 @@ function handleLifecycleProcessStarted(initialCursor, runtime, _state, launchRes
 async function handleLifecycleReady(runtime) {
     if (runtime && runtime.tool === "llama-server") {
         const { baseUrl } = getServerEndpointConfig();
-        appendOutput(`Server ready at ${baseUrl}`);
-        appendOutput(`Web UI: ${baseUrl}/`);
-        showToast("Server is ready!", "success", {
+        appendOutput(`服务器已就绪：${baseUrl}`);
+        appendOutput(`Web UI：${baseUrl}/`);
+        showToast("服务器已就绪！", "success", {
             duration: SERVER_READY_TOAST_MS,
             action: {
-                label: "Open Monitor",
+                label: "打开监视器",
                 onClick: () => switchTab("monitor"),
             },
         });
@@ -791,17 +791,17 @@ async function handleLifecycleReady(runtime) {
 }
 
 async function handleLifecycleFailure(message) {
-    appendOutput("ERROR: " + message);
+    appendOutput("错误：" + message);
     await refreshRuntimeStatusPanels();
 }
 
 function handleLifecycleSlowLoad(message) {
-    appendOutput("WARNING: " + message);
+    appendOutput("警告：" + message);
     showToast(message, "warning", { duration: SLOW_LOAD_WARNING_TOAST_MS });
 }
 
 async function handleReconciliationFailure(message) {
-    appendOutput("ERROR: " + message);
+    appendOutput("错误：" + message);
     showToast(message, "error", { duration: 0 });
     updateChatStatusBadge();
     updateApiEndpoints();
@@ -846,7 +846,7 @@ function buildManualLaunchRequest() {
     const args = result.args;
     const tool = flagCore.getCurrentTool();
     if (!flagCore.hasLaunchModelArg(args)) {
-        throw new Error("Select a model or provide a remote model source before launching.");
+        throw new Error("在启动之前，请选择一个模型或提供远程模型源。");
     }
     return { tool, args, env: result.env, launch_settings: flagCore.captureLaunchSettings() };
 }
@@ -874,7 +874,7 @@ async function stopLlama() {
         appendOutput("--- Process stopped ---");
         await refreshRuntimeStatusPanels();
     } else if (!outcome.cancelled && outcome.error) {
-        appendOutput("ERROR: " + outcome.error);
+        appendOutput("错误：" + outcome.error);
         showToast(outcome.error, "error", { duration: 0 });
         if (outcome.status && outcome.status.running) resumeRuntimePolling(outcome.status);
     }
@@ -1020,11 +1020,11 @@ function wireCommandCopyButton(buttonId, previewId) {
         const preview = document.getElementById(previewId);
         const command = preview ? preview.textContent.trim() : "";
         if (!command) {
-            showToast("No command to copy yet", "info");
+            showToast("暂无可复制的命令", "info");
             return;
         }
         copyText(command).then((copied) => {
-            showToast(copied ? "Command copied" : "Could not copy command",
+            showToast(copied ? "命令已复制" : "无法复制命令",
                 copied ? "info" : "error");
         });
     });

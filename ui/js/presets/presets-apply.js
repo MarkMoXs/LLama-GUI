@@ -55,7 +55,7 @@ function preparePresetLaunchState(data, options = {}) {
     const normalized = normalizePresetData(data);
     const preserveApiKey = options.preserveApiKey !== false;
     if (typeof flagCore.buildEffectiveFlagValues !== "function") {
-        throw new Error("Flag defaults are not available.");
+        throw new Error("标志默认值不可用。");
     }
     const flags = flagCore.buildEffectiveFlagValues(normalized.flags);
     if (preserveApiKey) {
@@ -97,8 +97,8 @@ function comparePresetToCurrent(data, currentData) {
     const keys = new Set([...Object.keys(prepared.flags), ...Object.keys(flags)]);
     const valueKey = value => Array.isArray(value) ? JSON.stringify(value.map(String)) : String(value ?? "");
     const entries = [
-        { id: "tool", label: "Tool", before: prepared.tool || (currentData ? currentData.tool : core.getCurrentTool()), after: currentData ? currentData.tool : core.getCurrentTool() },
-        { id: "model", label: "Model", before: prepared.model, after: currentData ? currentData.model : core.getSelectedModel() },
+        { id: "tool", label: "工具", before: prepared.tool || (currentData ? currentData.tool : core.getCurrentTool()), after: currentData ? currentData.tool : core.getCurrentTool() },
+        { id: "model", label: "模型", before: prepared.model, after: currentData ? currentData.model : core.getSelectedModel() },
         ...Array.from(keys).filter(id => !SENSITIVE_PRESET_FLAG_IDS.has(id) && id !== "ctx_size_draft")
             .map(id => ({ id, label: getPresetFlagLabel(id), before: prepared.flags[id], after: flags[id] })),
     ];
@@ -107,16 +107,16 @@ function comparePresetToCurrent(data, currentData) {
 
 function formatSavedPresetValue(id, value) {
     value = getPresetFlagCore().normalizeStoredFlagValue(id, value);
-    if (value === null || value === undefined || value === "") return "Not set";
+    if (value === null || value === undefined || value === "") return "未设置";
     const definition = (typeof FLAGS !== "undefined" ? FLAGS : []).find(flag => flag.id === id);
-    if (definition?.sensitive || SENSITIVE_PRESET_FLAG_IDS.has(id) || id === "custom_args") return "Set · value hidden";
-    if (id === "ctx_size" && String(value) === "0") return "Auto · from model (0)";
-    if (id === "gpu_layers" && value === "auto") return "Auto";
-    if (id === "gpu_layers" && value === "all") return "All layers";
+    if (definition?.sensitive || SENSITIVE_PRESET_FLAG_IDS.has(id) || id === "custom_args") return "已设置 · 值已隐藏";
+    if (id === "ctx_size" && String(value) === "0") return "自动 · 使用模型值（0）";
+    if (id === "gpu_layers" && value === "auto") return "自动";
+    if (id === "gpu_layers" && value === "all") return "全部层";
     const option = definition?.options?.find(option => String(option.value) === String(value));
     if (option) return option.label;
-    if (typeof value === "boolean") return value ? "Enabled" : "Disabled";
-    return Array.isArray(value) ? value.join(", ") || "None" : String(value);
+    if (typeof value === "boolean") return value ? "启用" : "禁用";
+    return Array.isArray(value) ? value.join(", ") || "无" : String(value);
 }
 
 function renderPresetChangeRows(body, changes) {
@@ -125,7 +125,7 @@ function renderPresetChangeRows(body, changes) {
         const row = document.createElement("tr");
         const before = formatSavedPresetValue(entry.id, entry.before);
         const after = formatSavedPresetValue(entry.id, entry.after);
-        for (const text of [entry.label, before, before === after && after === "Set · value hidden" ? "Changed · value hidden" : after]) {
+        for (const text of [entry.label, before, before === after && after === "已设置 · 值已隐藏" ? "已更改 · 值已隐藏" : after]) {
             const cell = document.createElement("td");
             cell.textContent = text;
             row.appendChild(cell);
@@ -160,15 +160,15 @@ function refreshPresetContext() {
         : { changes: [], blocked: hasSensitiveCustomArgs(getPresetFlagCore().getFlagValues()) };
     for (const panel of panels) {
         panel.classList.remove("hidden");
-        panel.querySelector("[data-preset-origin]").textContent = lastLoadedPresetName ? "Based on:" : "Unsaved configuration";
+        panel.querySelector("[data-preset-origin]").textContent = lastLoadedPresetName ? "Based on:" : "未保存的配置";
         const name = panel.querySelector("[data-preset-name]");
         name.classList.toggle("hidden", !lastLoadedPresetName);
         name.textContent = lastLoadedPresetName;
         name.title = lastLoadedPresetName;
         panel.querySelector("[data-preset-state]").classList.toggle("hidden", !lastLoadedPresetName);
-        panel.querySelector("[data-preset-state]").textContent = loadedPresetMissing ? "No longer saved"
+        panel.querySelector("[data-preset-state]").textContent = loadedPresetMissing ? "已不再保存"
             : comparison.blocked ? "Cannot save custom API key"
-                : comparison.changes.length ? "Modified" : "Matches saved preset";
+                : comparison.changes.length ? "已修改" : "与已保存预设匹配";
         const update = panel.querySelector("[data-preset-update]");
         update.classList.toggle("hidden", !lastLoadedPresetName);
         update.textContent = `Update ${lastLoadedPresetName}`;
@@ -176,7 +176,7 @@ function refreshPresetContext() {
         panel.querySelector("[data-preset-save-new]").disabled = presetSavePending || comparison.blocked;
         const review = panel.querySelector("[data-preset-review]");
         review.classList.toggle("hidden", loadedPresetMissing || !comparison.changes.length);
-        panel.querySelector("[data-preset-review-label]").textContent = `Compared with saved preset · ${comparison.changes.length} changes`;
+        panel.querySelector("[data-preset-review-label]").textContent = `与保存的预设值相比 · ${comparison.changes.length} changes`;
         if (review.open) renderPresetChangeRows(review.querySelector("tbody"), comparison.changes);
         const note = panel.querySelector("[data-preset-context-note]");
         note.classList.toggle("hidden", !loadedPresetMissing && !loadedPresetArchived && !comparison.blocked && !review.open);

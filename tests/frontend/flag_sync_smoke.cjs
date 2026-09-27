@@ -89,15 +89,15 @@ async function selectSection(page, section) {
 }
 
 async function verifyConfigurePresentation(page) {
-    await page.fill("#config-search", "context & memory");
+    await page.fill("#config-search", "上下文与内存");
     await page.waitForSelector("#flag-ctx_size", { state: "visible" });
     const contextHeader = page.locator('.accordion[data-category-id="context"] .accordion-header');
     const contextRow = page.locator('.flag-row[data-flag-id="ctx_size"]');
 
-    assert.equal(await page.getByRole("spinbutton", { name: "Total Context Window -c", exact: true }).getAttribute("id"), "flag-ctx_size");
+    assert.equal(await page.getByRole("spinbutton", { name: "上下文大小 -c", exact: true }).getAttribute("id"), "flag-ctx_size");
     await contextRow.locator(".flag-setting-name").click();
     assert.equal(await page.evaluate(() => document.activeElement.id), "flag-ctx_size", "setting labels focus their inputs");
-    assert.match(await contextRow.locator(".flag-default").textContent(), /GUI default: 64000/);
+    assert.match(await contextRow.locator(".flag-default").textContent(), /GUI 默认：64000/);
 
     const help = contextRow.locator(".flag-more");
     assert.equal(await help.locator(".flag-tip-text").isVisible(), false, "usage tips stay out of the collapsed row");
@@ -123,9 +123,9 @@ async function verifyConfigurePresentation(page) {
     assert.equal(numberColumns.length, 3);
     assert.ok(numberColumns.every(rect => Math.abs(rect.left - numberColumns[0].left) < 1
         && Math.abs(rect.right - numberColumns[0].right) < 1), "numeric controls share an aligned column");
-    assert.match(await page.locator('.flag-row[data-flag-id="mlock"] .flag-desc').textContent(), /Legacy.*b10875/);
+    assert.match(await page.locator('.flag-row[data-flag-id="mlock"] .flag-desc').textContent(), /旧版.*b10875/);
 
-    await page.fill("#config-search", "sampling");
+    await page.fill("#config-search", "采样");
     const submenu = page.locator('.accordion[data-category-id="sampling"] .flag-submenu-header').first();
     await submenu.waitFor({ state: "visible" });
     assert.equal(await submenu.getAttribute("aria-expanded"), "true");
@@ -152,20 +152,20 @@ async function verifyConfigurePresentation(page) {
 }
 
 async function verifyReasoningPreserve(page) {
-    await page.fill("#config-search", "preserve reasoning");
+    await page.fill("#config-search", "保留推理");
     const selector = "#flag-reasoning_preserve";
     await page.waitForSelector(selector, { state: "visible" });
     assert.equal(await page.inputValue(selector), "auto");
-    assert.match(await page.locator('.flag-row[data-flag-id="reasoning_preserve"] .flag-desc').textContent(), /Auto follows the binary default.*compatible templates.*more context/);
-    assert.deepEqual(await page.locator(`${selector} option`).allTextContents(), ["Auto", "Enabled", "Disabled"]);
+    assert.match(await page.locator('.flag-row[data-flag-id="reasoning_preserve"] .flag-desc').textContent(), /Auto 遵循二进制默认值.*兼容模板.*更多上下文/);
+    assert.deepEqual(await page.locator(`${selector} option`).allTextContents(), ["自动", "启用", "禁用"]);
     for (const mode of ["enabled", "disabled", "auto"]) {
         await page.selectOption(selector, mode);
         assert.equal(await page.evaluate(() => window.LlamaGui.flagCore.getFlagValues().reasoning_preserve), mode);
         const command = await page.textContent("#command-preview-text");
         assert.equal(/(?:^| )--reasoning-preserve(?: |$)/.test(command), mode === "enabled");
         assert.equal(/(?:^| )--no-reasoning-preserve(?: |$)/.test(command), mode === "disabled");
-        await page.fill("#config-search", "context");
-        await page.fill("#config-search", "preserve reasoning");
+        await page.fill("#config-search", "上下文");
+        await page.fill("#config-search", "保留推理");
         assert.equal(await page.inputValue(selector), mode, "rebuilding Configure preserves the selected mode");
     }
     for (const [legacy, mode] of [[true, "enabled"], [false, "auto"]]) {
@@ -190,7 +190,7 @@ async function verifyNgramSimple(page) {
     for (const id of ["ngram_simple", "ngram_mod"]) {
         const guidance = page.locator(`.flag-row[data-flag-id="${id}"] .flag-desc`);
         assert.equal(await guidance.isVisible(), true);
-        assert.match(await guidance.textContent(), /individually first.*Simple is tried first.*fallback/);
+        assert.match(await guidance.textContent(), /先分别尝试.*先尝试 Simple.*回退/);
     }
     await page.fill("#flag-ngram_simple_size_n", "8");
     await page.fill("#flag-ngram_simple_size_m", "16");
@@ -210,7 +210,7 @@ async function verifyNgramSimple(page) {
     await toggle.check();
     assert.match(await page.textContent("#command-preview-text"), /--spec-ngram-simple-size-m 16/);
     // Rebuilding Configure from search must preserve shared values and toggles.
-    await page.fill("#config-search", "context");
+    await page.fill("#config-search", "上下文");
     await page.fill("#config-search", "ngram simple");
     assert.equal(await toggle.isChecked(), true);
     assert.equal(await page.inputValue("#flag-ngram_simple_size_m"), "16");
@@ -218,15 +218,15 @@ async function verifyNgramSimple(page) {
     await page.evaluate(() => window.LlamaGui.flagCore.setMultipleFlagValues({
         model_draft: "models/draft.gguf", hf_repo_draft: "org/draft", draft_max: 8,
     }));
-    await page.fill("#config-search", "speculative type");
+    await page.fill("#config-search", "推测类型");
     assert.equal(await page.inputValue("#flag-spec_type"), "auto");
     await page.selectOption("#flag-spec_type", "none");
     assert.equal(await page.evaluate(() => window.LlamaGui.flagCore.getFlagValues().spec_type), "none");
     command = await page.textContent("#command-preview-text");
     assert.match(command, /--spec-type none(?: |$)/);
     assert.doesNotMatch(command, /(?:-md|-hfd|--spec-draft-n-max|--spec-ngram-)/);
-    await page.fill("#config-search", "context");
-    await page.fill("#config-search", "speculative type");
+    await page.fill("#config-search", "上下文");
+    await page.fill("#config-search", "推测类型");
     assert.equal(await page.inputValue("#flag-spec_type"), "none", "rebuilding Configure retains explicit None");
     await page.selectOption("#flag-spec_type", "auto");
     command = await page.textContent("#command-preview-text");
@@ -241,16 +241,16 @@ async function verifyNgramSimple(page) {
 
 async function verifyConfigureComparison(page) {
     await selectSection(page, "configure");
-    await page.fill("#config-search", "context & memory");
+    await page.fill("#config-search", "上下文与内存");
     await page.waitForSelector("#flag-ctx_size", { state: "visible" });
     const original = await page.inputValue("#flag-ctx_size");
     const row = page.locator('.flag-row[data-flag-id="ctx_size"]');
-    assert.equal(await page.textContent("#config-runtime-state"), "Process active · action failed", "a failed stop does not describe the process as stopped");
-    assert.equal(await page.textContent("#config-change-count"), "Settings match launch");
+    assert.equal(await page.textContent("#config-runtime-state"), "进程处于活动状态・操作失败", "a failed stop does not describe the process as stopped");
+    assert.equal(await page.textContent("#config-change-count"), "设置与启动参数一致");
     assert.equal(await row.locator(".flag-baseline-value").textContent(), original);
     await page.fill("#flag-ctx_size", String(Number(original) + 1));
-    assert.equal(await page.textContent("#config-change-count"), "1 setting changed since launch");
-    assert.match(await page.locator('.accordion[data-category-id="context"] .count').first().textContent(), /1 changed/);
+    assert.equal(await page.textContent("#config-change-count"), "1 项设置 启动以后发生了变更");
+    assert.match(await page.locator('.accordion[data-category-id="context"] .count').first().textContent(), /1 项已更改/);
     await page.check("#config-changes-only");
     assert.equal(await page.locator('.flag-row:not(.hidden)').count(), 1);
     await page.fill("#flag-ctx_size", original);
@@ -270,7 +270,7 @@ async function verifyConfigureComparison(page) {
     assert.equal(await page.locator("#config-comparison-exclusions").isVisible(), false);
     await page.locator("#config-comparison-about > summary").click();
     assert.equal(await page.locator("#config-comparison-exclusions").isVisible(), true);
-    assert.match(await page.textContent("#config-comparison-exclusions"), /Automatic values, API keys, and custom launch arguments aren’t compared/);
+    assert.match(await page.textContent("#config-comparison-exclusions"), /自动生成的数值.*不会参与对比/);
     assert.ok(!await page.locator(".config-runtime").textContent().then(text => text.includes("first-secret")));
     const viewport = page.viewportSize();
     for (const width of [820, 390]) {
@@ -285,23 +285,23 @@ async function verifyConfigureComparison(page) {
     }
     await page.setViewportSize(viewport);
     await page.click("#config-revert-changes");
-    assert.equal(await page.textContent("#config-change-count"), "Settings match launch");
+    assert.equal(await page.textContent("#config-change-count"), "设置与启动参数一致");
     assert.equal(await page.inputValue("#flag-ctx_size"), original);
     const selectedModel = await page.evaluate(() => window.LlamaGui.flagCore.getSelectedModel());
     await page.evaluate(() => {
         window.LlamaGui.flagCore.setSelectedModelValue("different.gguf");
         window.LlamaGui.flagCore.updateCommandPreview();
     });
-    assert.match(await page.textContent("#config-comparison-exclusions"), /selected a different model/);
+    assert.match(await page.textContent("#config-comparison-exclusions"), /选择了不同的模型/);
     await page.evaluate(model => {
         window.LlamaGui.flagCore.setSelectedModelValue(model);
         window.LlamaGui.flagCore.updateCommandPreview();
     }, selectedModel);
     await page.evaluate(() => window.LlamaGui.flagCore.setCurrentTool("llama-cli"));
     assert.equal(await page.locator("#config-changes-only").isDisabled(), true);
-    assert.match(await page.textContent("#config-comparison-note"), /Select llama-server/);
+    assert.match(await page.textContent("#config-comparison-note"), /选择 llama-server/);
     await page.evaluate(() => window.LlamaGui.flagCore.setCurrentTool("llama-server"));
-    assert.equal(await page.textContent("#config-change-count"), "Settings match launch");
+    assert.equal(await page.textContent("#config-change-count"), "设置与启动参数一致");
 }
 
 async function verifyConfigureReset(page) {
@@ -330,19 +330,19 @@ async function verifyConfigureReset(page) {
         if (request.method() !== "GET" && /\/api\/(launch|stop|presets|shutdown|restart)(?:[/?]|$)/.test(request.url())) writes.push(request.url());
     });
     const button = page.locator("#btn-config-reset");
-    const dialog = page.getByRole("dialog", { name: "Reset configuration to defaults?", exact: true });
+    const dialog = page.getByRole("dialog", { name: "确定要重置配置为默认吗？", exact: true });
     for (const dismiss of ["cancel", "escape", "enter"]) {
         await button.click();
         await dialog.waitFor({ state: "visible" });
         assert.equal(await dialog.locator("button[value=cancel]").evaluate(el => el === document.activeElement), true);
-        if (dismiss === "cancel") await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+        if (dismiss === "cancel") await dialog.getByRole("button", { name: "取消", exact: true }).click();
         else await page.keyboard.press(dismiss === "escape" ? "Escape" : "Enter");
         await dialog.waitFor({ state: "hidden" });
         assert.deepEqual(await page.evaluate(() => window.LlamaGui.flagCore.getFlagValues()), original, "dismissing leaves every setting intact");
         assert.equal(await button.evaluate(el => el === document.activeElement), true, "dismissal restores focus to Reset");
     }
     await button.click();
-    await dialog.getByRole("button", { name: "Reset to defaults", exact: true }).click();
+    await dialog.getByRole("button", { name: "重置为默认值", exact: true }).click();
     await page.waitForFunction(() => !window.LlamaGui.flagCore.getFlagValues().custom_args);
     const defaults = await page.evaluate(() => getDefaultValues());
     assert.deepEqual(await page.evaluate(() => window.LlamaGui.flagCore.getFlagValues()), defaults, "reset replaces all overrides, including hidden flags and custom args");
@@ -359,7 +359,7 @@ async function verifyConfigureReset(page) {
     assert.deepEqual(await page.evaluate(() => window.LlamaGui.apiClient.fetchJson("/api/presets")), savedPresets);
     assert.deepEqual(await page.evaluate(() => processLifecycle.getSnapshot().activeRuntime), runtime);
     await page.selectOption("#tool-select", "llama-server");
-    assert.match(await page.textContent("#config-change-count"), /changed since launch/);
+    assert.match(await page.textContent("#config-change-count"), /启动以后发生了变更/);
     await page.evaluate(() => window.LlamaGui.flagCore.setFlagValue("temperature", 0.22));
     const viewport = page.viewportSize();
     for (const width of [1440, 900, 390]) {
@@ -428,27 +428,27 @@ async function verifyPresetPolish(page) {
         await page.locator("#presets-list .preset-group-header").first().waitFor();
         await page.click("#btn-presets-expand-all");
         await page.locator('.preset-item[data-preset-name="Daily server"]').click();
-        assert.equal(await page.getByRole("button", { name: "Duplicate", exact: true }).isVisible(), false);
-        assert.match(await page.textContent(".preset-detail-stats"), /GUI default/);
+        assert.equal(await page.getByRole("button", { name: "复制", exact: true }).isVisible(), false);
+        assert.match(await page.textContent(".preset-detail-stats"), /GUI 默认/);
         await page.locator(".preset-saved-settings > summary").click();
         const table = page.locator(".preset-saved-values");
-        assert.deepEqual(await table.locator("thead th").allTextContents(), ["Setting", "Saved value", "GUI default"]);
+        assert.deepEqual(await table.locator("thead th").allTextContents(), ["设置", "已保存的值", "GUI 默认"]);
         for (const [label, saved, defaultValue] of [
-            ["Prompt Batch Size", "1024", "2048"],
-            ["Physical Batch Size", "512", ""],
-            ["GPU Layers", "All layers", "Auto"],
-            ["Flash Attention", "On", "Auto (default)"],
-            ["Lock Model in RAM", "Enabled", "Disabled"],
-            ["Preserve Reasoning", "Auto", ""],
+            ["提示批处理大小", "1024", "2048"],
+            ["物理批处理大小", "512", ""],
+            ["GPU 层数", "全部层", "自动"],
+            ["Flash 注意力", "开启", "自动（默认）"],
+            ["将模型锁定在 RAM 中", "启用", "禁用"],
+            ["保留推理", "自动", ""],
         ]) {
             const row = table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: label, exact: true }) });
             assert.deepEqual(await row.locator("td").allTextContents(), [saved, defaultValue], label);
         }
-        assert.equal(await table.locator("tbody tr").last().locator("td").last().textContent(), "Unavailable");
+        assert.equal(await table.locator("tbody tr").last().locator("td").last().textContent(), "不可用");
         assert.equal(await table.locator("img").count(), 0, "saved values render as text");
         assert.doesNotMatch(await page.textContent(".preset-saved-settings"), /hidden-hf-token|hidden-api-key|--alias daily|ctx_size_draft/);
         const changedRows = await table.locator("tbody tr").evaluateAll(rows => rows.filter(row => row.lastElementChild.textContent !== "").length);
-        assert.match(await page.textContent(".preset-saved-settings > summary"), new RegExp(`${changedRows} non-default overrides`));
+        assert.match(await page.textContent(".preset-saved-settings > summary"), new RegExp(`${changedRows} 项非默认自定义覆盖`));
         const viewport = page.viewportSize();
         for (const width of [390, 900, 1440]) {
             await page.setViewportSize({ width, height: 1000 });
@@ -456,23 +456,23 @@ async function verifyPresetPolish(page) {
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `preset page fits at ${width}px`);
         }
         await page.setViewportSize(viewport);
-        await page.getByRole("button", { name: "Load into Configure", exact: true }).click();
+        await page.getByRole("button", { name: "加载到配置中", exact: true }).click();
         await config.waitFor({ state: "visible" });
         assert.equal(await config.locator("[data-preset-name]").textContent(), "Daily server");
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "Matches saved preset");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "与已保存预设匹配");
         assert.equal(await config.locator("[data-preset-update]").isDisabled(), true);
 
         await page.evaluate(() => flagCore.setMultipleFlagValues({ temperature: 0.25, hf_token: "changed-hf-token", custom_args: "--alias changed" }));
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "Modified");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "已修改");
         await config.locator("[data-preset-review-label]").click();
         await config.locator("tbody tr").first().waitFor();
         assert.doesNotMatch(await config.locator("tbody").textContent(), /hidden-hf-token|changed-hf-token|--alias|session-only-api-key/);
-        assert.match(await config.locator("tbody").textContent(), /Changed · value hidden/);
+        assert.match(await config.locator("tbody").textContent(), /已更改 · 值已隐藏/);
         await selectSection(page, "quick-launch");
-        assert.equal(await quick.locator("[data-preset-state]").textContent(), "Modified");
+        assert.equal(await quick.locator("[data-preset-state]").textContent(), "已修改");
         await selectSection(page, "presets");
         await page.locator('.preset-item[data-preset-name="Another preset"]').click();
-        assert.match(await page.textContent(".preset-detail-stats"), /Auto · from model/);
+        assert.match(await page.textContent(".preset-detail-stats"), /自动 · 使用模型值/);
         assert.equal(await config.locator("[data-preset-name]").textContent(), "Daily server", "browsing must not change the edit source");
         await selectSection(page, "configure");
         await config.locator("[data-preset-update]").click();
@@ -492,9 +492,9 @@ async function verifyPresetPolish(page) {
         await page.waitForFunction(() => !presetSavePending);
         assert.equal(writes.at(-1).data.flags.temperature, 0.25);
         assert.equal(writes.at(-1).data.flags.api_key, undefined);
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "Modified");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "已修改");
         await page.evaluate(() => flagCore.setFlagValue("temperature", 0.25));
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "Matches saved preset");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "与已保存预设匹配");
 
         await config.locator("[data-preset-save-new]").click();
         await page.fill("#prompt-modal-input", "Daily server");
@@ -519,7 +519,7 @@ async function verifyPresetPolish(page) {
         await page.keyboard.press("Escape");
         assert.equal(await page.locator(".preset-more-actions").evaluate(el => el.open), false);
         await page.locator(".preset-more-actions > summary").click();
-        await page.getByRole("button", { name: "Rename", exact: true }).click();
+        await page.getByRole("button", { name: "重命名", exact: true }).click();
         await page.fill("#prompt-modal-input", "Renamed source");
         await page.click("#prompt-modal-ok");
         await page.waitForFunction(() => lastLoadedPresetName === "Renamed source");
@@ -528,12 +528,12 @@ async function verifyPresetPolish(page) {
         await config.locator("[data-preset-name]").click();
         await page.waitForFunction(() => document.querySelector(".preset-detail-title")?.textContent === "Renamed source");
         await page.locator(".preset-more-actions > summary").click();
-        await page.locator("#preset-detail-panel").getByRole("button", { name: "Archive", exact: true }).click();
+        await page.locator("#preset-detail-panel").getByRole("button", { name: "存档", exact: true }).click();
         await page.waitForFunction(() => loadedPresetArchived);
         await selectSection(page, "quick-launch");
         await quick.locator("[data-preset-name]").click();
         await page.waitForFunction(() => document.querySelector(".preset-detail-title")?.textContent === "Renamed source");
-        assert.match(await page.textContent("#preset-archive-view"), /Viewing archive/);
+        assert.match(await page.textContent("#preset-archive-view"), /正在查看归档/);
 
         // Failure leaves the source and pending edits available for retry.
         await selectSection(page, "configure");
@@ -544,7 +544,7 @@ async function verifyPresetPolish(page) {
         await page.locator('#preset-update-dialog button[value="update"]').click();
         await page.waitForFunction(() => !presetSavePending);
         assert.equal(await config.locator("[data-preset-update]").isEnabled(), true);
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "Modified");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "已修改");
         failSave = false;
 
         for (const section of ["configure", "quick-launch", "presets"]) {
@@ -562,7 +562,7 @@ async function verifyPresetPolish(page) {
         await page.locator('#preset-update-dialog button[value="update"]').click();
         await page.waitForFunction(() => !presetSavePending);
         assert.equal(writes.length, writesBeforeRemoval, "deleting a preset during review must not recreate it");
-        assert.equal(await config.locator("[data-preset-state]").textContent(), "No longer saved");
+        assert.equal(await config.locator("[data-preset-state]").textContent(), "已不再保存");
         assert.equal(await config.locator("[data-preset-update]").isDisabled(), true);
         assert.equal(await config.locator("[data-preset-save-new]").isEnabled(), true);
         assert.equal(await page.evaluate(() => JSON.stringify(processLifecycle.getSnapshot().activeRuntime)), runtimeBefore, "preset edits must not change the active runtime");
@@ -601,7 +601,7 @@ async function verifyQuickLaunchPolish(page) {
     await page.waitForFunction(() => document.querySelector(".quick-saved-preset")?.dataset.presetName === "Favorite session");
     assert.equal(await page.locator(".quick-saved-preset").count(), 3);
     assert.equal(await page.locator(".quick-saved-preset img").count(), 0, "preset names are plain text");
-    assert.equal(await page.textContent("#quick-runtime-state"), "Stopped");
+    assert.equal(await page.textContent("#quick-runtime-state"), "已停止");
     assert.equal(await page.textContent("#quick-models-folder-path"), await page.textContent("#models-folder-path"));
     for (const disclosure of await page.locator("#section-quick-launch details").all()) {
         if (await disclosure.evaluate(el => el.open)) await disclosure.locator(":scope > summary").click();
@@ -615,10 +615,10 @@ async function verifyQuickLaunchPolish(page) {
         return preset && !preset.disabled && preset.getAttribute("aria-pressed") === "true";
     });
     assert.equal(await page.inputValue("#quick-model-select"), "smoke-model.gguf");
-    assert.equal(await page.textContent("#btn-quick-launch-label"), "Launch server");
+    assert.equal(await page.textContent("#btn-quick-launch-label"), "开始运行");
     await page.fill("#quick-temperature-input", "0.43");
     assert.equal(await page.evaluate(() => flagCore.getFlagValues().temperature), 0.43);
-    assert.match(await page.locator(".quick-saved-preset").first().textContent(), /Modified/);
+    assert.match(await page.locator(".quick-saved-preset").first().textContent(), /已修改/);
     await page.fill("#quick-temperature-input", "0.8125");
     assert.equal(await page.locator("#quick-temperature-input").evaluate(el => el.validity.valid), true);
     await page.fill("#quick-temperature-input", "");
@@ -655,21 +655,21 @@ async function verifyQuickLaunchPolish(page) {
     activeRuntime = { generation: 401, tool: "llama-server", model: "running-model.gguf", host: "127.0.0.1", port: 8080, backend: "vulkan", version: "b12345" };
     await page.evaluate(s => processLifecycle.restore(s, { startOutput: () => {}, startStats: () => {}, postReady: () => {} }), status());
     assert.match(await page.textContent("#quick-runtime-model"), /running-model.gguf.*8080/);
-    assert.equal(await page.textContent(".quick-endpoint-label"), "Active endpoint");
+    assert.equal(await page.textContent(".quick-endpoint-label"), "当前活跃端点");
     assert.match(await page.textContent("#quick-server-summary"), /9050/, "pending port stays distinct from the running endpoint");
     await page.check('input[name="quick-launch-mode"][value="llama-cli"]');
     assert.equal(await page.locator("#quick-server-fields").isVisible(), false);
-    assert.equal(await page.textContent("#btn-quick-launch-label"), "Launch terminal");
-    assert.equal(await page.textContent("#btn-quick-stop-label"), "Stop server", "stop labels the active process");
+    assert.equal(await page.textContent("#btn-quick-launch-label"), "Terminal·运行");
+    assert.equal(await page.textContent("#btn-quick-stop-label"), "停止服务", "stop labels the active process");
     await page.click("#btn-quick-download");
     assert.equal(await page.locator(".hf-download-panel").evaluate(el => el.open), true);
     assert.equal(await page.locator("#hf-repo-input").evaluate(el => el === document.activeElement), true);
     entries = [];
     await page.evaluate(() => quickLaunchUi.refreshSavedPresets());
-    assert.match(await page.textContent("#quick-presets-status"), /Save a launch preset/);
+    assert.match(await page.textContent("#quick-presets-status"), /保存一个启动预设/);
     failPresets = true;
     await page.evaluate(() => quickLaunchUi.refreshSavedPresets());
-    assert.match(await page.textContent("#quick-presets-status"), /Could not refresh presets/);
+    assert.match(await page.textContent("#quick-presets-status"), /无法刷新预设/);
     activeRuntime = null;
     await page.evaluate(() => processLifecycle.restore({ running: false, active_runtime: null }));
     for (const [url, handler] of Object.entries(routes)) await page.unroute(url, handler);
@@ -721,7 +721,7 @@ async function verifyConfigureRestart(page) {
     await page.evaluate(activeRuntime => processLifecycle.restore({ running: true, active_runtime: activeRuntime }, {
         startOutput: () => {}, startStats: () => {}, postReady: () => {},
     }), runtime);
-    await page.fill("#config-search", "context & memory");
+    await page.fill("#config-search", "上下文与内存");
     await page.waitForSelector("#flag-ctx_size", { state: "visible" });
     const button = page.locator("#config-restart");
     assert.equal(await button.isEnabled(), true);
@@ -739,7 +739,7 @@ async function verifyConfigureRestart(page) {
     preflightError = "";
     refuseStop = true;
     await button.click();
-    await page.waitForFunction(() => document.getElementById("config-restart-error").textContent.includes("refused to stop"));
+    await page.waitForFunction(() => document.getElementById("config-restart-error").textContent.includes("拒绝停止"));
     assert.equal(launches.length, 0, "a refused stop must not launch a second process");
     assert.equal(await button.isEnabled(), true);
     refuseStop = false;
@@ -757,7 +757,7 @@ async function verifyConfigureRestart(page) {
     assert.ok(launches[0].args.flat().includes("16000"));
     assert.equal(await page.inputValue("#flag-ctx_size"), "32000", "edits made during restart remain pending");
     assert.equal(await page.locator('.flag-row[data-flag-id="ctx_size"] .flag-baseline-value').textContent(), "16000");
-    assert.equal(await button.textContent(), "Restart with changes");
+    assert.equal(await button.textContent(), "应用更改并重启");
     assert.equal(await page.locator("#config-restart-error").isVisible(), false);
     await page.evaluate(() => window.LlamaGui.flagCore.setCurrentTool("llama-cli"));
     assert.equal(await button.isVisible(), false, "restart is available only for the local server tool");
@@ -775,7 +775,7 @@ async function verifyShellPolish(page) {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const sections = ["quick-launch", "configure", "monitor", "benchmarking", "chat", "api", "presets", "install"];
     assert.deepEqual(await page.locator("#sidebar .nav-item").evaluateAll(items => items.map(el => el.dataset.section)), sections);
-    assert.deepEqual(await page.locator(".nav-section-label").allTextContents(), ["Tune", "Interact", "Library"]);
+    assert.deepEqual(await page.locator(".nav-section-label").allTextContents(), ["调整", "交互", "库"]);
     for (const section of sections) {
         await selectSection(page, section);
         assert.equal(await page.locator('#sidebar [aria-current="page"]').getAttribute("data-section"), section);
@@ -802,30 +802,30 @@ async function verifyShellPolish(page) {
     };
     for (const [url, handler] of Object.entries(routes)) await page.route(url, handler);
     await page.evaluate(s => processLifecycle.restore(s, { startOutput: () => {}, startStats: () => {}, postReady: () => {} }), status());
-    assert.equal(await page.textContent("#sidebar-runtime-state"), "Ready");
+    assert.equal(await page.textContent("#sidebar-runtime-state"), "准备就绪");
     assert.equal(await page.getAttribute("#sidebar-runtime-model", "title"), runtime.model);
     assert.equal(await page.locator("#sidebar-runtime img").count(), 0);
     await page.evaluate(() => {
         flagCore.setCurrentTool("llama-cli");
         flagCore.setFlagValue("port", 9999);
     });
-    assert.equal(await page.textContent("#btn-sidebar-stop-label"), "Stop server");
+    assert.equal(await page.textContent("#btn-sidebar-stop-label"), "停止服务");
     await page.locator("#sidebar-runtime > summary").click();
     assert.match(await page.textContent("#sidebar-runtime-build"), /vulkan.*b501/);
     assert.match(await page.textContent("#sidebar-runtime-endpoint"), /8091/);
     await page.click("#btn-sidebar-runtime-details");
     assert.equal(await page.locator("#section-monitor").isVisible(), true);
     await page.click("#btn-sidebar-stop");
-    await page.waitForFunction(() => document.getElementById("sidebar-runtime-state").textContent === "Stopping");
+    await page.waitForFunction(() => document.getElementById("sidebar-runtime-state").textContent === "停止");
     assert.equal(await page.locator("#btn-sidebar-stop").isDisabled(), true);
     await page.evaluate(() => document.getElementById("btn-sidebar-stop").click());
     assert.equal(stops, 1, "a second Stop cannot run during the transition");
     releaseStop();
-    await page.waitForFunction(() => document.getElementById("sidebar-runtime-state").textContent === "Stopped");
-    assert.equal(await page.textContent("#btn-sidebar-launch-label"), "Launch terminal");
+    await page.waitForFunction(() => document.getElementById("sidebar-runtime-state").textContent === "已停止");
+    assert.equal(await page.textContent("#btn-sidebar-launch-label"), "Terminal·运行");
     target = { connected: true, host: "127.0.0.2", port: 9001, label: "Remote workstation" };
     await page.evaluate(() => refreshRuntimeStatusPanels());
-    assert.equal(await page.textContent("#sidebar-runtime-state"), "External server");
+    assert.equal(await page.textContent("#sidebar-runtime-state"), "外部服务器");
     assert.match(await page.textContent("#sidebar-runtime-endpoint"), /9001/);
     await page.click("#btn-sidebar-runtime-details");
     assert.equal(await page.locator("#section-api").isVisible(), true);
@@ -857,7 +857,7 @@ async function verifyShellPolish(page) {
     assert.equal(await page.getAttribute("#mobile-toggle", "aria-expanded"), "false");
     await page.click("#mobile-toggle");
     await page.click("#btn-sidebar-stop-app");
-    assert.equal(await page.textContent("#confirm-modal-title"), "Quit Llama GUI");
+    assert.equal(await page.textContent("#confirm-modal-title"), "退出 Llama GUI");
     await page.click("#confirm-modal-cancel");
     await page.setViewportSize(viewport);
     await page.waitForTimeout(250);
@@ -902,12 +902,12 @@ async function verifyMonitorRuntimePolish(page) {
         await page.evaluate(s => processLifecycle.restore(s, { startOutput: () => {}, startStats: () => {}, postReady: () => {} }), status());
         await selectSection(page, "monitor");
         await page.waitForFunction(() => document.getElementById("monitor-cpu-value").textContent === "12.0%");
-        assert.equal(await page.textContent("#monitor-runtime-state"), "Ready");
+        assert.equal(await page.textContent("#monitor-runtime-state"), "准备就绪");
         assert.equal(await page.getAttribute("#monitor-runtime-model", "title"), runtime.model);
         assert.equal(await page.locator(".monitor-runtime img").count(), 0);
         assert.match(await page.textContent("#monitor-runtime-build"), /vulkan.*b601/);
         await page.evaluate(() => flagCore.setMultipleFlagValues({ ctx_size: 16000, port: 9999 }));
-        assert.equal(await page.textContent("#btn-monitor-review"), "Review changes · 2");
+        assert.equal(await page.textContent("#btn-monitor-review"), "查看变更 · 2");
         assert.match(await page.textContent("#monitor-runtime-endpoint"), /8091/);
         await page.click("#btn-monitor-review");
         assert.equal(await page.locator("#section-configure").isVisible(), true);
@@ -919,7 +919,7 @@ async function verifyMonitorRuntimePolish(page) {
         if (await gpuHelp.evaluate(el => el.open)) await gpuHelp.locator("summary").click();
         assert.equal(await page.locator("#monitor-setup-cards").isVisible(), false);
         assert.equal(await page.locator("#monitor-inference-card").isVisible(), true);
-        assert.match(await page.textContent("#monitor-gpu-summary"), /unavailable/);
+        assert.match(await page.textContent("#monitor-gpu-summary"), /不可用/);
         await gpuHelp.locator("summary").focus();
         await page.keyboard.press("Enter");
         assert.equal(await page.locator("#btn-monitor-recheck").isVisible(), true);
@@ -948,13 +948,13 @@ async function verifyMonitorRuntimePolish(page) {
             await processLifecycle.restore({ running: false, active_runtime: null });
             monitorUi.appendOutputLine("retained output");
         });
-        assert.equal(await page.textContent("#monitor-output-title"), "Last run output");
+        assert.equal(await page.textContent("#monitor-output-title"), "历史输出");
         await page.click("#btn-clear-output");
         assert.equal(await page.locator("#output-terminal").isVisible(), false);
         assert.equal(await page.locator("#btn-monitor-quick-launch").isVisible(), true);
         target = { connected: true, host: "127.0.0.1", port: 9008 };
         await page.evaluate(() => window.LlamaGui.manager.checkStatus());
-        assert.equal(await page.textContent("#monitor-runtime-state"), "External server");
+        assert.equal(await page.textContent("#monitor-runtime-state"), "外部服务器");
         assert.match(await page.textContent("#monitor-runtime-endpoint"), /9008/);
         assert.equal(await page.locator("#btn-monitor-review").isVisible(), false);
         await page.click("#btn-monitor-api");
@@ -1129,12 +1129,12 @@ async function verifySecondaryPagePolish(page) {
         manager.configure({ fetchJson: window.LlamaGui.apiClient.fetchJson });
         return result;
     });
-    assert.equal(installed.optional, "Not installed");
-    assert.equal(installed.required, "Missing · required");
-    assert.match(installed.summary, /1 of 2 installed/);
+    assert.equal(installed.optional, "未安装");
+    assert.equal(installed.required, "缺失 · 必需");
+    assert.match(installed.summary, /已安装 1 \/ 2/);
     assert.equal(installed.nodeKept && installed.focusKept && installed.openKept, true);
     assert.equal(installed.unsafeElements, 0);
-    assert.match(installed.warning, /required.*runtime libraries are missing/);
+    assert.match(installed.warning, /缺少所需的.*运行时库/);
     await selectSection(page, "quick-launch");
 }
 
@@ -1249,7 +1249,7 @@ async function verifyChatResponsiveLayout(page) {
                 assert.ok(layout.messages.clientHeight >= 80,
                     `both-open stacked layout reserves at least 80px of transcript space at ${viewport.width}px (received ${layout.messages.clientHeight}px)`);
             }
-            await page.getByRole("button", { name: "Context", exact: true }).click();
+            await page.getByRole("button", { name: "上下文", exact: true }).click();
             await page.locator("#chat-context-details summary").press("Enter");
             const expanded = await readLayout();
             assert.ok(expanded.context.height > 30 && expanded.context.bottom <= expanded.composer.top,
@@ -1265,7 +1265,7 @@ async function verifyChatResponsiveLayout(page) {
                 const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
                 return hit === send || send.contains(hit);
             }), true, `Context does not cover Send at ${viewport.width}px (${state})`);
-            await page.getByRole("button", { name: "Context", exact: true }).click();
+            await page.getByRole("button", { name: "上下文", exact: true }).click();
             assert.equal(await page.locator("#chat-tools").isVisible(), false, "Context toggles closed");
         }
     }
@@ -1323,10 +1323,10 @@ async function verifyCharacterCards(page) {
         if (new URL(request.url()).pathname === "/api/chat/completions") completions.push(request.postDataJSON());
     });
     const [chooser] = await Promise.all([
-        page.waitForEvent("filechooser"), page.getByRole("button", { name: "Load character card", exact: true }).press("Enter"),
+        page.waitForEvent("filechooser"), page.getByRole("button", { name: "加载角色", exact: true }).press("Enter"),
     ]);
     await chooser.setFiles({ name: "eloise.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(character)) });
-    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.startsWith("Started a chat"));
+    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.startsWith("已开始与"));
     assert.equal(completions.length, 0, "import must not send a chat request");
     assert.match(await page.locator("#chat-system-prompt").inputValue(), /Éloïse is an astronomer/);
     assert.match(await page.locator("#chat-messages").textContent(), /Hello User, I'm Éloïse/);
@@ -1337,7 +1337,7 @@ async function verifyCharacterCards(page) {
     assert.equal(firstImport.find(c => c.id === "original").systemPrompt, "Original system prompt");
 
     await page.setInputFiles("#chat-character-file", { name: "bad.json", mimeType: "application/json", buffer: Buffer.from("{bad") });
-    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.includes("invalid JSON"));
+    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.includes("无效的 JSON"));
     assert.equal(await page.locator("#chat-system-prompt").inputValue(), firstImport[0].systemPrompt);
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem("llama_gui_conversations"))), firstImport);
 
@@ -1345,7 +1345,7 @@ async function verifyCharacterCards(page) {
         ...character, name: "PNG explorer", description: "Studies the Moon.", first_mes: "Hello <img src=x onerror=alert(1)>",
     } };
     await page.setInputFiles("#chat-character-file", { name: "card.png", mimeType: "image/png", buffer: pngCard([["ccv3", JSON.stringify(pngData)]]) });
-    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.includes("Started a chat with PNG explorer"));
+    await page.waitForFunction(() => document.getElementById("chat-character-status").textContent.includes("已开始与 PNG explorer 的聊天"));
     assert.equal(await page.locator("#chat-messages img").count(), 0, "card greeting HTML is rendered as text");
     assert.match(await page.locator("#chat-messages").textContent(), /<img src=x/);
     assert.equal(completions.length, 0);
@@ -1397,7 +1397,7 @@ async function verifyChatDateTime(page) {
         "the browser tool is separate from server tools and their launch baseline");
     await selectSection(page, "chat");
     await page.click("#btn-open-sidebar");
-    const control = page.getByRole("checkbox", { name: "Current Date & Time", exact: true });
+    const control = page.getByRole("checkbox", { name: "当前日期 & 时间", exact: true });
     await control.waitFor({ state: "visible" });
     assert.equal(await control.isChecked(), false);
     const argsBefore = await page.evaluate(() => window.LlamaGui.flagCore.getLaunchArgs());
@@ -1442,7 +1442,7 @@ async function verifyChatDateTime(page) {
         (async () => {
             await page.fill("#chat-input", "What is the date and time?");
             await page.click("#btn-chat-send");
-            await page.getByText("Used Current Date & Time", { exact: true }).waitFor({ state: "visible" });
+            await page.getByText("已使用 Current Date & Time", { exact: true }).waitFor({ state: "visible" });
         })(),
     ]);
     assert.equal(requests.length, 2);
@@ -1452,7 +1452,7 @@ async function verifyChatDateTime(page) {
     assert.equal(requests[1].tool_choice, "none");
     assert.match(requests[0].messages[0].content, /get_datetime.*today.*web search/,
         "date-dependent questions get explicit clock guidance");
-    await page.getByText("Used Current Date & Time", { exact: true }).click();
+    await page.getByText("已使用 Current Date & Time", { exact: true }).click();
     assert.match(await page.locator("#chat-messages").textContent(), new RegExp(result.timezone));
     const preview = previewRequest.postDataJSON();
     assert.deepEqual(preview.tools, requests[0].tools);
@@ -1489,10 +1489,10 @@ async function verifyChatDeletion(page) {
     const confirm = page.locator("#confirm-modal-ok");
     const cancel = page.locator("#confirm-modal-cancel");
     await page.getByText("Beta", { exact: true }).click();
-    const betaDelete = page.locator(".chat-history-item").filter({ hasText: "Beta" }).getByRole("button", { name: "Delete conversation", exact: true });
+    const betaDelete = page.locator(".chat-history-item").filter({ hasText: "Beta" }).getByRole("button", { name: "删除对话", exact: true });
     await betaDelete.click();
-    assert.equal(await page.locator("#confirm-modal-title").textContent(), "Delete Conversation");
-    assert.match(await page.locator("#confirm-modal-message").textContent(), /Beta.*cannot be undone/);
+    assert.equal(await page.locator("#confirm-modal-title").textContent(), "删除对话");
+    assert.match(await page.locator("#confirm-modal-message").textContent(), /Beta.*无法撤销/);
     assert.deepEqual(await readIds(), ["Alpha", "Beta", "Gamma", "Delta"]);
     await cancel.press("Enter");
     assert.equal(await modal.isVisible(), false);
@@ -1511,7 +1511,7 @@ async function verifyChatDeletion(page) {
     assert.equal(await page.locator("#chat-system-prompt").inputValue(), "Alpha prompt", "deleting a conversation preserves other chats");
 
     await page.locator("#btn-chat-clear").click();
-    assert.equal(await page.locator("#confirm-modal-title").textContent(), "Clear Current Chat");
+    assert.equal(await page.locator("#confirm-modal-title").textContent(), "清空当前对话");
     await cancel.click();
     assert.match(await page.locator("#chat-messages").textContent(), /Alpha message/);
     await page.locator("#btn-chat-clear").click();
@@ -1524,7 +1524,7 @@ async function verifyChatDeletion(page) {
 
     await page.getByText("Gamma", { exact: true }).click();
     await page.locator("#btn-delete-all-history").click();
-    assert.equal(await page.locator("#confirm-modal-title").textContent(), "Delete All Conversations");
+    assert.equal(await page.locator("#confirm-modal-title").textContent(), "删除所有对话");
     await cancel.click();
     assert.deepEqual(await readIds(), ["Gamma", "Delta"]);
     await page.locator("#btn-delete-all-history").click();
@@ -1594,16 +1594,16 @@ async function verifyBenchmarkActions(page) {
     assert.equal(await stop.isVisible(), true);
     lines = ["prefill 123.45 ± 1.00 t/s", "generation 67.89 t/s", "<img src=x onerror=alert(1)>"];
     await page.waitForFunction(() => document.querySelector("#benchmark-summary").textContent.includes("67.89 t/s"));
-    assert.equal(await page.textContent("#benchmark-summary"), "Throughput observed: 123.45 t/s, 67.89 t/s");
+    assert.equal(await page.textContent("#benchmark-summary"), "实测吞吐量：123.45 t/s, 67.89 t/s");
     assert.equal(await output.locator("img").count(), 0);
     runtime = null;
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("process exited"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("进程已退出"));
     assert.equal(await run.isVisible(), true);
     assert.equal(await stop.isVisible(), false);
 
     launchError = "Benchmark executable missing";
     await run.click();
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("ERROR:"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("错误："));
     assert.match(await output.textContent(), /Benchmark executable missing/);
     assert.equal(await run.isVisible(), true);
     launchError = "";
@@ -1613,7 +1613,7 @@ async function verifyBenchmarkActions(page) {
     await stop.click();
     await page.waitForFunction(() => window.LlamaGui.processLifecycle.getSnapshot().phase === "failed"
         && !window.LlamaGui.processLifecycle.getSnapshot().busy);
-    assert.match(await output.textContent(), /Stop request failed/);
+    assert.match(await output.textContent(), /停止请求失败/);
     assert.equal(stops.at(-1).expected_generation, runtime.generation);
     assert.equal(await stop.isVisible(), true, "a refused stop keeps the process controllable");
     assert.equal(await run.isVisible(), false);
@@ -1621,20 +1621,20 @@ async function verifyBenchmarkActions(page) {
     await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Output continues"));
     refuseStop = false;
     await stop.click();
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Benchmark stopped"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("基准测试已停止"));
 
     runtime = { generation: ++generation, tool: "llama-bench", model: "models/smoke-model.gguf" };
     lines = ["restored throughput 42 t/s"];
     await page.evaluate(() => window.LlamaGui.manager.checkStatus());
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Reconnected to running llama-bench"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("已重新连接到正在运行的 llama-bench"));
     assert.equal(await stop.isVisible(), true, "accepted status updates must adopt an external benchmark launch");
     await page.reload();
     await selectSection(page, "benchmarking");
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Reconnected to running llama-bench"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("已重新连接到正在运行的 llama-bench"));
     await page.waitForFunction(() => document.querySelector("#benchmark-summary").textContent.includes("42 t/s"));
     assert.equal(await stop.isVisible(), true);
     await stop.click();
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Benchmark stopped"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("基准测试已停止"));
 
     await page.selectOption("#benchmark-type", "perplexity");
     await page.selectOption("#benchmark-manual-model", "smoke-model.gguf");
@@ -1656,7 +1656,7 @@ async function verifyBenchmarkActions(page) {
         env: {},
     });
     await stop.click();
-    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("Benchmark stopped"));
+    await page.waitForFunction(() => document.querySelector("#benchmark-output-terminal").textContent.includes("基准测试已停止"));
 }
 
 async function runScenario(browser, port, verify) {
@@ -1736,9 +1736,9 @@ async function runScenario(browser, port, verify) {
                 memory: { available: true, used_bytes: 12884901888, total_bytes: 34359738368, percent: 37.5 },
                 disk: {
                     available: true,
-                    path_label: "Application disk",
+                    path_label: "应用盘",
                     io_available: true,
-                    io_label: "All physical disks",
+                    io_label: "所有物理磁盘",
                     used_bytes: 500000000000,
                     total_bytes: 1000000000000,
                     percent: 50,
@@ -2150,9 +2150,9 @@ async function runScenario(browser, port, verify) {
                     mimeType: "application/json",
                     buffer: Buffer.from(JSON.stringify({ flags: { temperature: 0.45 } })),
                 });
-                await page.waitForFunction(() => document.querySelector("#preset-status")?.textContent.includes("already exists"));
+                await page.waitForFunction(() => document.querySelector("#preset-status")?.textContent.includes("已存在"));
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => /already exists/i.test(toast.textContent)));
+                    .some((toast) => /已存在/i.test(toast.textContent)));
                 assert.equal(presetSaveBodies.length, 0, "a colliding launch preset import must not write");
 
                 await page.setInputFiles("#preset-import", {
@@ -2217,12 +2217,12 @@ async function runScenario(browser, port, verify) {
                 assert.equal(toastUx.dismissedOnClick, true);
                 assert.equal(toastUx.cappedCount, 5);
                 assert.equal(toastUx.dismissedOnClose, true);
-                assert.equal(toastUx.closeLabel, "Dismiss notification");
+                assert.equal(toastUx.closeLabel, "关闭通知");
                 await page.evaluate(() => {
                     document.querySelectorAll("#toast-container .toast").forEach((toast) => toast.remove());
                 });
 
-                await page.waitForFunction(() => document.querySelector("#quick-launch-status")?.textContent.includes("Select a model"));
+                await page.waitForFunction(() => document.querySelector("#quick-launch-status")?.textContent.includes("请选择一个模型"));
                 assert.equal(await page.locator("#btn-quick-launch").isDisabled(), true);
                 assert.equal(await page.locator("#btn-sidebar-launch").isDisabled(), true);
 
@@ -2325,7 +2325,7 @@ async function runScenario(browser, port, verify) {
                 // unconditionally, type="number" reported the partial "0." as "" and the
                 // decimal point was wiped as fast as it was typed. page.fill() sets the
                 // value in one shot and would not have caught it.
-                await page.fill("#config-search", "temperature");
+                await page.fill("#config-search", "温度");
                 await page.waitForSelector("#flag-temperature", { state: "visible" });
                 await page.click("#flag-temperature");
                 await page.evaluate(() => { document.getElementById("flag-temperature").value = ""; });
@@ -2378,7 +2378,7 @@ async function runScenario(browser, port, verify) {
                 await page.waitForFunction(() => window.LlamaGui.flagCore.getFlagValues().ctx_size === 100000);
                 assert.match(await page.textContent("#command-preview-text"), /-c 100000/);
 
-                await page.fill("#config-search", "per-slot context");
+                await page.fill("#config-search", "每槽位上下文");
                 await page.waitForSelector("#flag-kv_unified_per_slot", { state: "visible" });
                 assert.equal(await page.locator("#flag-kv_unified_per_slot").getAttribute("min"), "1");
                 await page.fill("#flag-kv_unified_per_slot", "16000");
@@ -2405,7 +2405,7 @@ async function runScenario(browser, port, verify) {
                     });
                     window.LlamaGui.quickLaunchUi.afterApply(window.LlamaGui.flagCore.getFlagValues());
                 });
-                await page.fill("#config-search", "sampling");
+                await page.fill("#config-search", "采样");
                 await page.waitForFunction(() => {
                     const headers = Array.from(document.querySelectorAll(
                         '.accordion[data-category-id="sampling"] .flag-submenu-header'
@@ -2430,7 +2430,7 @@ async function runScenario(browser, port, verify) {
                 await page.selectOption("#tool-select", "llama-server");
                 await page.waitForFunction(() => window.LlamaGui.flagCore.getCurrentTool() === "llama-server");
 
-                await page.fill("#config-search", "default reasoning effort");
+                await page.fill("#config-search", "默认推理强度");
                 await page.waitForSelector("#flag-chat_template_reasoning_effort", { state: "visible" });
                 assert.deepEqual(
                     await page.locator("#flag-chat_template_reasoning_effort option").evaluateAll((options) => (
@@ -2440,7 +2440,7 @@ async function runScenario(browser, port, verify) {
                 );
                 assert.match(
                     await page.textContent('.flag-row[data-flag-id="chat_template_reasoning_effort"] .flag-desc'),
-                    /server-wide/i
+                    /整个服务器范围内/i
                 );
                 await page.selectOption("#flag-chat_template_reasoning_effort", "xhigh");
                 await page.waitForFunction(() => (
@@ -2456,7 +2456,7 @@ async function runScenario(browser, port, verify) {
                 assert.ok(!reasoningArgs.includes("--reasoning-effort"));
                 assert.ok(!reasoningArgs.includes("--chat-template-kwargs"));
 
-                await page.fill("#config-search", "gpu layers");
+                await page.fill("#config-search", "GPU 层数");
                 await page.waitForSelector("#flag-gpu_layers", { state: "visible" });
                 await page.fill("#flag-gpu_layers", "7");
                 await page.dispatchEvent("#flag-gpu_layers", "input");
@@ -2475,7 +2475,7 @@ async function runScenario(browser, port, verify) {
                 await page.waitForFunction(() => window.LlamaGui.flagCore.getFlagValues().gpu_layers === "9");
                 assert.match(await page.textContent("#command-preview-text"), /(?:-ngl|--gpu-layers) 9/);
 
-                await page.fill("#config-search", "expert");
+                await page.fill("#config-search", "专家");
                 await page.waitForSelector("#flag-override_tensor", { state: "visible" });
                 await page.waitForFunction(() => document.querySelector(".override-tensor-buffer-select")?.value === "CUDA0");
                 await page.evaluate(() => {
@@ -2494,7 +2494,7 @@ async function runScenario(browser, port, verify) {
                     /-ot blk\.\*\.ffn_\.\*_exps\.weight=CUDA0/
                 );
 
-                await page.fill("#config-search", "metrics");
+                await page.fill("#config-search", "指标");
                 await page.waitForSelector("#flag-metrics", { state: "visible" });
                 await page.click("#flag-metrics");
                 await page.waitForFunction(() => document.querySelector("#quick-metrics-toggle")?.checked === false);
@@ -2503,7 +2503,7 @@ async function runScenario(browser, port, verify) {
             },
             async "API key controls and masked command previews"() {
                 await selectSection(page, "configure");
-                await page.fill("#config-search", "api key");
+                await page.fill("#config-search", "API 密钥");
                 await page.waitForSelector("#flag-api_key", { state: "visible" });
                 const passwordManagerHints = await page.evaluate(() => {
                     const fieldState = (id) => {
@@ -2532,13 +2532,13 @@ async function runScenario(browser, port, verify) {
                     assert.equal(field.masked, passwordManagerHints.cssMasking);
                     if (passwordManagerHints.cssMasking) assert.equal(field.textSecurity, "disc");
                 }
-                await page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "Generate" }).click();
+                await page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "生成" }).click();
                 assert.match(await page.inputValue("#flag-api_key"), /^[A-Za-z0-9_-]{43}$/);
-                const showApiKey = page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "Show" });
+                const showApiKey = page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "显示" });
                 await showApiKey.click();
                 assert.equal(await page.locator("#flag-api_key").getAttribute("type"), "text");
                 assert.equal(await page.locator("#flag-api_key").evaluate((input) => input.classList.contains("sensitive-input-masked")), false);
-                await page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "Hide" }).click();
+                await page.locator("#flag-api_key + .sensitive-input-actions button", { hasText: "隐藏" }).click();
                 assert.equal(
                     await page.locator("#flag-api_key").getAttribute("type"),
                     passwordManagerHints.cssMasking ? "text" : "password"
@@ -2586,7 +2586,7 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.textContent("#stats-gen-tokens"), "20");
                 assert.equal(await page.textContent("#stats-context"), "60",
                     "Session tokens must sum prompt plus generated since the baseline");
-                assert.ok((await page.textContent("#stats-bar")).includes("Session tokens"),
+                assert.ok((await page.textContent("#stats-bar")).includes("会话总计 tokens"),
                     "the fixed bar labels cumulative tokens as Session tokens, not Context");
 
                 statsMetrics = {
@@ -2625,8 +2625,8 @@ async function runScenario(browser, port, verify) {
                 const livePromptSpeed = await page.textContent("#stats-prompt-speed");
                 assert.ok(Number(livePromptSpeed) > 0, "prompt speed updates before completed counters advance");
                 assert.equal(await page.textContent("#monitor-inference-prompt-speed"), `${livePromptSpeed} tok/s`);
-                assert.equal(await page.textContent("#monitor-inference-prompt-speed-label"), "Live prompt speed");
-                assert.equal(await page.textContent("#stats-prompt-speed-label"), "tok/s prompt live");
+                assert.equal(await page.textContent("#monitor-inference-prompt-speed-label"), "实时提示词速度");
+                assert.equal(await page.textContent("#stats-prompt-speed-label"), "tok/s 提示词实时");
                 assert.equal(await page.textContent("#stats-prompt-tokens"), "0");
                 await page.evaluate(() => inferencePolling._test.poll());
                 assert.equal(await page.textContent("#stats-prompt-speed"), livePromptSpeed,
@@ -2638,8 +2638,8 @@ async function runScenario(browser, port, verify) {
                 await page.evaluate(() => inferencePolling._test.poll());
                 assert.equal(await page.textContent("#stats-prompt-speed"), "200.0");
                 assert.equal(await page.textContent("#monitor-inference-prompt-speed"), "200.0 tok/s");
-                assert.equal(await page.textContent("#monitor-inference-prompt-speed-label"), "Avg prompt speed");
-                assert.equal(await page.textContent("#stats-prompt-speed-label"), "tok/s prompt avg");
+                assert.equal(await page.textContent("#monitor-inference-prompt-speed-label"), "平均提示词速度");
+                assert.equal(await page.textContent("#stats-prompt-speed-label"), " tok/s · 提示词平均值");
 
                 statsMetrics.processing = 1;
                 statsSlots = [{
@@ -2660,8 +2660,8 @@ async function runScenario(browser, port, verify) {
                 assert.ok(Number(liveGenSpeed) > 0, "live speed updates before completion counters advance");
                 assert.equal(await page.textContent("#monitor-inference-gen-speed"), `${liveGenSpeed} tok/s`,
                     "the Monitor card shares the fixed bar's live rate");
-                assert.equal(await page.textContent("#monitor-inference-gen-speed-label"), "Live generation speed");
-                assert.equal(await page.textContent("#stats-gen-speed-label"), "tok/s gen live");
+                assert.equal(await page.textContent("#monitor-inference-gen-speed-label"), "实时生成速度");
+                assert.equal(await page.textContent("#stats-gen-speed-label"), "tok/s 生成实时");
                 assert.equal(await page.textContent("#stats-context"), "400",
                     "session tokens stay baseline-relative while slot context moves independently");
                 statsMetrics.genTokens = 530;
@@ -2670,8 +2670,8 @@ async function runScenario(browser, port, verify) {
                 statsSlots = idleStatsSlots;
                 await page.evaluate(() => inferencePolling._test.poll());
                 assert.equal(await page.textContent("#stats-gen-speed"), "15.0", "idle preserves the average");
-                assert.equal(await page.textContent("#monitor-inference-gen-speed-label"), "Avg generation speed");
-                assert.equal(await page.textContent("#stats-gen-speed-label"), "tok/s gen avg");
+                assert.equal(await page.textContent("#monitor-inference-gen-speed-label"), "平均生成速度");
+                assert.equal(await page.textContent("#stats-gen-speed-label"), " tok/s ·生成平均值");
                 delete statsMetrics.genSeconds;
                 await page.evaluate(() => inferencePolling._test.poll());
                 assert.equal(await page.textContent("#stats-gen-speed"), "--", "missing time does not use a gauge");
@@ -2784,7 +2784,7 @@ async function runScenario(browser, port, verify) {
                 await selectSection(page, "chat");
                 assert.equal(await page.locator("#chat-input").isDisabled(), true);
                 assert.equal(await page.locator("#btn-chat-send").isDisabled(), true);
-                assert.match(await page.textContent("#chat-no-server-note"), /Start llama-server/i);
+                assert.match(await page.textContent("#chat-no-server-note"), /启动 llama-server/i);
                 statusRunning = true;
                 activeProcessTool = "llama-cli";
                 statusActiveRuntime = { tool: "llama-cli", generation: 43 };
@@ -2822,7 +2822,7 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.locator("#chat-web-search-max-results").getAttribute("min"), "1");
                 assert.equal(await page.locator("#chat-web-search-max-results").getAttribute("max"), "10");
                 assert.deepEqual(await page.locator("#chat-thinking-effort option").allTextContents(), [
-                    "Auto (model default)", "Off", "Low", "Medium", "High", "XHigh",
+                    "自动「模型默认」", "关闭", "低", "中", "高", "超高",
                 ]);
                 if (await page.locator("#chat-sidebar").evaluate(el => el.classList.contains("collapsed"))) {
                     await page.locator("#btn-open-sidebar").click();
@@ -2948,7 +2948,7 @@ async function runScenario(browser, port, verify) {
                 });
                 await page.fill("#chat-input", "Empty response");
                 await page.click("#btn-chat-send");
-                await page.waitForFunction(() => document.querySelector("#chat-messages")?.textContent.includes("Response body is empty"));
+                await page.waitForFunction(() => document.querySelector("#chat-messages")?.textContent.includes("响应体为空"));
                 assert.equal(await page.locator(".chat-message.assistant").count(), 1);
                 assert.equal(await page.locator(".chat-message.assistant .chat-bubble").count(), 1);
                 await page.evaluate(() => window.__restoreChatFetch());
@@ -3106,12 +3106,12 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.locator("#btn-chat-jump-latest").isVisible(), true,
                     "Jump to latest remains available after a completed away-from-bottom stream");
                 const stagedMetadata = await page.locator(".chat-response-metadata").last().innerText();
-                assert.match(stagedMetadata, /Prompt: 13/);
-                assert.match(stagedMetadata, /Completion: 7/);
-                assert.match(stagedMetadata, /Total: 20/);
-                assert.match(stagedMetadata, /Speed: 12\.5 tok\/s/);
-                assert.match(stagedMetadata, /Stop: Finished/);
-                assert.doesNotMatch(stagedMetadata, /Stop: stop/i);
+                assert.match(stagedMetadata, /提示词: 13/);
+                assert.match(stagedMetadata, /生成: 7/);
+                assert.match(stagedMetadata, /总计: 20/);
+                assert.match(stagedMetadata, /速度: 12\.5 tok\/s/);
+                assert.match(stagedMetadata, /停止原因: 已完成/);
+                assert.doesNotMatch(stagedMetadata, /停止原因: 停止/i);
                 assert.match(await page.locator(".chat-reasoning-body").last().textContent(), /Later reasoning chunk/);
 
                 await page.locator("#btn-chat-jump-latest").click();
@@ -3155,7 +3155,7 @@ async function runScenario(browser, port, verify) {
                 await page.fill("#chat-input", "Editable prompt");
                 await page.click("#btn-chat-send");
                 await page.waitForFunction(() => document.querySelector("#btn-chat-send")?.style.display !== "none");
-                const editAction = page.getByRole("button", { name: "Edit and resend", exact: true });
+                const editAction = page.getByRole("button", { name: "编辑并重新发送", exact: true });
                 assert.equal(await editAction.count(), 1, "completed user turns expose Edit and resend immediately");
                 await editAction.click();
                 await page.waitForSelector("#confirm-modal:not(.hidden)");
@@ -3175,17 +3175,17 @@ async function runScenario(browser, port, verify) {
                 chatResponseMode = "failed-partial";
                 await page.fill("#chat-input", "Keep this draft");
                 await page.click("#btn-chat-regenerate");
-                await page.waitForFunction(() => document.querySelector(".chat-response-status")?.textContent.includes("previous answer kept"));
+                await page.waitForFunction(() => document.querySelector(".chat-response-status")?.textContent.includes("保留了上一个回答"));
                 assert.equal(await page.locator(".chat-message.assistant .chat-bubble").innerText(), "ok");
                 assert.equal(await page.locator(".chat-message.user").count(), 1);
                 assert.equal(await page.locator("#chat-input").inputValue(), "Keep this draft");
-                await page.getByRole("button", { name: "Next answer", exact: true }).click();
+                await page.getByRole("button", { name: "下一个回答", exact: true }).click();
                 assert.equal(await page.locator(".chat-message.assistant .chat-bubble").innerText(), "recoverable partial");
-                assert.match(await page.locator(".chat-response-status").innerText(), /Incomplete/);
-                await page.getByRole("button", { name: "Previous answer", exact: true }).click();
+                assert.match(await page.locator(".chat-response-status").innerText(), /不完整/);
+                await page.getByRole("button", { name: "上一个回答", exact: true }).click();
                 chatResponseMode = "ok";
-                await page.getByRole("button", { name: "Retry", exact: true }).click();
-                await page.waitForFunction(() => document.querySelector(".chat-message.assistant .chat-response-footer")?.textContent.includes("Answer 3 of 3"));
+                await page.getByRole("button", { name: "重试", exact: true }).click();
+                await page.waitForFunction(() => document.querySelector(".chat-message.assistant .chat-response-footer")?.textContent.includes("第 3 / 3 个回答"));
                 assert.equal(await page.locator(".chat-message.user").count(), 1);
                 assert.equal(chatCompletionBodies.length, recoveryRequestCount + 2);
                 assert.deepEqual(chatCompletionBodies.at(-1).messages, [{ role: "user", content: "Recovery test" }]);
@@ -3221,7 +3221,7 @@ async function runScenario(browser, port, verify) {
                 await page.click("#btn-chat-send");
                 await page.waitForFunction(() => document.querySelector(".chat-response-status")?.textContent.includes("Context limit exceeded"));
                 assert.equal(await page.locator("#chat-context-warning").isVisible(), true);
-                assert.match(await page.locator("#chat-context-warning").innerText(), /exceeds/);
+                assert.match(await page.locator("#chat-context-warning").innerText(), /超出/);
                 await page.click("#btn-chat-context-details");
                 assert.equal(await page.locator("#chat-context-label").isVisible(), true);
                 assert.match(await page.locator("#chat-context-label").innerText(), /Includes web results/);
@@ -3237,13 +3237,13 @@ async function runScenario(browser, port, verify) {
                 contextResponseMode = "warning";
                 await page.fill("#chat-input", "Nearly full draft");
                 await page.waitForFunction(() => !document.querySelector("#chat-context-warning").hidden);
-                assert.match(await page.locator("#chat-context-warning").innerText(), /nearly full/);
+                assert.match(await page.locator("#chat-context-warning").innerText(), /即将达到/);
                 assert.equal(await page.locator("#chat-context-label").isVisible(), false);
                 chatResponseMode = "ok";
                 contextResponseMode = "ok";
                 await page.fill("#chat-input", "Changed draft");
                 await page.waitForFunction(() => document.querySelector("#chat-context-warning").hidden);
-                await page.getByRole("button", { name: "Retry", exact: true }).click();
+                await page.getByRole("button", { name: "重试", exact: true }).click();
                 await page.waitForFunction(() => document.querySelector("#btn-chat-send")?.style.display !== "none");
                 assert.equal(chatCompletionBodies.at(-1).messages.filter(msg => msg.role === "user").length, 1);
                 assert.equal(await page.locator("#chat-input").inputValue(), "Changed draft");
@@ -3308,12 +3308,12 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.locator("#quick-repeat-penalty").evaluate((el) => el.validity.valid), true);
                 assert.equal(await page.locator("#quick-presence-penalty").evaluate((el) => el.validity.valid), true);
                 await selectSection(page, "configure");
-                await page.fill("#config-search", "presence");
+                await page.fill("#config-search", "存在");
                 await page.waitForSelector("#flag-presence_penalty", { state: "visible" });
                 await page.waitForFunction(() => document.querySelector("#flag-presence_penalty")?.value === "0.3");
                 assert.equal(await page.locator("#flag-presence_penalty").evaluate((el) => el.step), "0.1");
                 assert.equal(await page.locator("#flag-presence_penalty").evaluate((el) => el.validity.valid), true);
-                await page.fill("#config-search", "temperature");
+                await page.fill("#config-search", "温度");
                 await page.waitForSelector("#flag-temperature", { state: "visible" });
                 await page.waitForFunction(() => document.querySelector("#flag-temperature")?.value === "0.96");
                 assert.equal(await page.locator("#flag-temperature").evaluate((el) => el.step), "0.01");
@@ -3331,7 +3331,7 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.locator("#quick-temperature").getAttribute("data-unset"), "false");
                 await selectSection(page, "configure");
 
-                await page.fill("#config-search", "checkpoint min");
+                await page.fill("#config-search", "检查点最小");
                 await page.waitForSelector("#flag-checkpoint_every_n_tokens", { state: "visible" });
                 assert.equal(await page.locator("#flag-checkpoint_every_n_tokens").getAttribute("min"), "0");
                 await page.fill("#flag-checkpoint_every_n_tokens", "0");
@@ -3375,7 +3375,7 @@ async function runScenario(browser, port, verify) {
                 await page.fill("#quick-sampler-name", "smoke sampler");
                 await page.click("#btn-quick-sampler-save");
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => /already exists/i.test(toast.textContent)));
+                    .some((toast) => /已存在/i.test(toast.textContent)));
                 const samplerStoreAfterCollision = await page.evaluate(
                     () => JSON.parse(localStorage.getItem("llama_gui_sampler_presets_v1") || "{}")
                 );
@@ -3392,7 +3392,7 @@ async function runScenario(browser, port, verify) {
                 await page.waitForFunction(() => window.LlamaGui.flagCore.getFlagValues().presence_penalty === 0.4);
                 await page.waitForFunction(() => document.querySelector("#chat-slider-temp")?.value === "0.64");
                 await selectSection(page, "configure");
-                await page.fill("#config-search", "presence");
+                await page.fill("#config-search", "存在");
                 await page.waitForSelector("#flag-presence_penalty", { state: "visible" });
                 await page.waitForFunction(() => document.querySelector("#flag-presence_penalty")?.value === "0.4");
 
@@ -3416,7 +3416,7 @@ async function runScenario(browser, port, verify) {
                 await page.evaluate((selector) => {
                     document.querySelector(selector).dataset.smokeRebuildTag = "1";
                 }, configSamplerSelect);
-                await page.fill("#config-search", "penalty");
+                await page.fill("#config-search", "惩罚");
                 await page.waitForFunction(
                     (selector) => {
                         const select = document.querySelector(selector);
@@ -3430,7 +3430,7 @@ async function runScenario(browser, port, verify) {
                     "the Configure sampler selection must survive a panel rebuild"
                 );
 
-                await page.locator(".sampler-presets button", { hasText: "Rename" }).click();
+                await page.locator(".sampler-presets button", { hasText: "重命名" }).click();
                 await page.waitForSelector("#prompt-modal:not(.hidden)");
                 await page.fill("#prompt-modal-input", "Renamed Smoke Sampler");
                 await page.click("#prompt-modal-ok");
@@ -3442,7 +3442,7 @@ async function runScenario(browser, port, verify) {
                         && !Object.prototype.hasOwnProperty.call(store, "Smoke Sampler");
                 });
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => toast.textContent.includes('Renamed sampler preset to "Renamed Smoke Sampler"')));
+                    .some((toast) => toast.textContent.includes('采样预设已重命名为 "Renamed Smoke Sampler"')));
                 assert.equal(
                     await page.inputValue(configSamplerSelect),
                     "custom|Renamed Smoke Sampler",
@@ -3460,9 +3460,9 @@ async function runScenario(browser, port, verify) {
                 // A built-in is not renameable, and the attempt must not disturb the store.
                 await page.selectOption(configSamplerSelect, "builtin|Balanced");
                 await page.dispatchEvent(configSamplerSelect, "change");
-                await page.locator(".sampler-presets button", { hasText: "Rename" }).click();
+                await page.locator(".sampler-presets button", { hasText: "重命名" }).click();
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => toast.textContent.includes("Built-in sampler presets cannot be renamed.")));
+                    .some((toast) => toast.textContent.includes("内置采样预设无法重命名")));
                 assert.equal(
                     await page.evaluate(() => document.querySelector("#prompt-modal")?.classList.contains("hidden")),
                     true,
@@ -3485,7 +3485,7 @@ async function runScenario(browser, port, verify) {
                     })),
                 });
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => /already exists/i.test(toast.textContent)));
+                    .some((toast) => /已存在/i.test(toast.textContent)));
                 assert.deepEqual(
                     await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("llama_gui_sampler_presets_v1") || "{}"))),
                     ["Renamed Smoke Sampler"],
@@ -3503,7 +3503,7 @@ async function runScenario(browser, port, verify) {
                     })),
                 });
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => /must contain an object of sampler values/i.test(toast.textContent)));
+                    .some((toast) => /必须包含一个采样值对象/i.test(toast.textContent)));
                 assert.deepEqual(
                     await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("llama_gui_sampler_presets_v1") || "{}"))),
                     ["Renamed Smoke Sampler"],
@@ -3525,7 +3525,7 @@ async function runScenario(browser, port, verify) {
                     return raw && Object.prototype.hasOwnProperty.call(JSON.parse(raw), "Renamed Again Sampler");
                 });
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => toast.textContent.includes('Renamed sampler preset to "Renamed Again Sampler"')));
+                    .some((toast) => toast.textContent.includes('采样预设已重命名为 "Renamed Again Sampler"')));
                 await selectSection(page, "configure");
                 assert.equal(
                     await page.inputValue(configSamplerSelect),
@@ -3543,7 +3543,7 @@ async function runScenario(browser, port, verify) {
                 await page.click("#confirm-modal-ok");
                 await deletePromise;
                 await page.waitForFunction(() => Array.from(document.querySelectorAll(".toast-message"))
-                    .some((toast) => toast.textContent.includes('Deleted sampler preset "Renamed Again Sampler"')));
+                    .some((toast) => toast.textContent.includes('删除采样预设 "Renamed Again Sampler"')));
             },
             async "API endpoints and remote tunnel states"() {
                 await page.evaluate(() => {
@@ -3573,7 +3573,7 @@ async function runScenario(browser, port, verify) {
                         stopHidden: document.querySelector("#btn-stop-remote-tunnel")?.classList.contains("hidden"),
                     });
                     const states = {};
-                    window.LlamaGui.remoteTunnelUi.renderStatus({ status: "idle", message: "Remote tunnel is not running." });
+                    window.LlamaGui.remoteTunnelUi.renderStatus({ status: "idle", message: "远程隧道未运行" });
                     states.idle = readState();
                     window.LlamaGui.remoteTunnelUi.renderStatus({ status: "starting", message: "Starting Cloudflare tunnel..." });
                     states.starting = readState();
@@ -3587,7 +3587,7 @@ async function runScenario(browser, port, verify) {
                     states.error = readState();
                     return states;
                 });
-                assert.equal(tunnelStates.idle.badge, "idle");
+                assert.equal(tunnelStates.idle.badge, "空闲");
                 assert.equal(tunnelStates.idle.urlHidden, true);
                 assert.equal(tunnelStates.starting.startDisabled, true);
                 assert.equal(tunnelStates.starting.stopHidden, false);
@@ -3607,7 +3607,7 @@ async function runScenario(browser, port, verify) {
                 activeProcessTool = "";
                 statusActiveRuntime = null;
                 await page.evaluate(() => refreshRuntimeStatusPanels());
-                assert.equal(await page.textContent("#external-server-badge"), "Not connected");
+                assert.equal(await page.textContent("#external-server-badge"), "未连接");
                 assert.equal(
                     await page.locator("#external-server-summary").evaluate((el) => el.classList.contains("hidden")),
                     true
@@ -3630,7 +3630,7 @@ async function runScenario(browser, port, verify) {
                     await page.locator("#btn-disconnect-external-server").evaluate((el) => el.classList.contains("hidden")),
                     false
                 );
-                assert.match(await page.textContent("#api-status-note"), /started outside this GUI/);
+                assert.match(await page.textContent("#api-status-note"), /外部启动的 llama-server/);
 
                 await selectSection(page, "chat");
                 await page.waitForFunction(() => document.querySelector("#chat-input")?.disabled === false);
@@ -3639,7 +3639,7 @@ async function runScenario(browser, port, verify) {
                 await selectSection(page, "api");
                 await page.click("#btn-disconnect-external-server");
                 await page.waitForFunction(
-                    () => document.querySelector("#external-server-badge")?.textContent === "Not connected"
+                    () => document.querySelector("#external-server-badge")?.textContent === "未连接"
                 );
                 assert.equal(externalTargetRequests.at(-1).method, "DELETE");
                 assert.equal(await page.inputValue("#external-server-key"), "");
@@ -3697,7 +3697,7 @@ async function runScenario(browser, port, verify) {
                     await page.textContent("#external-server-note"),
                     "Re-enter the API key for 127.0.0.1:9003 to reconnect."
                 );
-                assert.equal(await page.textContent("#external-server-badge"), "Not connected");
+                assert.equal(await page.textContent("#external-server-badge"), "未连接");
                 rememberedTarget = null;
             },
             async "custom launch arguments and environment validation"() {
@@ -3713,13 +3713,13 @@ async function runScenario(browser, port, verify) {
                     });
                 });
                 await selectSection(page, "quick-launch");
-                await page.waitForFunction(() => document.querySelector("#quick-chip-model .chip-text")?.textContent === "Model: remote source");
+                await page.waitForFunction(() => document.querySelector("#quick-chip-model .chip-text")?.textContent === "模型: 远程仓库");
                 assert.ok((await page.locator("#quick-chip-model").getAttribute("class")).includes("ok"));
-                assert.equal(await page.textContent("#quick-chip-api .chip-text"), "API: protected");
+                assert.equal(await page.textContent("#quick-chip-api .chip-text"), "API: 受保护");
                 assert.ok((await page.locator("#quick-api-protected-badge").getAttribute("class")).includes("visible"));
 
                 await page.evaluate(() => window.LlamaGui.flagCore.setCurrentTool("llama-cli"));
-                await page.waitForFunction(() => document.querySelector("#quick-chip-api .chip-text")?.textContent === "API: not applicable");
+                await page.waitForFunction(() => document.querySelector("#quick-chip-api .chip-text")?.textContent === "API: 不适用");
                 assert.ok(!(await page.locator("#quick-api-protected-badge").getAttribute("class")).includes("visible"));
 
                 await page.evaluate(() => {
@@ -3772,17 +3772,17 @@ async function runScenario(browser, port, verify) {
 
                 await page.fill("#custom-launch-args", "--threads 'unterminated");
                 await page.dispatchEvent("#custom-launch-args", "input");
-                await page.waitForFunction(() => document.querySelector("#custom-launch-args-status")?.textContent.includes("unmatched single quote"));
+                await page.waitForFunction(() => document.querySelector("#custom-launch-args-status")?.textContent.includes("未匹配的单引号"));
                 assert.match(await page.textContent("#command-preview-text"), /Cannot launch:/);
                 await page.selectOption("#model-select", "smoke-model.gguf");
                 await page.dispatchEvent("#model-select", "change");
                 await selectSection(page, "quick-launch");
                 assert.ok((await page.locator("#quick-chip-model").getAttribute("class")).includes("ok"));
-                assert.equal(await page.textContent("#quick-chip-model .chip-text"), "Model: smoke-model.gguf");
+                assert.equal(await page.textContent("#quick-chip-model .chip-text"), "模型: smoke-model.gguf");
                 await selectSection(page, "configure");
                 const launchCountBefore = launchBodies.length;
                 await page.click("#btn-launch");
-                await page.waitForFunction(() => document.querySelector("#toast-container")?.textContent.includes("unmatched single quote"));
+                await page.waitForFunction(() => document.querySelector("#toast-container")?.textContent.includes("未匹配的单引号"));
                 assert.equal(launchBodies.length, launchCountBefore);
             },
             async "custom backend activation preserves shared flags"() {
@@ -3793,36 +3793,36 @@ async function runScenario(browser, port, verify) {
                 const customReleaseCountBefore = countCustomReleaseRequests();
                 await page.selectOption("#backend-select", "custom");
                 await page.waitForFunction(() => document.querySelector("#custom-backend-info")?.offsetParent !== null);
-                await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "Activate Custom");
+                await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "激活自定义");
                 await page.waitForTimeout(250);
                 assert.equal(countCustomReleaseRequests(), customReleaseCountBefore);
                 await page.click("#btn-install");
-                await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("Custom backend activated"));
+                await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("后端已激活"));
                 assert.equal(activateCustomRequests.length, 1);
                 assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
 
                 const flagsBeforeSwitch = await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues()));
                 await page.selectOption("#backend-select", "custom-02");
                 await page.waitForFunction(() => document.querySelector("#custom-backend-folder")?.textContent === "llama/custom-02/bin/");
-                assert.equal(await page.locator("#installed-backend-summary").textContent(), "Installed backend: Custom");
+                assert.equal(await page.locator("#installed-backend-summary").textContent(), "后端类型：Custom");
                 await page.click("#btn-install");
-                await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("Custom 02 needs llama-cli and llama-server"));
+                await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("Custom 02 需要在"));
                 assert.equal(installedBackend, "custom");
                 assert.equal(await page.locator("#btn-update").isDisabled(), true);
                 custom02Ready = true;
                 await page.click("#btn-install");
-                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: Custom 02");
+                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "后端类型：Custom 02");
                 assert.equal(await page.locator("#version-badge").textContent(), "Custom 02");
                 assert.match(await page.locator("#installed-info").textContent(), /llama\/custom-02\/bin\//);
                 assert.deepEqual(activateCustomRequests.at(-1), { backend: "custom-02" });
                 assert.equal(countCustomReleaseRequests(), customReleaseCountBefore);
                 await page.selectOption("#backend-select", "cpu");
-                await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "Activate Existing");
+                await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "激活现有");
                 await page.click("#btn-install");
-                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: CPU");
+                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "后端类型：CPU");
                 await page.selectOption("#backend-select", "custom");
                 await page.click("#btn-install");
-                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: Custom");
+                await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "后端类型：Custom");
                 assert.equal(await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues())), flagsBeforeSwitch,
                     "switching builds must not change shared model/preset flags");
             },
@@ -3990,10 +3990,10 @@ async function runScenario(browser, port, verify) {
                         quickLabelText: quickLabel?.textContent?.trim() || "",
                     };
                 });
-                assert.match(searchableSelectAccessibility.buttonLabel, /^Model A preset:/);
+                assert.match(searchableSelectAccessibility.buttonLabel, /^模型 A 预设:/);
                 assert.ok(searchableSelectAccessibility.activeOptionExists, "active searchable option must be exposed to assistive technology");
-                assert.match(searchableSelectAccessibility.quickButtonLabel, /^Model:/);
-                assert.equal(searchableSelectAccessibility.quickLabelText, "Model");
+                assert.match(searchableSelectAccessibility.quickButtonLabel, /^模型:/);
+                assert.equal(searchableSelectAccessibility.quickLabelText, "模型");
                 const searchableOptionLayout = await page.evaluate(() => {
                     const item = document.querySelector(".ss-popup:not(.hidden) .ss-item");
                     const style = getComputedStyle(item);
@@ -4041,7 +4041,7 @@ async function runScenario(browser, port, verify) {
                 await page.focus("#sidebar-model-switcher-slider");
                 await page.keyboard.press("ArrowRight");
                 assert.equal(await page.evaluate(() => window.__sidebarSwitchCalls), 1, "an arrow key should preview without switching");
-                assert.match(await page.textContent("#sidebar-model-switcher-status"), /Press Enter to switch to Model B/);
+                assert.match(await page.textContent("#sidebar-model-switcher-status"), /按 Enter 键切换至模型 B/);
                 await page.keyboard.press("Enter");
                 await page.waitForFunction(() => window.__sidebarSwitchCalls === 2);
                 await page.waitForFunction(() => document.querySelector("#sidebar-model-switcher-slider")?.getAttribute("aria-valuenow") === "0");
@@ -4216,10 +4216,10 @@ async function runScenario(browser, port, verify) {
                 assert.equal(await page.textContent("#monitor-memory-value"), "37.5%");
                 assert.equal(await page.textContent("#monitor-disk-read"), "1.2 MB/s");
                 assert.equal(await page.textContent("#monitor-disk-write"), "410 KB/s");
-                assert.equal(await page.textContent("#monitor-disk-activity"), "Reading and writing");
-                assert.match(await page.textContent("#monitor-disk-sub"), /All physical disks.*Includes other applications/);
+                assert.equal(await page.textContent("#monitor-disk-activity"), "读取 与 写入");
+                assert.match(await page.textContent("#monitor-disk-sub"), /所有物理磁盘.*包括其他应用/);
                 assert.equal(await page.locator("#monitor-disk-value, #monitor-disk-bar").count(), 0, "capacity no longer appears in the activity card");
-                assert.match(await page.textContent("#monitor-live-badge"), /Live/);
+                assert.match(await page.textContent("#monitor-live-badge"), /实时/);
                 await page.waitForFunction(() => document.querySelectorAll("#monitor-card-grid [data-monitor-key^='gpu:']").length === 1);
                 assert.match(await page.textContent("#monitor-card-grid"), /Smoke GPU/);
                 const wideMonitorLayout = await page.locator("#monitor-card-grid").evaluate((grid) => {
@@ -4316,17 +4316,17 @@ async function runScenario(browser, port, verify) {
                     await inferencePolling._test.poll();
                 });
                 assert.equal(await page.textContent("#stats-context"), "100");
-                assert.equal(await page.textContent("#monitor-inference-total"), "100 tokens",
+                assert.equal(await page.textContent("#monitor-inference-total"), "100 个 Token",
                     "the Inference card must agree with the fixed bar's session baseline");
                 assert.match(await page.textContent("#monitor-inference-context-reading"), /250 \/ 1,000/);
-                assert.match(await page.textContent("#monitor-inference-context-label"), /active/,
+                assert.match(await page.textContent("#monitor-inference-context-label"), /上下文 · 当前插槽占用（活跃）/,
                     "a processing slot is labeled active");
-                assert.match(await page.textContent("#monitor-inference-state-badge"), /1 active/);
+                assert.match(await page.textContent("#monitor-inference-state-badge"), /活动请求：1/);
 
                 // Reset updates both views immediately from the shared baseline.
                 await page.click("#btn-reset-inference");
                 assert.equal(await page.textContent("#stats-context"), "0");
-                assert.equal(await page.textContent("#monitor-inference-total"), "0 tokens");
+                assert.equal(await page.textContent("#monitor-inference-total"), "0 个 Token");
                 await page.evaluate(() => inferencePolling.stop());
 
                 // System polling stops while the Monitor panel is hidden.
@@ -4427,11 +4427,11 @@ async function verifyStarterProfiles(page) {
         assert.equal(await page.inputValue("#flag-ctx_size"), String(ctx));
         assert.equal(await page.inputValue("#quick-gpu-mode"), "auto");
         assert.equal(await page.textContent("#quick-command-preview"), await page.textContent("#command-preview-text"));
-        assert.match(await page.textContent("#quick-profile-summary"), /Samplers unchanged/);
-        assert.match(await page.textContent("#quick-fit-summary"), /minimum context llama.cpp default/);
+        assert.match(await page.textContent("#quick-profile-summary"), /采样器保持不变/);
+        assert.match(await page.textContent("#quick-fit-summary"), /上下文大小：llama.cpp 默认/);
         assert.equal(await page.locator("#flag-kv_offload").evaluate(el => el.indeterminate), true);
-        assert.equal(await page.locator("#flag-kv_offload + label").textContent(), "llama.cpp default");
-        assert.equal(await page.locator("#flag-cache_type_k option:checked").textContent(), "llama.cpp default");
+        assert.equal(await page.locator("#flag-kv_offload + label").textContent(), "llama.cpp 默认");
+        assert.equal(await page.locator("#flag-cache_type_k option:checked").textContent(), "llama.cpp 默认");
     }
     const roundTrip = await page.evaluate(() => {
         const core = window.LlamaGui.flagCore;
@@ -4444,7 +4444,7 @@ async function verifyStarterProfiles(page) {
     assert.equal(await page.inputValue("#quick-fit-ctx"), "");
     await page.selectOption("#quick-context-preset", "256000");
     assert.equal(await page.inputValue("#quick-fit-ctx"), "", "repeated context changes do not relink inherited fit minimum");
-    await page.locator(".fit-advanced > summary", { hasText: "Advanced fit options" }).click();
+    await page.locator(".fit-advanced > summary", { hasText: "高级 fit 选项" }).click();
     await page.click("#btn-quick-fit-sync");
     await page.selectOption("#quick-context-preset", "64000");
     assert.equal(await page.inputValue("#quick-fit-ctx"), "64000", "Match Context explicitly restores linking");
@@ -4452,9 +4452,9 @@ async function verifyStarterProfiles(page) {
         window.LlamaGui.quickLaunchUi.renderContextSnapshot({ sources: { slots: "ok" }, context: { total: 32000 } });
     });
     assert.match(await page.textContent("#quick-runtime-context"), /32/);
-    assert.match(await page.textContent("#quick-chip-context"), /Requested context: 64/);
+    assert.match(await page.textContent("#quick-chip-context"), /上下文大小： 64/);
     await page.evaluate(() => window.LlamaGui.quickLaunchUi.renderContextSnapshot({ context: null }));
-    assert.match(await page.textContent("#quick-runtime-context"), /unavailable/);
+    assert.match(await page.textContent("#quick-runtime-context"), /不可用/);
     assert.deepEqual(writes, [], "starter profiles never launch, stop, or write saved presets");
     page.off("request", observe);
 }

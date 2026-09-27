@@ -24,7 +24,7 @@
 
     function formatBytes(bytes) {
         const value = finiteNonNegativeOrNull(bytes);
-        if (value === null) return "Not available";
+        if (value === null) return "暂无数据";
         let scaled = value;
         let unitIndex = 0;
         while (scaled >= 1024 && unitIndex < BYTE_UNITS.length - 1) {
@@ -37,13 +37,13 @@
 
     function formatRate(bytesPerSecond) {
         const value = finiteNonNegativeOrNull(bytesPerSecond);
-        if (value === null) return "Not available";
+        if (value === null) return "暂无数据";
         return `${formatBytes(value)}/s`;
     }
 
     function formatPercentValue(value, digits = 0) {
         const clamped = clampPercent(value);
-        if (clamped === null) return "Not available";
+        if (clamped === null) return "暂无数据";
         return clamped.toFixed(digits);
     }
 
@@ -116,7 +116,7 @@
         bar.classList.toggle("hidden", clamped === null);
         if (clamped === null) {
             bar.removeAttribute("aria-valuenow");
-            bar.setAttribute("aria-valuetext", "Not available");
+            bar.setAttribute("aria-valuetext", "暂无数据");
         } else {
             const now = String(Math.round(clamped * 10) / 10);
             if (bar.getAttribute("aria-valuenow") !== now) bar.setAttribute("aria-valuenow", now);
@@ -142,7 +142,7 @@
         if (!row) return;
         const reading = row.querySelector(".monitor-metric-reading");
         if (!reading) return;
-        setText(reading, unavailable ? "Not available" : readingText);
+        setText(reading, unavailable ? "暂无数据" : readingText);
         reading.classList.toggle("monitor-not-available", Boolean(unavailable));
     }
 

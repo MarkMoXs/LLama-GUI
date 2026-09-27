@@ -121,12 +121,12 @@ test("output allows five retries, resets the count on success, then stops on the
     for (let i = 1; i <= 6; i++) {
         await h.tick(300); h.calls.at(-1).reject(new Error("offline")); await flush();
         assert.equal(h.poller.isActive(), i <= 5);
-        assert.match(h.lines.at(-1), i <= 5 ? new RegExp(`retry ${i}/5`) : /Connection to server lost/);
+        assert.match(h.lines.at(-1), i <= 5 ? new RegExp(`重试 ${i}/5`) : /与服务器的连接已断开/);
     }
     assert.deepEqual(h.events, ["lost"]);
     assert.equal(h.timers.size, 0);
     h.poller.start(); await h.tick(300);
     h.calls.at(-1).reject(new Error("offline")); await flush();
-    assert.match(h.lines.at(-1), /retry 1\/5/);
+    assert.match(h.lines.at(-1), /重试 1\/5/);
     h.poller.stop();
 });

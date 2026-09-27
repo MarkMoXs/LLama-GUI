@@ -260,18 +260,18 @@
 
     function buildLocalModelPath(modelName) {
         const name = normalizeModelRelPath(modelName);
-        if (!name) return { path: "", error: "Invalid model filename." };
+        if (!name) return { path: "", error: "无效的模型文件名。" };
         if (!modelDirInfo) {
-            return { path: "", error: "Models folder status is not available yet." };
+            return { path: "", error: "模型文件夹状态尚不可用。" };
         }
         if (!modelDirInfo.models_dir_available) {
             return {
                 path: "",
-                error: modelDirInfo.models_dir_error || "Models folder is unavailable.",
+                error: modelDirInfo.models_dir_error || "模型文件夹不可用。",
             };
         }
         const argRoot = modelDirInfo.models_arg_root;
-        if (!argRoot) return { path: "", error: "Models folder launch path is unavailable." };
+        if (!argRoot) return { path: "", error: "模型文件夹启动路径不可用。" };
         const separator = /[\\/]$/.test(argRoot) ? "" : "/";
         return { path: argRoot + separator + name, error: null };
     }
@@ -447,10 +447,10 @@
         }
 
         if (escaping) {
-            return { error: "Custom launch args end with an unfinished escape." };
+            return { error: "自定义启动参数以未完成的转义结尾。" };
         }
         if (quote) {
-            return { error: `Custom launch args contain an unmatched ${quote === "'" ? "single" : "double"} quote.` };
+            return { error: `自定义启动参数包含一个未匹配的${quote === "'" ? "单" : "双"}引号。` };
         }
         if (tokenStarted) tokens.push(token);
         return { tokens };

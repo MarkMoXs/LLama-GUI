@@ -22,7 +22,7 @@ def reset_shared_server_state():
     server.set_remote_tunnel_state(
         status="idle",
         url="",
-        message="Remote tunnel is not running.",
+        message="远程隧道未运行",
         log="",
     )
     server.set_llama_api_target(server.LLAMA_HOST, server.LLAMA_PORT)

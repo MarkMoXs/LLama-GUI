@@ -190,12 +190,12 @@ class DeltaMathTests(unittest.TestCase):
     def test_disk_io_is_independent_of_capacity(self):
         previous = make_counters(monotonic=98.0, disk_read=0, disk_write=0)
         counters = make_counters(disk_usage=None)
-        counters["disk"]["label"] = "All physical disks"
+        counters["disk"]["label"] = "所有物理磁盘"
         data, _ = self._sample(previous, counters)
         disk = data["system"]["disk"]
         self.assertFalse(disk["available"])
         self.assertTrue(disk["io_available"])
-        self.assertEqual(disk["io_label"], "All physical disks")
+        self.assertEqual(disk["io_label"], "所有物理磁盘")
         self.assertEqual(disk["read_bytes_per_second"], 500_000)
         counters["disk"] = None
         counters["disk_usage"] = (10, 100)
@@ -405,7 +405,7 @@ class NativeDiskCountersTests(unittest.TestCase):
             counters = svc.collect_windows_disk_counters()
         self.assertEqual(counters["bytes_read"], 2 ** 40 + 1)
         self.assertEqual(counters["bytes_written"], 2 ** 40 + 2)
-        self.assertEqual(counters["label"], "All physical disks")
+        self.assertEqual(counters["label"], "所有物理磁盘")
         self.assertEqual(pdh.PdhCloseQuery.call_args.args[0].value, 0x100000000)
         self.assertEqual(pdh.PdhAddEnglishCounterW.call_count, 2)
         self.assertEqual(pdh.PdhAddEnglishCounterW.call_args_list[0].args[1],
@@ -994,7 +994,7 @@ class SetupStateTests(unittest.TestCase):
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0]["provider"], "")
         self.assertEqual(entries[0]["state"], "unavailable")
-        self.assertIn("AMD SMI itself supports Linux only", entries[0]["message"])
+        self.assertIn("AMD SMI本身仅支持Linux系统", entries[0]["message"])
         self.assertIn("all-smi", entries[0]["message"])
         self.assertIn("nvidia-smi", entries[0]["message"])
 
@@ -1105,7 +1105,7 @@ class SetupStateTests(unittest.TestCase):
         )
         self.assertEqual(entries[0]["action"], "open_docs")
         self.assertIsNone(entries[0]["command"])
-        self.assertIn("using your distribution's package manager", entries[0]["message"])
+        self.assertIn("使用发行版的包管理器", entries[0]["message"])
         self.assertIn("amdrocm-amdsmi", entries[0]["message"])
 
     def test_wsl_is_excluded_before_distribution_detection(self):
@@ -1125,9 +1125,9 @@ class SetupStateTests(unittest.TestCase):
             )
             entry = entries[0]
             self.assertEqual(entry["state"], "unsupported", platform)
-            self.assertIn("Linux bare metal", entry["message"])
+            self.assertIn("Linux 裸机", entry["message"])
             self.assertIn("all-smi", entry["message"])
-            self.assertIn("Models can still run normally", entry["message"])
+            self.assertIn("模型仍可正常运行", entry["message"])
 
 
 class CollectSampleTests(unittest.TestCase):

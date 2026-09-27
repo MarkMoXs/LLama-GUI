@@ -68,7 +68,7 @@
         if (availableBackends.length === 0) {
             const opt = document.createElement("option");
             opt.value = "";
-            opt.textContent = "No supported backends for this platform";
+            opt.textContent = "此平台没有受支持的后端";
             backendSelect.appendChild(opt);
             backendSelect.disabled = true;
             return;
@@ -108,13 +108,13 @@
         el.className = "installed-backend-summary";
 
         if (status && status.installed && installedBackend) {
-            el.textContent = "Installed backend: " + label;
+            el.textContent = "后端类型：" + label;
             el.classList.add("is-installed");
         } else if (status && status.config_stale && installedBackend) {
-            el.textContent = "Configured backend: " + label + " (incomplete)";
+            el.textContent = "已配置后端：" + label + "（未完成）";
             el.classList.add("is-stale");
         } else {
-            el.textContent = "Installed backend: None";
+            el.textContent = "当前后端：无";
             el.classList.add("is-empty");
         }
     }
@@ -131,20 +131,20 @@
         const canActivateExisting = canActivateOfficialBackend(status, installTarget);
 
         if (installBtn && !customTargetSelected) {
-            installBtn.textContent = canActivateExisting ? "Activate Existing" : "Install";
+            installBtn.textContent = canActivateExisting ? "激活现有" : "安装";
             installBtn.title = canActivateExisting
-                ? "Use the official llama.cpp files already installed in llama/bin"
-                : "Download and install the selected llama.cpp release";
+                ? "使用已安装在 llama/bin 中的官方 llama.cpp 文件"
+                : "下载并安装所选的 llama.cpp 版本";
         }
 
         if (updateBtn) {
             const canUpdate = !customTargetSelected && hasInstalledBackend && !isCustomBackend(installedBackend, status);
             updateBtn.disabled = !canUpdate;
             updateBtn.title = canUpdate
-                ? "Check the installed backend for updates"
+                ? "检查已安装后端是否有更新"
                 : customTargetSelected || isCustomBackend(installedBackend, status)
-                    ? "Custom backend installations are managed manually"
-                    : "Install llama.cpp before checking for updates";
+                    ? "自定义后端需手动管理"
+                    : "请先安装 llama.cpp，再检查更新";
         }
 
         if (repairBtn) {
@@ -152,10 +152,10 @@
             repairBtn.classList.toggle("hidden", !canRepair && !customTargetSelected);
             repairBtn.disabled = !canRepair;
             repairBtn.title = customTargetSelected
-                ? "Custom backend files are managed manually"
+                ? "自定义后端文件需手动管理"
                 : canRepair
-                    ? "Reinstall the configured backend files"
-                    : "Repair is available only for incomplete default backend installs";
+                    ? "重新安装已配置的后端文件"
+                    : "仅未完成的默认后端安装可使用修复功能";
         }
     }
 
@@ -186,7 +186,7 @@
         if (title) title.textContent = backendLabelFromStatus(status, backend) + " Setup:";
         const installBtn = document.getElementById("btn-install");
         if (installBtn) {
-            installBtn.textContent = "Activate Custom";
+            installBtn.textContent = "激活自定义";
         }
         const updateBtn = document.getElementById("btn-update");
         if (updateBtn) updateBtn.disabled = true;
@@ -203,7 +203,7 @@
         if (sel) sel.disabled = false;
         const installBtn = document.getElementById("btn-install");
         if (installBtn) {
-            installBtn.textContent = "Install";
+            installBtn.textContent = "安装";
         }
         const updateBtn = document.getElementById("btn-update");
         if (updateBtn) updateBtn.disabled = false;
@@ -242,8 +242,8 @@
             if (result.ok) {
                 const foundList = (result.found || []).join(", ");
                 const missingList = (result.missing || []).join(", ");
-                let msg = label + " backend activated. Found: " + (foundList || "none") + ".";
-                if (missingList) msg += " Missing: " + missingList + ".";
+                let msg = label + " 后端已激活。找到：" + (foundList || "无") + "。";
+                if (missingList) msg += " 缺失：" + missingList + "。";
                 I.install.showStatus("success", msg);
                 await I.status.checkStatus();
             } else {
@@ -253,16 +253,16 @@
                 if (result.error) {
                     I.install.showStatus("error", result.error);
                 } else if (missingRuntime) {
-                    I.install.showStatus("error", `${label} is missing runtime libraries in ${folder}: ${missingRuntime}.`);
+                    I.install.showStatus("error", `${label} 在 ${folder} 中缺少运行时库：${missingRuntime}。`);
                 } else if (notExecutable) {
-                    I.install.showStatus("error", `${label} tools must be executable in ${folder}: ${notExecutable}.`);
+                    I.install.showStatus("error", `${label} 工具必须可执行，位置在 ${folder}：${notExecutable}。`);
                 } else {
                     const missingList = missingRequired || (result.missing || []).join(", ");
-                    I.install.showStatus("error", `${label} needs llama-cli and llama-server in ${folder}. Missing: ${missingList || "required tools"}.`);
+                    I.install.showStatus("error", `${label} 需要在 ${folder} 中提供 llama-cli 和 llama-server。缺失：${missingList || "所需工具"}。`);
                 }
             }
         } catch (e) {
-            I.install.showStatus("error", `Failed to activate ${label}: ${e.message}`);
+            I.install.showStatus("error", `激活 ${label} 失败：${e.message}`);
         } finally {
             customActivationInProgress = false;
             I.install.setInstallButtonsDisabled(false);
@@ -272,17 +272,17 @@
 
     async function activateOfficialBackend(backend) {
         I.install.setInstallButtonsDisabled(true);
-        I.install.showStatus("info", `Activating existing ${backend} backend...`);
+        I.install.showStatus("info", `正在激活现有 ${backend} 后端...`);
         try {
             const result = await I.dependencies.fetchJson("/api/install", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ backend, activate_existing: true }),
             });
-            I.install.showStatus("success", `Existing ${result.tag} (${result.backend}) installation activated.`);
+            I.install.showStatus("success", `已激活现有安装：${result.tag} (${result.backend})。`);
             await I.status.checkStatus();
         } catch (e) {
-            I.install.showStatus("error", "Failed to activate existing backend: " + e.message);
+            I.install.showStatus("error", "激活现有后端失败：" + e.message);
         } finally {
             I.install.setInstallButtonsDisabled(false);
             syncInstallActionButtons(I.status.getLatestStatus(), selectedBackendId());
@@ -338,10 +338,10 @@
                 : status.version + " (" + status.backend + ")";
             badge.className = "badge badge-green";
         } else if (status.config_stale) {
-            badge.textContent = "Install Incomplete";
+            badge.textContent = "安装未完成";
             badge.className = "badge badge-yellow";
         } else {
-            badge.textContent = "Not Installed";
+            badge.textContent = "未安装";
             badge.className = "badge";
         }
 
@@ -377,7 +377,7 @@
             const coreTools = document.createElement("div");
             coreTools.className = "installed-tools";
             const coreTitle = document.createElement("h4");
-            coreTitle.textContent = "Launch tools";
+            coreTitle.textContent = "启动工具";
             coreTools.appendChild(coreTitle);
 
             const optionalTools = document.createElement("details");
@@ -386,11 +386,11 @@
             optionalTools.open = optionalToolsOpen;
             const optionalEntries = tools.filter(([name]) => !isCoreTool(name));
             const optionalTitle = document.createElement("summary");
-            optionalTitle.textContent = `Optional tools · ${optionalEntries.filter(([, exists]) => exists).length} of ${optionalEntries.length} installed`;
+            optionalTitle.textContent = `可选工具 · 已安装 ${optionalEntries.filter(([, exists]) => exists).length} / ${optionalEntries.length}`;
             optionalTools.appendChild(optionalTitle);
             const hint = document.createElement("p");
             hint.className = "installed-info-hint";
-            hint.textContent = "Benchmark and utility tools are only needed for their respective tasks.";
+            hint.textContent = "基准测试和实用工具仅在各自任务中需要。";
             optionalTools.appendChild(hint);
 
             for (const [name, exists] of tools) {
@@ -401,7 +401,7 @@
                 label.textContent = name;
                 const state = document.createElement("span");
                 state.className = exists ? "exe-ok" : required ? "exe-missing" : "exe-optional";
-                state.textContent = exists ? "Available" : required ? "Missing · required" : "Not installed";
+                state.textContent = exists ? "可用" : required ? "缺失 · 必需" : "未安装";
                 row.appendChild(label);
                 row.appendChild(state);
                 (required ? coreTools : optionalTools).appendChild(row);
@@ -419,8 +419,8 @@
             const warning = document.createElement("div");
             warning.className = "installed-info-warning";
             warning.textContent = missingRuntimeFiles.length > 0
-                ? "Configuration exists, but required llama.cpp runtime libraries are missing."
-                : "Configuration exists, but required llama.cpp executables are missing.";
+                ? "配置已存在，但缺少所需的 llama.cpp 运行时库。"
+                : "配置已存在，但缺少所需的 llama.cpp 可执行文件。";
             info.appendChild(warning);
 
             if (missingRuntimeFiles.length > 0) {
@@ -428,17 +428,17 @@
                 missing.className = "installed-info-note";
                 const shown = missingRuntimeFiles.slice(0, 8).join(", ");
                 const extra = missingRuntimeFiles.length > 8 ? `, and ${missingRuntimeFiles.length - 8} more` : "";
-                missing.textContent = "Missing runtime libraries: " + shown + extra;
+                missing.textContent = "缺少运行时库：" + shown + extra;
                 info.appendChild(missing);
             }
 
             const hint = document.createElement("div");
             hint.className = "installed-info-hint";
             hint.textContent = isCustomBackend(status.backend, status)
-                ? `Check the required tools and runtime libraries in ${customBackendFolder(status.backend, status)}, then click Activate Custom again.`
+                ? `请检查 ${customBackendFolder(status.backend, status)} 中的所需工具和运行时库，然后再次点击“激活自定义”。`
                 : status.platform === "linux" && missingRuntimeFiles.length > 0
-                    ? "Click Repair Install first. If the same libraries remain missing, install or update the Vulkan/ROCm driver runtime for this system."
-                    : "Click Repair Install to reinstall the configured version/backend and restore binaries.";
+                    ? "请先点击“修复安装”。如果同样的库仍然缺失，再安装或更新该系统的 Vulkan/ROCm 驱动运行时。"
+                    : "请点击“修复安装”以重新安装已配置的版本/后端并恢复二进制文件。";
             info.appendChild(hint);
 
             appendRow("Version (config)", String(status.version));
@@ -454,11 +454,11 @@
             const hint = document.createElement("p");
             const platformText = status.platform_label ? `${status.platform_label} (${status.arch})` : "this system";
             if (!status.available_backends || status.available_backends.length === 0) {
-                title.textContent = "No prebuilt backends available";
-                hint.textContent = `No prebuilt llama.cpp backends are configured for ${platformText}.`;
+                title.textContent = "没有可用的预构建后端";
+                hint.textContent = `没有为 ${platformText} 配置可用的 prebuilt llama.cpp 后端。`;
             } else {
-                title.textContent = "No llama.cpp installed";
-                hint.textContent = `Select a version above and click Install to set up llama.cpp for ${platformText}.`;
+                title.textContent = "尚未安装 llama.cpp";
+                hint.textContent = `请选择上方的版本并点击“安装”，以在 ${platformText} 上设置 llama.cpp。`;
             }
             empty.appendChild(title);
             empty.appendChild(hint);
