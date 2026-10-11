@@ -794,8 +794,14 @@ for (const tool of ["llama-server", "llama-cli"]) {
     `, context);
     assert.equal(vm.runInContext("window.LlamaGui.flagCore.getFlagValues().spec_type", context), "auto");
     assert.ok(!flatLaunchArgs().includes("--spec-type"), "Auto leaves type detection to llama.cpp");
+    vm.runInContext('window.LlamaGui.flagCore.setFlagValue("spec_type", "draft-mtp")', context);
+    assert.ok(!flatLaunchArgs().includes("--spec-draft-sampling"), "greedy default must remain compatible with older builds");
+    vm.runInContext('window.LlamaGui.flagCore.setFlagValue("draft_sampling", "probabilistic")', context);
+    const samplingArgs = Array.from(flatLaunchArgs());
+    assert.equal(samplingArgs[samplingArgs.indexOf("--spec-draft-sampling") + 1], "probabilistic");
     vm.runInContext(`window.LlamaGui.flagCore.applyFlagValues({
         spec_type: "none", model_draft: "draft.gguf", hf_repo_draft: "org/draft",
+        draft_sampling: "probabilistic",
         draft_max: 8, draft_min: 2, draft_p_min: 0.5, draft_p_split: 0.1,
         gpu_layers_draft: "all", draft_device: "CUDA0",
         draft_cache_type_k: "q8_0", draft_cache_type_v: "q8_0",
@@ -817,6 +823,7 @@ for (const tool of ["llama-server", "llama-cli"]) {
     args = Array.from(flatLaunchArgs());
     assert.equal(args[args.indexOf("--spec-type") + 1], "ngram-mod,ngram-map-k4v,ngram-simple");
     assert.equal(args[args.indexOf("-md") + 1], "draft.gguf", "switching back restores saved draft arguments");
+    assert.equal(args[args.indexOf("--spec-draft-sampling") + 1], "probabilistic", "switching back restores draft sampling");
     vm.runInContext(`window.LlamaGui.flagCore.setMultipleFlagValues({
         ngram_simple: false, ngram_mod: false, ngram_map_k4v: false,
     })`, context);
