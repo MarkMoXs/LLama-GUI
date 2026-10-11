@@ -5,6 +5,8 @@
     let lastInstalledInfoRenderKey = "";
     let pendingInstallBackendId = null;
     let customActivationInProgress = false;
+    let customFolderPickerInProgress = false;
+    const customFolderDrafts = new Map();
 
     function normalizeBackendId(value) {
         return String(value || "").trim();
@@ -34,6 +36,60 @@
     function customBackendFolder(backendId, status = I.status.getLatestStatus()) {
         const backend = backendOptionsFromStatus(status).find((entry) => entry.id === backendId);
         return backend && backend.bin_dir ? backend.bin_dir : "llama/custom/bin/";
+    }
+
+    function renderCustomFolderControls(backend, status = I.status.getLatestStatus()) {
+        const option = backendOptionsFromStatus(status).find(entry => entry.id === backend);
+        const input = document.getElementById("custom-backend-dir");
+        const draft = customFolderDrafts.has(backend)
+            ? customFolderDrafts.get(backend)
+            : option && option.bin_dir_is_default === false ? option.bin_dir : "";
+        const busy = customActivationInProgress || customFolderPickerInProgress;
+        if (input) {
+            if (input.value !== draft) input.value = draft;
+            input.placeholder = option && option.default_bin_dir || customBackendFolder(backend, status);
+            input.disabled = busy;
+        }
+        for (const id of ["btn-browse-custom-backend", "btn-default-custom-backend"]) {
+            const button = document.getElementById(id);
+            if (button) button.disabled = busy;
+        }
+        const select = document.getElementById("backend-select");
+        if (select) select.disabled = busy;
+    }
+
+    async function chooseCustomBackendFolder() {
+        if (customActivationInProgress || customFolderPickerInProgress) return;
+        const backend = selectedBackendId();
+        customFolderPickerInProgress = true;
+        renderCustomFolderControls(backend);
+        I.install.setInstallButtonsDisabled(true);
+        try {
+            const selection = await I.dependencies.fetchJson("/api/select-folder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ purpose: "custom-backend", backend, title: "Select llama.cpp Executable Folder" }),
+            });
+            if (selection.selected) customFolderDrafts.set(backend, selection.path);
+        } catch (error) {
+            I.install.showStatus("error", "Could not select the custom backend folder: " + error.message);
+        } finally {
+            customFolderPickerInProgress = false;
+            renderCustomFolderControls(selectedBackendId());
+            I.install.setInstallButtonsDisabled(false);
+            syncInstallActionButtons(I.status.getLatestStatus(), selectedBackendId());
+        }
+    }
+
+    function initCustomFolderControls() {
+        document.getElementById("custom-backend-dir")?.addEventListener("input", event => {
+            customFolderDrafts.set(selectedBackendId(), event.target.value);
+        });
+        document.getElementById("btn-browse-custom-backend")?.addEventListener("click", chooseCustomBackendFolder);
+        document.getElementById("btn-default-custom-backend")?.addEventListener("click", () => {
+            customFolderDrafts.set(selectedBackendId(), "");
+            renderCustomFolderControls(selectedBackendId());
+        });
     }
 
     function installedBackendIdFromStatus(status) {
@@ -182,6 +238,7 @@
         if (customInfo) customInfo.style.display = "";
         const folder = document.getElementById("custom-backend-folder");
         if (folder) folder.textContent = customBackendFolder(backend, status);
+        renderCustomFolderControls(backend, status);
         const title = document.getElementById("custom-backend-title");
         if (title) title.textContent = backendLabelFromStatus(status, backend) + " Setup:";
         const installBtn = document.getElementById("btn-install");
@@ -226,20 +283,29 @@
     }
 
     async function activateCustomBackend() {
-        if (customActivationInProgress) return;
+        if (customActivationInProgress || customFolderPickerInProgress) return;
         customActivationInProgress = true;
         const backend = selectedBackendId();
         const label = backendLabelFromStatus(I.status.getLatestStatus(), backend);
-        const folder = customBackendFolder(backend);
+        const hasDraft = customFolderDrafts.has(backend);
+        const draft = customFolderDrafts.get(backend);
+        const option = backendOptionsFromStatus(I.status.getLatestStatus()).find(entry => entry.id === backend);
+        const folder = hasDraft
+            ? draft.trim() || option && option.default_bin_dir || customBackendFolder(backend)
+            : customBackendFolder(backend);
+        const body = { backend };
+        if (hasDraft) body.bin_dir = draft.trim() || null;
+        renderCustomFolderControls(backend);
         I.install.setInstallButtonsDisabled(true);
         I.install.showStatus("info", `Checking ${label} binaries...`);
         try {
             const result = await I.dependencies.fetchJson("/api/activate-custom", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ backend }),
+                body: JSON.stringify(body),
             });
             if (result.ok) {
+                customFolderDrafts.delete(backend);
                 const foundList = (result.found || []).join(", ");
                 const missingList = (result.missing || []).join(", ");
                 let msg = label + " backend activated. Found: " + (foundList || "none") + ".";
@@ -265,6 +331,7 @@
             I.install.showStatus("error", `Failed to activate ${label}: ${e.message}`);
         } finally {
             customActivationInProgress = false;
+            renderCustomFolderControls(selectedBackendId());
             I.install.setInstallButtonsDisabled(false);
             syncInstallActionButtons(I.status.getLatestStatus(), selectedBackendId());
         }
@@ -318,7 +385,10 @@
             showOfficialBackendControls();
         }
         syncInstallActionButtons(status, activeBackend);
-        if (customActivationInProgress) I.install.setInstallButtonsDisabled(true);
+        if (customActivationInProgress || customFolderPickerInProgress) {
+            I.install.setInstallButtonsDisabled(true);
+            if (backendSelect) backendSelect.disabled = true;
+        }
 
         if (backendSelect) {
             const targetBackend = activeBackend;
@@ -471,6 +541,7 @@
         canActivateOfficialBackend,
         selectedBackendId,
         onBackendChange,
+        initCustomFolderControls,
         activateCustomBackend,
         activateOfficialBackend,
         updateStatusUI,

@@ -30,13 +30,20 @@ function candidateExecutables(toolName) {
     // An explicitly selected build must never fall back to another installation.
     if (EXPLICIT_BIN_DIR) return [path.resolve(EXPLICIT_BIN_DIR, exeName)];
     let backend;
+    let customDirectory;
     const configPath = path.join(ROOT, "config.json");
     if (fs.existsSync(configPath)) {
         try {
-            backend = JSON.parse(fs.readFileSync(configPath, "utf8"))?.backend;
+            const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+            backend = config?.backend;
+            customDirectory = config?.custom_backend_dirs?.[backend];
         } catch (error) {
             console.warn(`Could not read installed backend selection: ${error.message}`);
         }
+    }
+    if (["custom", "custom-02"].includes(backend) && customDirectory !== undefined) {
+        assert.ok(typeof customDirectory === "string" && path.isAbsolute(customDirectory), "configured custom backend folder must be absolute");
+        return [path.join(customDirectory, exeName)];
     }
     const installedDirectory = ["custom", "custom-02"].includes(backend)
         ? path.join(ROOT, "llama", backend, "bin") : path.join(ROOT, "llama", "bin");

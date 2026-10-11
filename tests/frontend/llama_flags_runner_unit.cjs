@@ -98,6 +98,15 @@ const custom02 = ["/repo/llama/custom-02/bin/llama-server", "/repo/llama/custom-
 const selected02 = run({ config: { backend: "custom-02" }, files: [...custom02, ...custom, ...both], env: { PATH: "/pin" } });
 assert.equal(selected02.exitCode, 0);
 assert.deepEqual(selected02.calls, custom02, "the second slot must take precedence over the first and PATH");
+const external = ["/external build/llama-server", "/external build/llama-cli"];
+const externalConfig = { backend: "custom-02", custom_backend_dirs: { custom: "/other", "custom-02": "/external build" } };
+const selectedExternal = run({ config: externalConfig, files: [...external, ...custom02, ...both], env: { PATH: "/pin" } });
+assert.equal(selectedExternal.exitCode, 0);
+assert.deepEqual(selectedExternal.calls, external);
+const missingExternal = run({ config: externalConfig, files: [...custom02, ...both], env: { PATH: "/pin" } });
+assert.deepEqual(missingExternal.calls, [], "a missing external build must not check another installation");
+assert.match(missingExternal.output, /check skipped/);
+assert.equal(run({ config: { backend: "custom", custom_backend_dirs: { custom: "relative" } }, files: both }).exitCode, 1);
 assert.equal(run({ files: both, env: { LLAMA_CPP_BIN_DIR: "/pin" } }).exitCode, 0);
 
 // removed_in exemption: builds at or above the removal tag may lack the flag;
