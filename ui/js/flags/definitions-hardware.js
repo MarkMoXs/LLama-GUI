@@ -266,6 +266,18 @@ const FLAG_DEFINITIONS_HARDWARE = [
 		min: 0,
 	},
 	{
+		id: "moe_cache_mib",
+		flag: "--moe-cache-mib",
+		category: "gpu",
+		type: "int",
+		label: "MoE GPU Cache (MiB)",
+		desc: "GPU memory reserved for caching MoE experts kept in CPU memory. 0 disables the cache. With multiple GPUs, the cache is split according to Tensor Split.",
+		tool: "both",
+		default: 0,
+		min: 0,
+		placeholder: "0 = disabled",
+	},
+	{
 		id: "n_cpu_ffn",
 		flag: "-ncffn",
 		category: "gpu",
