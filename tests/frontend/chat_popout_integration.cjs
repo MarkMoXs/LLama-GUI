@@ -2,6 +2,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
+const { spawnSync } = require("node:child_process");
+const os = require("node:os");
 const { test } = require("node:test");
 const { startUiServer } = require("./ui_server.cjs");
 
@@ -24,6 +26,21 @@ const CHAT_RETURN = "#btn-chat-return";
 const CHAT_HOST_STATUS = "#chat-window-host-status";
 const CHAT_OPEN_FULL_GUI = "#chat-window-open-full-gui";
 const API_SECRET = "fixture-api-secret-must-not-persist";
+
+test("browser launch failure closes the fixture server", { timeout: 15_000 }, () => {
+    const env = { ...process.env, PLAYWRIGHT_BROWSERS_PATH: path.join(os.tmpdir(), randomUUID()) };
+    delete env.NODE_TEST_CONTEXT;
+    const result = spawnSync(process.execPath, [
+        "--test", "--test-name-pattern=^direct Chat window URL", __filename,
+    ], {
+        env,
+        encoding: "utf8",
+        timeout: 10_000,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, 1, "missing Chromium must fail promptly rather than hang");
+    assert.match(result.stdout + result.stderr, /Executable doesn't exist/);
+});
 
 function json(value) {
     return JSON.stringify(value);
@@ -243,17 +260,14 @@ async function assertNoSecret(page, label) {
 
 test("direct Chat window URL without an opener shows a safe unavailable shell", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const callsResult = await installApiRoutes(context);
     const pageErrors = [];
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(error.message));
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     await page.goto(`${server.baseUrl}?${POPUP_QUERY}`, { waitUntil: "domcontentloaded" });
     await page.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "visible" });
@@ -280,17 +294,14 @@ test("direct Chat window URL without an opener shows a safe unavailable shell", 
 
 test("Chat pop-out contains URL construction and live host getter failures", { timeout: 60_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const pageErrors = [];
     context.on("page", page => page.on("pageerror", error => pageErrors.push(error.message)));
     await installInitScript(context, representativeConversation(), randomUUID());
     const { calls } = await installApiRoutes(context);
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
     const main = await context.newPage();
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
     await selectChat(main);
@@ -334,7 +345,9 @@ test("Chat pop-out contains URL construction and live host getter failures", { t
 
 test("Chat recovery focuses a safe control when no server disables the composer", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     await installInitScript(context, representativeConversation(), randomUUID());
     await installApiRoutes(context, {
@@ -344,11 +357,6 @@ test("Chat recovery focuses a safe control when no server disables the composer"
             active_runtime: null,
             runtime_generation: null,
         },
-    });
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
     });
 
     const main = await context.newPage();
@@ -382,15 +390,12 @@ test("Chat recovery focuses a safe control when no server disables the composer"
 
 test("Recover chat here explains ownership contention and retries after the owner closes", { timeout: 60_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     await installInitScript(context, representativeConversation(), randomUUID());
     const { calls } = await installApiRoutes(context);
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     const owner = await context.newPage();
     await owner.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
@@ -437,7 +442,9 @@ test("Recover chat here explains ownership contention and retries after the owne
 
 test("Chat initialization failure leaves an unavailable shell without breaking the GUI", { timeout: 60_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     let chatUiRouteHit = false;
     await context.route(/\/js\/chat\/chat-main\.js(?:\?|$)/, async route => {
@@ -452,11 +459,6 @@ test("Chat initialization failure leaves an unavailable shell without breaking t
     const pageErrors = [];
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(error.message));
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     await page.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__phase4ChatInitFailureFixture === true);
@@ -480,7 +482,9 @@ test("Chat initialization failure leaves an unavailable shell without breaking t
 
 test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const pageErrors = [];
     context.on("page", page => page.on("pageerror", error => pageErrors.push(error.message)));
@@ -490,11 +494,6 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
     const { calls } = await installApiRoutes(context);
     let main;
     let popup;
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     main = await context.newPage();
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
@@ -695,7 +694,9 @@ test("real same-context Chat pop-out use and return cycle", { timeout: 120_000 }
 
 test("blocked and blank pop-outs preserve ownership and a fresh transfer identity", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const pageErrors = [];
     context.on("page", page => page.on("pageerror", error => pageErrors.push(error.message)));
@@ -712,11 +713,6 @@ test("blocked and blank pop-outs preserve ownership and a fresh transfer identit
     });
     const { calls } = await installApiRoutes(context);
     let main;
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     main = await context.newPage();
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
@@ -895,7 +891,9 @@ test("blocked and blank pop-outs preserve ownership and a fresh transfer identit
 
 test("idle popup close and deletion recovery use an independently seeded transcript", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     await context.addInitScript(() => { window.__LLAMA_GUI_TEST_HOOKS__ = true; });
     const pageErrors = [];
@@ -903,11 +901,6 @@ test("idle popup close and deletion recovery use an independently seeded transcr
     const conversation = representativeConversation();
     await installInitScript(context, conversation, `phase4-idle-${randomUUID()}`);
     const { calls } = await installApiRoutes(context);
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     const main = await context.newPage();
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
@@ -1034,7 +1027,9 @@ test("idle popup close and deletion recovery use an independently seeded transcr
 
 test("popup reload and main reload recover the newest checkpoint without resend", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const conversation = representativeConversation();
     const runNonce = `phase4-reload-${randomUUID()}`;
@@ -1043,11 +1038,6 @@ test("popup reload and main reload recover the newest checkpoint without resend"
     const { calls } = await installApiRoutes(context);
     let main;
     let popup;
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     main = await context.newPage();
     await main.goto(server.baseUrl, { waitUntil: "domcontentloaded" });
@@ -1179,21 +1169,18 @@ test("popup reload and main reload recover the newest checkpoint without resend"
 
 test("insecure mapped origin keeps single-window Chat fallback usable", { timeout: 120_000 }, async t => {
     const server = await startUiServer();
+    t.after(() => server.close());
     const browser = await chromium.launch({
         headless: true,
         args: ["--host-resolver-rules=MAP popout-test.invalid 127.0.0.1"],
     });
+    t.after(() => browser.close());
     const context = await browser.newContext();
     const conversation = representativeConversation();
     const runNonce = `phase4-insecure-${randomUUID()}`;
     await installInitScript(context, conversation, runNonce);
     await installApiRoutes(context);
     const main = await context.newPage();
-    t.after(async () => {
-        await context.close();
-        await browser.close();
-        await server.close();
-    });
 
     const port = new URL(server.baseUrl).port;
     await main.goto(`http://popout-test.invalid:${port}/`, { waitUntil: "domcontentloaded" });

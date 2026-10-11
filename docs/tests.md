@@ -73,6 +73,18 @@ npm run test:frontend
 
 Runs the Playwright smoke test for browser-level shared-state sync. This is also the only suite that can cover the Configure sampler preset panel, because `renderFlags()` destroys and rebuilds it — the `<select>` an assertion reads is a different element than the one that was clicked, which a `node:vm` harness cannot reproduce.
 
+On Windows, Codex's sandbox can redirect `LOCALAPPDATA`, causing Playwright to
+look in an empty browser cache even when Chromium is installed for the normal
+user. `PLAYWRIGHT_BROWSERS_PATH` can select an existing cache (see
+[Playwright's browser cache documentation](https://playwright.dev/docs/browsers#managing-browser-binaries)),
+but this alone does not grant network access. If Chromium reports
+`ERR_NETWORK_ACCESS_DENIED` when opening the local fixture server, run
+`npm run test:frontend` through Codex's approved command escalation or a normal
+local terminal. Do not repeatedly reinstall browsers into the redirected cache.
+The pop-out fixtures register server and browser cleanup immediately after each
+resource starts, so setup failures exit promptly; a child-process regression
+check verifies this with an intentionally missing Chromium cache.
+
 Both browser suites serve `ui/` through the shared Node HTTP/1.1 server in `tests/frontend/ui_server.cjs`. Persistent connections avoid opening a socket for every asset, which can exhaust Windows socket buffers during repeated page loads (`net::ERR_NO_BUFFER_SPACE`). A regression check verifies that HTML, JavaScript, and CSS requests reuse one connection. Python is not needed to serve the browser fixtures.
 
 The browser suite has named `node:test` scenarios with fresh browser contexts and API fixtures. Shared controls, authentication, inference, Chat streaming/recovery/compaction, samplers, external servers, custom launch arguments, backend activation, model switching, preset focus, model folders, and Monitor behavior run independently. A scenario failure does not prevent the remaining scenarios from running. Smoke-test failures, including startup and reload timeouts, retain the original error as their cause and include captured page errors and failed requests, or explicit indications that none were captured. Normal request cancellations during navigation are excluded. Injected Configure rendering failures and connection resets verify these diagnostics on both initial load and reload. The external-server reload check waits for a restored inference target before asserting its exact identity, so a wrong identity is reported directly. To run one scenario:
