@@ -52,7 +52,7 @@ def is_custom_backend(backend: Any) -> bool:
     return isinstance(backend, str) and backend in CUSTOM_BACKEND_SPECS
 
 
-def get_backend_bin_dir(ctx: AppContext, backend: Any) -> pathlib.Path:
+def get_default_backend_bin_dir(ctx: AppContext, backend: Any) -> pathlib.Path:
     if backend == "custom":
         return ctx.paths.llama_custom_bin
     if is_custom_backend(backend):
@@ -60,16 +60,38 @@ def get_backend_bin_dir(ctx: AppContext, backend: Any) -> pathlib.Path:
     return ctx.paths.llama_bin
 
 
+def get_backend_bin_dir(
+    ctx: AppContext, backend: Any, cfg: Optional[Mapping[str, Any]] = None
+) -> pathlib.Path:
+    if is_custom_backend(backend):
+        cfg = ctx.services.load_config() if cfg is None else cfg
+        folders = cfg.get("custom_backend_dirs", {})
+        if not isinstance(folders, Mapping):
+            raise ValueError("Configured custom backend folders are invalid.")
+        if backend in folders:
+            value = folders[backend]
+            if not isinstance(value, str) or not value.strip() or "\x00" in value:
+                raise ValueError("Configured custom backend folder is invalid.")
+            path = pathlib.Path(value)
+            if not path.is_absolute():
+                raise ValueError("Custom backend folder must be an absolute path.")
+            return path
+    return get_default_backend_bin_dir(ctx, backend)
+
+
+def get_custom_backend_dir_info(ctx: AppContext, backend: str, cfg: Mapping[str, Any]) -> dict[str, Any]:
+    path = get_backend_bin_dir(ctx, backend, cfg)
+    default = get_default_backend_bin_dir(ctx, backend)
+    return {"bin_dir": str(path), "default_bin_dir": str(default), "bin_dir_is_default": path == default}
+
+
 def get_backend_grammars_dir(ctx: AppContext, backend: Any) -> pathlib.Path:
     if backend == "custom":
         return ctx.paths.llama_custom_grammars
     if is_custom_backend(backend):
-        return get_backend_bin_dir(ctx, backend).parent / "grammars"
+        return get_default_backend_bin_dir(ctx, backend).parent / "grammars"
     return ctx.paths.llama_grammars
 
-
-def custom_backend_bin_label(backend: str) -> str:
-    return f"llama/{CUSTOM_BACKEND_SPECS[backend]['folder']}/bin/"
 
 # (gpu_target, family label) for every target upstream publishes.
 LEMONADE_ROCM_TARGETS = [
@@ -464,7 +486,7 @@ def validate_runtime_dependencies(
         print(f"[llama_manager] load_config failed during runtime validation: {e}", file=sys.stderr)
         cfg = {}
 
-    cache_key = (cfg.get("backend"), tool_names)
+    cache_key = (cfg.get("backend"), str(get_backend_bin_dir(ctx, cfg.get("backend"), cfg)), tool_names)
     now = time.monotonic()
     with ctx.state.runtime_health_lock:
         cached = ctx.state.runtime_health_cache.get(cache_key)
@@ -489,7 +511,7 @@ def _validate_runtime_dependencies_uncached(
     current_platform = ctx.services.current_platform or sys.platform
     if current_platform == "unknown":
         current_platform = sys.platform
-    runtime_dir = get_backend_bin_dir(ctx, cfg.get("backend"))
+    runtime_dir = get_backend_bin_dir(ctx, cfg.get("backend"), cfg)
 
     for tool in tool_names:
         exe_path = ctx.services.find_tool_executable(tool)
@@ -543,13 +565,40 @@ def _validate_runtime_dependencies_uncached(
     }
 
 
-def activate_custom_backend(ctx: AppContext, backend: str = "custom") -> dict[str, Any]:
+_CUSTOM_DIR_UNSET = object()
+
+
+def activate_custom_backend(
+    ctx: AppContext, backend: str = "custom", bin_dir: Any = _CUSTOM_DIR_UNSET
+) -> dict[str, Any]:
     if not is_custom_backend(backend):
         return {"ok": False, "error": "Unsupported custom backend"}
     try:
-        bin_dir = get_backend_bin_dir(ctx, backend)
-        bin_dir.mkdir(parents=True, exist_ok=True)
-        get_backend_grammars_dir(ctx, backend).mkdir(parents=True, exist_ok=True)
+        candidate_cfg = dict(ctx.services.load_config())
+        folders = candidate_cfg.get("custom_backend_dirs", {})
+        if not isinstance(folders, Mapping):
+            raise ValueError("Configured custom backend folders are invalid.")
+        folders = dict(folders)
+        if bin_dir is not _CUSTOM_DIR_UNSET:
+            if bin_dir is None:
+                folders.pop(backend, None)
+            else:
+                if not isinstance(bin_dir, str) or not bin_dir.strip() or "\x00" in bin_dir:
+                    raise ValueError("Custom backend folder must be an absolute path or null.")
+                candidate = pathlib.Path(bin_dir.strip()).expanduser()
+                if not candidate.is_absolute():
+                    raise ValueError("Custom backend folder must be an absolute path.")
+                folders[backend] = str(candidate)
+        candidate_cfg["custom_backend_dirs"] = folders
+        bin_dir = get_backend_bin_dir(ctx, backend, candidate_cfg)
+        if backend in folders:
+            if not bin_dir.is_dir():
+                raise ValueError(f"Custom backend folder does not exist or is not a directory: {bin_dir}")
+            with os.scandir(bin_dir):
+                pass
+        else:
+            bin_dir.mkdir(parents=True, exist_ok=True)
+            get_backend_grammars_dir(ctx, backend).mkdir(parents=True, exist_ok=True)
 
         required = {
             ctx.services.get_tool_filename("llama-cli"),
@@ -580,7 +629,7 @@ def activate_custom_backend(ctx: AppContext, backend: str = "custom") -> dict[st
                 "not_executable": sorted(not_executable),
             }
 
-        runtime_health = _validate_custom_runtime_dependencies(ctx, required, backend)
+        runtime_health = _validate_custom_runtime_dependencies(ctx, required, backend, bin_dir=bin_dir)
         if not runtime_health.get("ok", True):
             return {
                 "ok": False,
@@ -603,6 +652,15 @@ def activate_custom_backend(ctx: AppContext, backend: str = "custom") -> dict[st
             cfg["version"] = "custom"
             cfg["backend"] = backend
             cfg["tag"] = "custom"
+            saved_folders = dict(cfg.get("custom_backend_dirs", {}))
+            if backend in folders:
+                saved_folders[backend] = folders[backend]
+            else:
+                saved_folders.pop(backend, None)
+            if saved_folders:
+                cfg["custom_backend_dirs"] = saved_folders
+            else:
+                cfg.pop("custom_backend_dirs", None)
             ctx.services.save_config(cfg)
         ctx.state.clear_runtime_health_cache()
         return {
@@ -613,6 +671,8 @@ def activate_custom_backend(ctx: AppContext, backend: str = "custom") -> dict[st
             "not_executable": [],
             "runtime_health": runtime_health,
         }
+    except ValueError as e:
+        return {"ok": False, "error": str(e)}
     except Exception as e:
         print(f"[llama_manager] activate_custom_backend failed: {e}", file=sys.stderr)
         return {"ok": False, "error": sanitize_error(e, 500)}
@@ -713,9 +773,10 @@ def activate_official_backend(ctx: AppContext, backend: str) -> dict[str, Any]:
 
 
 def _validate_custom_runtime_dependencies(
-    ctx: AppContext, executable_names: Iterable[str], backend: str = "custom"
+    ctx: AppContext, executable_names: Iterable[str], backend: str = "custom",
+    *, bin_dir: Optional[pathlib.Path] = None,
 ) -> dict[str, Any]:
-    bin_dir = get_backend_bin_dir(ctx, backend)
+    bin_dir = get_backend_bin_dir(ctx, backend) if bin_dir is None else bin_dir
     current_platform = ctx.services.current_platform or sys.platform
     if current_platform == "unknown":
         current_platform = sys.platform

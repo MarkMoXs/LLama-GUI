@@ -28,6 +28,7 @@
         document.getElementById("btn-sidebar-stop-app")?.addEventListener("click", I.lifecycle.stopPythonServer);
         document.getElementById("btn-refresh-models")?.addEventListener("click", () => I.models.refreshModels());
         I.modelDir.initModelDirControls();
+        I.backends.initCustomFolderControls();
         window.addEventListener("beforeunload", I.install.stopInstallProgressPolling);
         I.appUpdate.checkAppUpdateStatus();
         I.install.refreshBackends();

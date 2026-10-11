@@ -2024,7 +2024,7 @@ class ExtractedRouteTests(unittest.TestCase):
     def test_process_manager_launch_rejects_non_executable_unix_tools(self):
         cases = [
             ("cpu", "Repair Install"),
-            ("custom", "chmod +x on llama/custom/bin/llama-server"),
+            ("custom", "chmod +x on"),
         ]
         for backend, expected_recovery in cases:
             with self.subTest(backend=backend), tempfile.TemporaryDirectory() as tmp:
@@ -2046,6 +2046,8 @@ class ExtractedRouteTests(unittest.TestCase):
 
                 self.assertIn("llama-server is not executable", result["error"])
                 self.assertIn(expected_recovery, result["error"])
+                if backend == "custom":
+                    self.assertIn(str(executable), result["error"])
                 mock_popen.assert_not_called()
 
     def test_process_manager_redacts_api_keys_from_display_commands(self):

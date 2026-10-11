@@ -194,12 +194,12 @@ def get_tool_filename(tool):
 
 def find_tool_executable(tool):
     cfg = load_config()
-    return llama_manager_service.get_backend_bin_dir(APP_CONTEXT, cfg.get("backend")) / get_tool_filename(tool)
+    return llama_manager_service.get_backend_bin_dir(APP_CONTEXT, cfg.get("backend"), cfg) / get_tool_filename(tool)
 
 
 def get_runtime_files():
     cfg = load_config()
-    search_dir = llama_manager_service.get_backend_bin_dir(APP_CONTEXT, cfg.get("backend"))
+    search_dir = llama_manager_service.get_backend_bin_dir(APP_CONTEXT, cfg.get("backend"), cfg)
     if not search_dir.exists():
         return []
     runtime_files = []

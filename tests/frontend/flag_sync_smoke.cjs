@@ -1647,6 +1647,9 @@ async function runScenario(browser, port, verify) {
         let rememberedTarget = null;
         const externalTargetRequests = [];
         let installedBackend = "cpu";
+        const customBackendDirs = {};
+        let customFolderSelection = { selected: true, path: "D:\\Custom & Build" };
+        const customFolderRequests = [];
         let modelsDirInfo = {
             models_dir: "models",
             models_arg_root: "models",
@@ -1815,6 +1818,12 @@ async function runScenario(browser, port, verify) {
                 return;
             }
             if (pathName === "/api/select-folder") {
+                const request = JSON.parse(route.request().postData() || "{}");
+                if (request.purpose === "custom-backend") {
+                    customFolderRequests.push(request);
+                    await route.fulfill({ json: customFolderSelection });
+                    return;
+                }
                 await route.fulfill({
                     status: 200,
                     contentType: "application/json",
@@ -1937,8 +1946,11 @@ async function runScenario(browser, port, verify) {
                         official_install: { backend: "cpu", tag: "smoke", version: "smoke", files_present: true },
                         available_backends: [
                             { id: "cpu", label: "CPU" },
-                            { id: "custom", label: "Custom", custom: true, bin_dir: "llama/custom/bin/" },
-                            { id: "custom-02", label: "Custom 02", custom: true, bin_dir: "llama/custom-02/bin/" },
+                            ...["custom", "custom-02"].map(id => ({
+                                id, label: id === "custom" ? "Custom" : "Custom 02", custom: true,
+                                bin_dir: customBackendDirs[id] || `llama/${id}/bin/`,
+                                default_bin_dir: `llama/${id}/bin/`, bin_dir_is_default: !customBackendDirs[id],
+                            })),
                         ],
                         executables: {
                             "llama-cli": true,
@@ -2005,6 +2017,10 @@ async function runScenario(browser, port, verify) {
                     return;
                 }
                 installedBackend = requested.backend || "custom";
+                if (Object.hasOwn(requested, "bin_dir")) {
+                    if (requested.bin_dir === null) delete customBackendDirs[installedBackend];
+                    else customBackendDirs[installedBackend] = requested.bin_dir;
+                }
                 await route.fulfill({
                     status: 200,
                     contentType: "application/json",
@@ -3765,35 +3781,64 @@ async function runScenario(browser, port, verify) {
                 await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "Activate Custom");
                 await page.waitForTimeout(250);
                 assert.equal(countCustomReleaseRequests(), customReleaseCountBefore);
+                await page.click("#btn-browse-custom-backend");
+                await page.waitForFunction(() => document.querySelector("#custom-backend-dir")?.value === "D:\\Custom & Build");
+                assert.equal(customFolderRequests.at(-1).backend, "custom");
+                assert.equal(installedBackend, "cpu", "browsing does not activate a backend");
+                await page.evaluate(() => window.LlamaGui.manager.checkStatus());
+                assert.equal(await page.inputValue("#custom-backend-dir"), "D:\\Custom & Build");
                 await page.click("#btn-install");
                 await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("Custom backend activated"));
                 assert.equal(activateCustomRequests.length, 1);
+                assert.deepEqual(activateCustomRequests[0], { backend: "custom", bin_dir: "D:\\Custom & Build" });
+                assert.equal(await page.textContent("#custom-backend-folder"), "D:\\Custom & Build");
                 assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
 
                 const flagsBeforeSwitch = await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues()));
                 await page.selectOption("#backend-select", "custom-02");
                 await page.waitForFunction(() => document.querySelector("#custom-backend-folder")?.textContent === "llama/custom-02/bin/");
+                await page.fill("#custom-backend-dir", "D:\\Second Build");
                 assert.equal(await page.locator("#installed-backend-summary").textContent(), "Installed backend: Custom");
                 await page.click("#btn-install");
                 await page.waitForFunction(() => document.querySelector("#install-status")?.textContent.includes("Custom 02 needs llama-cli and llama-server"));
                 assert.equal(installedBackend, "custom");
+                assert.equal(customBackendDirs["custom-02"], undefined);
+                assert.equal(await page.inputValue("#custom-backend-dir"), "D:\\Second Build");
                 assert.equal(await page.locator("#btn-update").isDisabled(), true);
                 custom02Ready = true;
                 await page.click("#btn-install");
                 await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: Custom 02");
                 assert.equal(await page.locator("#version-badge").textContent(), "Custom 02");
-                assert.match(await page.locator("#installed-info").textContent(), /llama\/custom-02\/bin\//);
-                assert.deepEqual(activateCustomRequests.at(-1), { backend: "custom-02" });
+                assert.ok((await page.locator("#installed-info").textContent()).includes("D:\\Second Build"));
+                assert.deepEqual(activateCustomRequests.at(-1), { backend: "custom-02", bin_dir: "D:\\Second Build" });
                 assert.equal(countCustomReleaseRequests(), customReleaseCountBefore);
                 await page.selectOption("#backend-select", "cpu");
                 await page.waitForFunction(() => document.querySelector("#btn-install")?.textContent === "Activate Existing");
                 await page.click("#btn-install");
                 await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: CPU");
                 await page.selectOption("#backend-select", "custom");
+                assert.equal(await page.inputValue("#custom-backend-dir"), "D:\\Custom & Build");
+                customFolderSelection = { selected: false, path: "" };
+                await page.click("#btn-browse-custom-backend");
+                await page.waitForFunction(() => !document.querySelector("#btn-browse-custom-backend")?.disabled);
+                assert.equal(await page.inputValue("#custom-backend-dir"), "D:\\Custom & Build");
                 await page.click("#btn-install");
                 await page.waitForFunction(() => document.querySelector("#installed-backend-summary")?.textContent === "Installed backend: Custom");
                 assert.equal(await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues())), flagsBeforeSwitch,
                     "switching builds must not change shared model/preset flags");
+                await page.reload({ waitUntil: "domcontentloaded" });
+                await page.waitForFunction(() => document.querySelector("#custom-backend-dir")?.value === "D:\\Custom & Build");
+                await selectSection(page, "install");
+                const flagsAfterReload = await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues()));
+                await page.click("#btn-default-custom-backend");
+                assert.equal(await page.inputValue("#custom-backend-dir"), "");
+                assert.equal(customBackendDirs.custom, "D:\\Custom & Build", "reset is staged until activation");
+                await page.click("#btn-install");
+                await page.waitForFunction(() => document.querySelector("#custom-backend-folder")?.textContent === "llama/custom/bin/");
+                assert.deepEqual(activateCustomRequests.at(-1), { backend: "custom", bin_dir: null });
+                assert.equal(customBackendDirs["custom-02"], "D:\\Second Build");
+                assert.equal(await page.evaluate(() => JSON.stringify(window.LlamaGui.flagCore.getFlagValues())), flagsAfterReload,
+                    "resetting the executable folder must not change shared flags");
             },
             async "model switcher refresh drag and keyboard controls"() {
                 await selectSection(page, "quick-launch");

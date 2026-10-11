@@ -8,7 +8,7 @@ from unittest import mock
 
 from backend import app
 from backend.http import Request
-from backend.routes import install, lifecycle, status
+from backend.routes import file_picker, install, lifecycle, status
 from backend.services import llama_manager, process_manager
 from tests.backend.test_extracted_routes import DummyResponse
 from tests.backend.test_services import make_service_context
@@ -54,10 +54,190 @@ class CustomSlotsTests(unittest.TestCase):
         (grammars / "local.gbnf").write_text(backend)
         return directory
 
-    def activate(self, backend="custom"):
+    def activate(self, backend="custom", **options):
         response = DummyResponse()
-        install.activate_custom(Request("POST", "/api/activate-custom", "", {}, body={"backend": backend}), response, self.ctx)
+        install.activate_custom(Request("POST", "/api/activate-custom", "", {}, body={"backend": backend, **options}), response, self.ctx)
         return response
+
+    def external_build(self, name="external build", suffix=None):
+        directory = self.ctx.paths.root / name
+        directory.mkdir()
+        for tool in ("llama-cli", "llama-server"):
+            (directory / (tool + (self.ctx.services.binary_suffix if suffix is None else suffix))).write_text(name)
+        (directory / "ggml.dll").write_text(name)
+        return directory
+
+    def test_external_folders_persist_per_slot_and_reset_independently(self):
+        first = self.external_build()
+        second = self.external_build("second build")
+        for backend, directory in (("custom", first), ("custom-02", second)):
+            self.assertTrue(self.activate(backend, bin_dir=str(directory)).payload["ok"])
+            with mock.patch.object(app, "APP_CONTEXT", self.ctx), mock.patch.object(app, "CONFIG_FILE", self.ctx.paths.config_file), mock.patch.object(app, "BINARY_SUFFIX", ".exe"):
+                self.assertEqual(app.find_tool_executable("llama-server"), directory / "llama-server.exe")
+                self.assertEqual(app.get_runtime_files(), [directory / "ggml.dll"])
+            self.assertFalse((directory.parent / "grammars").exists())
+        cfg = self.ctx.services.load_config()
+        self.assertEqual(cfg["custom_backend_dirs"], {"custom": str(first), "custom-02": str(second)})
+        self.assertEqual(cfg["models_dir"], "saved-model-root")
+        self.assertEqual(cfg["official_install"]["backend"], "cpu")
+        with mock.patch.object(llama_manager, "_probe_official_build", return_value=(True, "b123")):
+            self.assertTrue(llama_manager.activate_official_backend(self.ctx, "cpu")["ok"])
+        self.assertEqual(self.ctx.services.load_config()["custom_backend_dirs"], cfg["custom_backend_dirs"])
+        self.assertTrue(self.activate("custom").payload["ok"])
+        self.assertEqual(llama_manager.get_backend_bin_dir(self.ctx, "custom"), first)
+        self.assertTrue(self.activate("custom", bin_dir=None).payload["ok"])
+        self.assertEqual(self.ctx.services.load_config()["custom_backend_dirs"], {"custom-02": str(second)})
+        self.assertEqual(llama_manager.get_backend_bin_dir(self.ctx, "custom"), self.ctx.paths.llama_custom_bin)
+        self.assertTrue(self.activate("custom-02", bin_dir=None).payload["ok"])
+        self.assertNotIn("custom_backend_dirs", self.ctx.services.load_config())
+
+    def test_invalid_external_folders_do_not_change_config_or_create_directories(self):
+        first = self.external_build()
+        self.assertTrue(self.activate(bin_dir=str(first)).payload["ok"])
+        previous = self.ctx.paths.config_file.read_bytes()
+        missing = self.ctx.paths.root / "absent" / "bin"
+        for value in (str(missing), str(first / "llama-cli.exe"), "relative/bin", "", "\x00", 12, [], {}):
+            with self.subTest(value=value):
+                result = self.activate("custom-02", bin_dir=value)
+                self.assertFalse(result.payload["ok"])
+                self.assertTrue(result.payload["error"])
+                self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+                self.assertFalse(self.ctx.state.install_in_progress)
+        self.assertFalse(missing.parent.exists())
+        with mock.patch.object(llama_manager.os, "scandir", side_effect=PermissionError("unreadable")):
+            self.assertFalse(self.activate("custom-02", bin_dir=str(first)).payload["ok"])
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+
+    def test_missing_external_tool_and_failed_reset_keep_previous_selection(self):
+        directory = self.external_build()
+        self.assertTrue(self.activate(bin_dir=str(directory)).payload["ok"])
+        previous = self.ctx.paths.config_file.read_bytes()
+        (self.ctx.paths.llama_custom_bin / "llama-server.exe").unlink()
+        self.assertFalse(self.activate(bin_dir=None).payload["ok"])
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+        (directory / "llama-server.exe").unlink()
+        result = self.activate()
+        self.assertEqual(result.payload["missing_required"], ["llama-server.exe"])
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+        executable, error = process_manager._validate_launch_environment(self.ctx, "llama-server")
+        self.assertIsNone(executable)
+        self.assertIn("not found", error)
+
+    def test_unavailable_saved_external_folder_does_not_fallback_or_get_recreated(self):
+        directory = self.external_build()
+        self.activate(bin_dir=str(directory))
+        for path in directory.iterdir():
+            path.unlink()
+        directory.rmdir()
+        self.assertFalse(self.activate().payload["ok"])
+        response = DummyResponse()
+        status.get_status(Request("GET", "/api/status", "", {}), response, self.ctx)
+        self.assertFalse(response.payload["installed"])
+        self.assertTrue(response.payload["config_stale"])
+        self.assertEqual(llama_manager.get_backend_bin_dir(self.ctx, "custom"), directory)
+        response = DummyResponse()
+        lifecycle.post_open_folder(Request("POST", "/api/open-folder", "", {}, body={"folder": "llama"}), response, self.ctx)
+        self.assertEqual(response.status, 409)
+        self.assertFalse(directory.exists())
+
+    def test_external_runtime_checks_and_launch_use_the_candidate_directory(self):
+        self.ctx.services.current_platform = "linux"
+        self.ctx.services.binary_suffix = ""
+        self.ctx.services.normalize_llama_api_target = lambda host, port: {"host": host, "port": int(port)}
+        directory = self.external_build()
+        (directory / "libggml-cuda.so").write_text("plugin")
+        previous = self.ctx.paths.config_file.read_bytes()
+        with mock.patch.object(llama_manager.os, "access", return_value=False):
+            self.assertEqual(len(self.activate(bin_dir=str(directory)).payload["not_executable"]), 2)
+        with mock.patch.object(llama_manager.os, "access", return_value=True), mock.patch.object(
+            llama_manager, "get_linux_missing_libraries", return_value=["libmissing.so"]
+        ) as probe:
+            result = self.activate(bin_dir=str(directory))
+            self.assertFalse(result.payload["ok"])
+            self.assertTrue(all(call.args[1] == directory for call in probe.call_args_list))
+            self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+            probe.return_value = []
+            self.assertTrue(self.activate(bin_dir=str(directory)).payload["ok"])
+            fake_process = mock.Mock(pid=1234)
+            fake_process.poll.return_value = None
+            model = self.ctx.paths.root / "model.gguf"
+            model.write_text("model")
+            args = ["-m", str(model)]
+            with mock.patch.object(process_manager.subprocess, "Popen", return_value=fake_process) as popen, mock.patch.object(process_manager.threading, "Thread"):
+                self.assertTrue(process_manager.preflight_launch(self.ctx, "llama-server", args, {})["ok"])
+                result = process_manager.launch_process(self.ctx, "llama-server", args)
+                self.assertEqual(result["pid"], 1234)
+                self.assertEqual(popen.call_args.args[0], [str(directory / "llama-server"), *args])
+                self.assertEqual(popen.call_args.kwargs["env"]["PATH"].split(os.pathsep)[0], str(directory))
+                self.assertEqual(popen.call_args.kwargs["env"]["LD_LIBRARY_PATH"].split(os.pathsep)[0], str(directory))
+            fake_process.poll.return_value = 0
+        self.assertEqual(process_manager._fit_params_executable(self.ctx), directory / "llama-fit-params")
+        with mock.patch.object(llama_manager.os, "access", return_value=False):
+            self.assertIn(str(directory), process_manager._validate_launch_environment(self.ctx, "llama-server")[1])
+
+    def test_runtime_cache_is_specific_to_the_selected_external_folder(self):
+        first = self.external_build()
+        second = self.external_build("second build")
+        self.ctx.services.current_platform = "linux"
+        cfg = self.ctx.services.load_config()
+        cfg.update(backend="custom", custom_backend_dirs={"custom": str(first)})
+        self.ctx.services.save_config(cfg)
+        with mock.patch.object(llama_manager, "_validate_runtime_dependencies_uncached", return_value={"ok": True}) as probe:
+            llama_manager.validate_runtime_dependencies(self.ctx)
+            cfg["custom_backend_dirs"]["custom"] = str(second)
+            self.ctx.services.save_config(cfg)
+            llama_manager.validate_runtime_dependencies(self.ctx)
+            self.assertEqual(probe.call_count, 2)
+
+    def test_macos_external_runtime_validation_and_environment(self):
+        self.ctx.services.current_platform = "darwin"
+        self.ctx.services.binary_suffix = ""
+        directory = self.external_build()
+        with mock.patch.object(llama_manager.os, "access", return_value=True), mock.patch.object(
+            llama_manager, "get_macos_rpath_libraries", return_value=["libllama.dylib"]
+        ):
+            previous = self.ctx.paths.config_file.read_bytes()
+            self.assertFalse(self.activate(bin_dir=str(directory)).payload["ok"])
+            self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+            (directory / "libllama.dylib").write_text("library")
+            self.assertTrue(self.activate(bin_dir=str(directory)).payload["ok"])
+            self.assertIsNone(process_manager._validate_launch_environment(self.ctx, "llama-server")[1])
+        env = process_manager._build_process_env(self.ctx)
+        self.assertEqual(env["DYLD_LIBRARY_PATH"].split(os.pathsep)[0], str(directory))
+
+    def test_invalid_saved_overrides_never_resolve_to_default_binaries(self):
+        cfg = self.ctx.services.load_config()
+        for folders in (None, [], {"custom": None}, {"custom": ""}, {"custom": "relative"}, {"custom": "\x00"}):
+            with self.subTest(folders=folders):
+                cfg["custom_backend_dirs"] = folders
+                self.ctx.services.save_config(cfg)
+                with self.assertRaises(ValueError):
+                    llama_manager.get_backend_bin_dir(self.ctx, "custom")
+                self.assertFalse(self.activate().payload["ok"])
+
+    def test_external_folder_status_picker_open_and_cleanup_preserve_files(self):
+        directory = self.external_build()
+        self.activate("custom-02", bin_dir=str(directory))
+        previous = {p: p.read_bytes() for p in directory.iterdir()}
+        response = DummyResponse()
+        status.get_status(Request("GET", "/api/status", "", {}), response, self.ctx)
+        slot = next(item for item in response.payload["available_backends"] if item["id"] == "custom-02")
+        self.assertEqual(slot["bin_dir"], str(directory))
+        self.assertFalse(slot["bin_dir_is_default"])
+        with mock.patch.object(file_picker.file_picker, "select_folder_in_native_dialog", return_value="") as picker:
+            response = DummyResponse()
+            file_picker.select_folder(Request("POST", "/api/select-folder", "", {}, body={"purpose": "custom-backend", "backend": "custom-02"}), response, self.ctx)
+            self.assertFalse(response.payload["selected"])
+            self.assertEqual(picker.call_args.kwargs["initial_dir"], directory)
+            response = DummyResponse()
+            file_picker.select_folder(Request("POST", "/api/select-folder", "", {}, body={"purpose": "custom-backend", "backend": "cpu"}), response, self.ctx)
+            self.assertEqual(response.status, 400)
+        with mock.patch.object(lifecycle.lifecycle_service, "open_folder_in_file_manager") as open_folder:
+            lifecycle.post_open_folder(Request("POST", "/api/open-folder", "", {}, body={"folder": "llama"}), DummyResponse(), self.ctx)
+            open_folder.assert_called_once_with(directory)
+        process_manager.remove_llama_files(self.ctx)
+        self.assertEqual(previous, {p: p.read_bytes() for p in directory.iterdir()})
+        self.assertEqual(self.ctx.services.load_config()["custom_backend_dirs"], {"custom-02": str(directory)})
 
     def test_switch_round_trip_persists_identity_and_keeps_both_builds(self):
         original = {p: p.read_bytes() for p in self.ctx.paths.llama.rglob("*") if p.is_file()}
@@ -237,13 +417,16 @@ class CustomSlotsTests(unittest.TestCase):
                 self.assertEqual(self.activate(invalid).status, 400)
                 self.assertFalse(self.ctx.state.install_in_progress)
         self.ctx.state.install_in_progress = True
-        self.assertEqual(self.activate("custom-02").status, 409)
+        candidate = str(self.external_build())
+        previous = self.ctx.paths.config_file.read_bytes()
+        self.assertEqual(self.activate("custom-02", bin_dir=candidate).status, 409)
         self.ctx.state.install_in_progress = False
         with mock.patch.object(process_manager, "is_process_running", return_value=True):
-            result = self.activate("custom-02")
+            result = self.activate("custom-02", bin_dir=candidate)
         self.assertEqual(result.status, 400)
         self.assertIn("Stop running process", result.payload["error"])
         self.assertEqual(self.ctx.services.load_config()["backend"], "cpu")
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
 
     def test_second_slot_is_excluded_from_official_download_and_update_routes(self):
         self.activate("custom-02")
@@ -268,10 +451,11 @@ class CustomSlotsTests(unittest.TestCase):
         self.assertTrue(response.payload["installed"])
         self.assertEqual(response.payload["backend"], "custom-02")
         slots = [item for item in response.payload["available_backends"] if item.get("custom")]
-        self.assertEqual(slots, [
-            {"id": "custom", "label": "Custom", "custom": True, "bin_dir": "llama/custom/bin/"},
-            {"id": "custom-02", "label": "Custom 02", "custom": True, "bin_dir": "llama/custom-02/bin/"},
-        ])
+        self.assertEqual([slot["id"] for slot in slots], ["custom", "custom-02"])
+        for slot in slots:
+            self.assertEqual(slot["bin_dir"], str(llama_manager.get_default_backend_bin_dir(self.ctx, slot["id"])))
+            self.assertEqual(slot["default_bin_dir"], slot["bin_dir"])
+            self.assertTrue(slot["bin_dir_is_default"])
         with mock.patch.object(lifecycle.lifecycle_service, "open_folder_in_file_manager") as open_folder:
             lifecycle.post_open_folder(Request("POST", "/api/open-folder", "", {}, body={"folder": "llama"}), DummyResponse(), self.ctx)
         open_folder.assert_called_once_with(self.ctx.paths.llama / "custom-02")

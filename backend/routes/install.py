@@ -227,9 +227,11 @@ def activate_custom(request, response, ctx):
             response.error(*claim_error)
             return
         try:
-            result = llama_manager.activate_custom_backend(ctx, backend)
+            options = {"bin_dir": request.body["bin_dir"]} if "bin_dir" in (request.body or {}) else {}
+            result = llama_manager.activate_custom_backend(ctx, backend, **options)
             response.json(result)
         finally:
             process_manager.release_install_slot(ctx)
     except Exception as e:
+        print(f"[install] custom activation failed: {e}", file=sys.stderr)
         response.error(sanitize_error(e, 500), 500)
