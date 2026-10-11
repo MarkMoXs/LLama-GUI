@@ -108,6 +108,48 @@ class CustomSlotsTests(unittest.TestCase):
             self.assertFalse(self.activate("custom-02", bin_dir=str(first)).payload["ok"])
         self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
 
+    def test_managed_runtime_folders_cannot_be_selected_as_custom_builds(self):
+        managed = [self.ctx.paths.llama_bin, self.ctx.paths.llama_grammars, self.ctx.paths.llama / "dll"]
+        for directory in (self.ctx.paths.llama_bin, self.ctx.paths.llama_grammars):
+            managed.extend(directory.with_name(directory.name + suffix) for suffix in (".new", ".old"))
+        candidates = managed + [directory / "nested" for directory in managed]
+        candidates.extend([self.ctx.paths.llama, self.ctx.paths.root,
+                           self.ctx.paths.llama_custom_bin / ".." / ".." / "bin"])
+        previous = self.ctx.paths.config_file.read_bytes()
+        for directory in candidates:
+            with self.subTest(directory=directory):
+                directory.mkdir(parents=True, exist_ok=True)
+                for tool in ("llama-cli.exe", "llama-server.exe"):
+                    (directory / tool).write_text("custom build")
+                result = self.activate("custom-02", bin_dir=str(directory))
+                self.assertFalse(result.payload["ok"])
+                self.assertIn("overlaps", result.payload["error"])
+                self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+                self.assertFalse(self.ctx.state.install_in_progress)
+                self.assertEqual((directory / "llama-server.exe").read_text(), "custom build")
+
+    def test_saved_managed_folder_is_rejected_on_reactivation(self):
+        cfg = self.ctx.services.load_config()
+        cfg["custom_backend_dirs"] = {"custom": str(self.ctx.paths.llama_bin)}
+        self.ctx.services.save_config(cfg)
+        previous = self.ctx.paths.config_file.read_bytes()
+        result = self.activate()
+        self.assertFalse(result.payload["ok"])
+        self.assertIn("overlaps", result.payload["error"])
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+
+    def test_symlink_to_managed_folder_is_rejected(self):
+        alias = self.ctx.paths.root / "runtime alias"
+        try:
+            alias.symlink_to(self.ctx.paths.llama_bin, target_is_directory=True)
+        except (OSError, NotImplementedError) as exc:
+            self.skipTest(f"Directory symlinks unavailable: {exc}")
+        previous = self.ctx.paths.config_file.read_bytes()
+        result = self.activate(bin_dir=str(alias))
+        self.assertFalse(result.payload["ok"])
+        self.assertIn("overlaps", result.payload["error"])
+        self.assertEqual(self.ctx.paths.config_file.read_bytes(), previous)
+
     def test_missing_external_tool_and_failed_reset_keep_previous_selection(self):
         directory = self.external_build()
         self.assertTrue(self.activate(bin_dir=str(directory)).payload["ok"])

@@ -591,6 +591,20 @@ def activate_custom_backend(
                 folders[backend] = str(candidate)
         candidate_cfg["custom_backend_dirs"] = folders
         bin_dir = get_backend_bin_dir(ctx, backend, candidate_cfg)
+        # Official installs replace these trees; cleanup also removes the DLL tree.
+        managed_dirs = [ctx.paths.llama_bin, ctx.paths.llama_grammars, ctx.paths.llama / "dll"]
+        for directory in (ctx.paths.llama_bin, ctx.paths.llama_grammars):
+            managed_dirs.extend(directory.with_name(directory.name + suffix) for suffix in (".new", ".old"))
+        resolved_bin_dir = bin_dir.resolve()
+        for directory in managed_dirs:
+            resolved_directory = directory.resolve()
+            if (resolved_bin_dir == resolved_directory
+                    or resolved_directory in resolved_bin_dir.parents
+                    or resolved_bin_dir in resolved_directory.parents):
+                raise ValueError(
+                    f"Custom backend folder overlaps an app-managed runtime folder: {directory}. "
+                    "Choose a separate executable folder."
+                )
         if backend in folders:
             if not bin_dir.is_dir():
                 raise ValueError(f"Custom backend folder does not exist or is not a directory: {bin_dir}")
