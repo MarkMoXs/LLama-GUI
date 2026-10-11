@@ -315,6 +315,7 @@
 
     function shouldOmitFlagValue(f, value) {
         const inertDefaultValues = {
+            draft_sampling: "greedy",
             n_predict: -1,
             keep: 0,
             threads: -1,

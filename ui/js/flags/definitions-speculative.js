@@ -2,6 +2,20 @@
 const FLAG_DEFINITIONS_SPECULATIVE = [
 	// Speculative Decoding
 	{
+		id: "draft_sampling",
+		flag: "--spec-draft-sampling",
+		category: "speculative",
+		type: "enum",
+		label: "Draft Sampling",
+		desc: "Works with draft-simple and draft-mtp. Default: greedy.",
+		tool: "both",
+		default: "greedy",
+		options: [
+			{ value: "greedy", label: "Greedy (default)" },
+			{ value: "probabilistic", label: "Probabilistic" },
+		],
+	},
+	{
 		id: "draft_max",
 		flag: "--spec-draft-n-max",
 		category: "speculative",
