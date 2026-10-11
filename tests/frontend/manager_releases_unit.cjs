@@ -90,6 +90,9 @@ const elements = new Map();
     "custom-backend-info",
     "custom-backend-folder",
     "custom-backend-title",
+    "custom-backend-dir",
+    "btn-browse-custom-backend",
+    "btn-default-custom-backend",
     "install-status",
     "app-update-status",
     "app-update-channel",
@@ -586,6 +589,92 @@ for (const src of scripts) {
     await elements.get("btn-update").listeners.click[0]();
     unloadHandlers[0]();
     assert.deepEqual(clearedTimers, [17, 17], "unload cleans up active install polling");
+
+    // Folder changes belong to a slot and remain pending until activation succeeds.
+    const input = elements.get("custom-backend-dir");
+    const browse = elements.get("btn-browse-custom-backend");
+    const reset = elements.get("btn-default-custom-backend");
+    assert.equal(input.listeners.input.length, 1);
+    assert.equal(browse.listeners.click.length, 1);
+    const folderRequests = [];
+    let folderStatus = { ...cpuStatus, available_backends: availableBackends.map(option => option.custom
+        ? { ...option, default_bin_dir: option.bin_dir, bin_dir_is_default: true } : option) };
+    let selection = { selected: false, path: "" };
+    let finishPicker;
+    let finishFolderActivation;
+    manager.configure({ fetchJson: async (url, options) => {
+        if (url === "/api/status") return folderStatus;
+        if (url === "/api/select-folder") {
+            folderRequests.push(JSON.parse(options.body));
+            if (selection === null) return new Promise(resolve => { finishPicker = resolve; });
+            return selection;
+        }
+        if (url === "/api/activate-custom") {
+            folderRequests.push(JSON.parse(options.body));
+            return new Promise(resolve => { finishFolderActivation = resolve; });
+        }
+        if (url.startsWith("/api/releases")) return fetchPayload;
+        assert.fail("Unexpected folder request: " + url);
+    } });
+    await manager.checkStatus();
+    backendSelect.value = "custom";
+    manager._test.onBackendChange();
+    input.value = "/first build";
+    input.listeners.input[0]({ target: input });
+    await manager.checkStatus();
+    assert.equal(input.value, "/first build", "polling preserves a typed draft");
+    backendSelect.value = "custom-02";
+    manager._test.onBackendChange();
+    assert.equal(input.value, "");
+    input.value = "/second build";
+    input.listeners.input[0]({ target: input });
+    backendSelect.value = "custom";
+    manager._test.onBackendChange();
+    assert.equal(input.value, "/first build", "switching slots restores the slot's draft");
+    await browse.listeners.click[0]();
+    assert.equal(input.value, "/first build", "picker cancellation keeps the draft");
+    assert.equal(folderRequests.at(-1).purpose, "custom-backend");
+    assert.equal(folderRequests.at(-1).backend, "custom");
+    selection = null;
+    const picking = browse.listeners.click[0]();
+    await browse.listeners.click[0]();
+    assert.equal(folderRequests.filter(request => request.purpose).length, 2, "duplicate pickers are ignored");
+    await manager.checkStatus();
+    assert.equal(backendSelect.disabled, true);
+    assert.equal(input.disabled, true);
+    assert.equal(elements.get("btn-install").disabled, true);
+    finishPicker({ selected: true, path: "/picked & build" });
+    await picking;
+    assert.equal(input.value, "/picked & build");
+    assert.equal(backendSelect.disabled, false);
+    let applying = manager._test.installRelease();
+    assert.deepEqual(folderRequests.at(-1), { backend: "custom", bin_dir: "/picked & build" });
+    await manager.checkStatus();
+    assert.equal(input.disabled, true);
+    assert.equal(reset.disabled, true);
+    finishFolderActivation({ ok: false, missing_required: ["llama-server"] });
+    await applying;
+    assert.equal(input.value, "/picked & build");
+    assert.equal(manager.getLatestStatus().backend, "cpu");
+    applying = manager._test.installRelease();
+    folderStatus = { ...folderStatus, backend: "custom", available_backends: folderStatus.available_backends.map(option =>
+        option.id === "custom" ? { ...option, bin_dir: "/picked & build", bin_dir_is_default: false } : option) };
+    finishFolderActivation({ ok: true, found: ["llama-server", "llama-cli"] });
+    await applying;
+    assert.equal(input.value, "/picked & build", "successful activation renders the saved folder");
+    assert.equal(elements.get("custom-backend-folder").textContent, "/picked & build");
+    reset.listeners.click[0]();
+    await manager.checkStatus();
+    assert.equal(input.value, "", "a pending reset survives polling");
+    assert.equal(elements.get("custom-backend-folder").textContent, "/picked & build", "reset does not change the saved path before activation");
+    applying = manager._test.installRelease();
+    assert.deepEqual(folderRequests.at(-1), { backend: "custom", bin_dir: null });
+    finishFolderActivation({ ok: false, missing_required: ["llama-server"] });
+    await applying;
+    assert.match(elements.get("install-status").textContent, /llama\/custom\/bin/);
+    backendSelect.value = "custom-02";
+    manager._test.onBackendChange();
+    assert.equal(input.value, "/second build", "other slot's pending folder remains independent");
 
     console.log("manager releases unit tests passed");
 })().catch((err) => {

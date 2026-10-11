@@ -26,10 +26,16 @@ def post_open_folder(request, response, ctx):
         return
     try:
         if folder == "llama":
-            backend = ctx.services.load_config().get("backend")
-            target = (llama_manager.get_backend_bin_dir(ctx, backend).parent
-                      if llama_manager.is_custom_backend(backend) else ctx.paths.llama)
-            target.mkdir(parents=True, exist_ok=True)
+            cfg = ctx.services.load_config()
+            backend = cfg.get("backend")
+            if llama_manager.is_custom_backend(backend) and backend in cfg.get("custom_backend_dirs", {}):
+                target = llama_manager.get_backend_bin_dir(ctx, backend, cfg)
+                if not target.is_dir():
+                    raise ValueError(f"Custom backend folder is unavailable: {target}")
+            else:
+                target = (llama_manager.get_default_backend_bin_dir(ctx, backend).parent
+                          if llama_manager.is_custom_backend(backend) else ctx.paths.llama)
+                target.mkdir(parents=True, exist_ok=True)
         else:
             target = model_dir.get_models_dir(ctx)
         lifecycle_service.open_folder_in_file_manager(target)

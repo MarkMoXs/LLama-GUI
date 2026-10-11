@@ -71,7 +71,7 @@ def get_status(request, response, ctx):
                 "available_backends": [
                     {
                         "id": key, "label": spec["label"],
-                        **({"custom": True, "bin_dir": llama_manager.custom_backend_bin_label(key)}
+                        **({"custom": True, **llama_manager.get_custom_backend_dir_info(ctx, key, cfg)}
                            if llama_manager.is_custom_backend(key) else {}),
                     }
                     for key, spec in backend_specs.items()

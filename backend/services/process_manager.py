@@ -493,7 +493,7 @@ def _load_config_safe(ctx: AppContext) -> dict[str, Any]:
 def _fit_params_executable(ctx: AppContext) -> Any:
     suffix = getattr(ctx.services, "binary_suffix", "") or ""
     cfg = _load_config_safe(ctx)
-    bin_dir = llama_manager.get_backend_bin_dir(ctx, cfg.get("backend"))
+    bin_dir = llama_manager.get_backend_bin_dir(ctx, cfg.get("backend"), cfg)
     return bin_dir / f"llama-fit-params{suffix}"
 
 
@@ -1063,7 +1063,7 @@ def normalize_process_env(value: Any) -> dict[str, str]:
 def _build_process_env(ctx: AppContext) -> dict[str, str]:
     env = os.environ.copy()
     cfg = _load_config_safe(ctx)
-    bin_dir = llama_manager.get_backend_bin_dir(ctx, cfg.get("backend"))
+    bin_dir = llama_manager.get_backend_bin_dir(ctx, cfg.get("backend"), cfg)
     runtime_paths = [str(bin_dir)]
     existing_path = env.get("PATH", "")
     env["PATH"] = os.pathsep.join(runtime_paths + ([existing_path] if existing_path else []))
@@ -1154,7 +1154,7 @@ def _validate_launch_environment(
     if current_platform != "win32" and not os.access(exe_path, os.X_OK):
         backend = _load_config_safe(ctx).get("backend")
         recovery = (
-            f"Run chmod +x on {llama_manager.custom_backend_bin_label(backend)}{exe_name}."
+            f"Run chmod +x on {exe_path}."
             if llama_manager.is_custom_backend(backend)
             else "Use Repair Install to restore executable permissions."
         )
@@ -1169,7 +1169,7 @@ def _validate_launch_environment(
     plural = "libraries" if len(missing_runtime_files) != 1 else "library"
     backend = _load_config_safe(ctx).get("backend")
     recovery = (
-        f"Add the missing files to {llama_manager.custom_backend_bin_label(backend)}."
+        f"Add the missing files to {exe_path.parent}."
         if llama_manager.is_custom_backend(backend)
         else (
             "Use Repair Install, then verify the matching Vulkan/ROCm driver runtime is installed."

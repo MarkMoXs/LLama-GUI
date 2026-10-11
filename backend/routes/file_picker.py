@@ -1,9 +1,10 @@
 """Routes for native file selection."""
 
 from pathlib import Path
+import sys
 
 from backend.http import sanitize_error
-from backend.services import file_picker, model_dir
+from backend.services import file_picker, llama_manager, model_dir
 
 
 def select_file(request, response, ctx):
@@ -35,10 +36,20 @@ def select_file(request, response, ctx):
 
 def select_folder(request, response, ctx):
     body = request.body or {}
-    title = str(body.get("title") or "Select Models Folder").strip() or "Select Models Folder"
+    default_title = "Select llama.cpp Executable Folder" if body.get("purpose") == "custom-backend" else "Select Models Folder"
+    title = str(body.get("title") or default_title).strip() or default_title
     try:
-        info = model_dir.get_models_dir_info(ctx)
-        initial_dir = Path(info["models_dir"]) if info["models_dir_available"] else ctx.paths.models.parent
+        if body.get("purpose") == "custom-backend":
+            backend = body.get("backend", "custom")
+            if not llama_manager.is_custom_backend(backend):
+                response.error("Unsupported custom backend", 400)
+                return
+            initial_dir = llama_manager.get_backend_bin_dir(ctx, backend)
+            if not initial_dir.is_dir():
+                initial_dir = ctx.paths.root
+        else:
+            info = model_dir.get_models_dir_info(ctx)
+            initial_dir = Path(info["models_dir"]) if info["models_dir_available"] else ctx.paths.models.parent
         selected_path = file_picker.select_folder_in_native_dialog(
             title=title,
             initial_dir=initial_dir,
@@ -47,4 +58,5 @@ def select_folder(request, response, ctx):
     except file_picker.NativePickerUnavailableError as exc:
         response.error(str(exc), 503)
     except Exception as exc:
+        print(f"[file_picker] folder selection failed: {exc}", file=sys.stderr)
         response.error(sanitize_error(exc, 500), 500)
