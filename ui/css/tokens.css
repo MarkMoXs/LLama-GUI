@@ -466,26 +466,26 @@
    pure white is the right tint for it. */
 :root[data-theme="sexylight"] {
     color-scheme: light;
-    --bg-base: #efefef;/* 右背景 */
+    --bg-base: #fafffc;/* 右背景 */
     --bg-surface: #ffffff;/* 侧边栏 */
-    --bg-raised: rgba(139, 92, 246, 0.18);
+    --bg-raised: rgba(35, 35, 35, 0.041);
     --bg-elevated: #fafafa;
     --bg-hover: #efefef;
-    --fg: #8b5cf6;
+    --fg: #323232;
     --fg-muted: #555555;
     --fg-bright: #000000;
     /* Brightened from the mockup's #6b6d80, which lands at 2.93:1 on
        --bg-elevated — under the 3:1 floor this tier is held to. */
-    --fg-faint: #71738a;
-    --accent: #8b5cf6;
+    --fg-faint: #FF616C;
+    --accent: #FF616C;
     --accent-hover: #a78bfa;
     /* Lighter than the --accent fill, diverging from the dark-theme
        "same as fill" convention: #8b5cf6 reaches only 3.53:1 on
        --bg-elevated, and the mockup's white would sit ~1.1:1 from --fg
        (the Cappuccino defect). #a78bfa clears AA everywhere it lands. */
-    --accent-text: #a78bfa;
-    --accent-subtle: rgba(139, 92, 246, 0.12);
-    --accent-border: rgba(139, 92, 246, 0.17);
+    --accent-text: #f93e4b;
+    --accent-subtle: rgba(255, 97, 108, 0.12);
+    --accent-border: rgba(90, 226, 151, 0.17);
     --on-accent: #ffffff;
     /* Dark reads better on the bright magenta fill: 5.46:1 vs white's 3.46. */
     --on-magenta: #0a0b14;
@@ -521,10 +521,10 @@
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.15);
 
-    --inset-xs: rgba(0, 0, 0, 0.20);
-    --inset-sm: rgba(0, 0, 0, 0.30);
-    --inset-md: rgba(0, 0, 0, 0.40);
-    --inset-lg: rgba(0, 0, 0, 0.50);
+    --inset-xs: rgba(0, 0, 0, 0.2);
+    --inset-sm: rgba(0, 0, 0, 0.3);
+    --inset-md: rgba(0, 0, 0, 0.4);
+    --inset-lg: rgba(0, 0, 0, 0.5);
     --red-fg: #fca5a5;
     --yellow-glow: rgba(245, 158, 11, 0.5);
 
