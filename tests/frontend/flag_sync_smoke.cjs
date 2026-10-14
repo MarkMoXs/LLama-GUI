@@ -137,6 +137,26 @@ async function verifyReasoningPreserve(page) {
     await page.fill("#config-search", "");
 }
 
+async function verifyDraftBatchSize(page) {
+    await selectSection(page, "configure");
+    await page.fill("#config-search", "draft physical batch");
+    const input = page.locator("#flag-draft_ubatch_size");
+    await input.waitFor({ state: "visible" });
+    assert.equal(await input.inputValue(), "");
+    assert.equal(await input.getAttribute("min"), "0");
+    await page.evaluate(() => window.LlamaGui.flagCore.setFlagValue("spec_type", "draft-mtp"));
+    await input.fill("8");
+    assert.equal(await page.evaluate(() => window.LlamaGui.flagCore.getFlagValues().draft_ubatch_size), 8);
+    assert.match(await page.textContent("#command-preview-text"), /--spec-draft-n-ubatch 8(?: |$)/);
+    await page.fill("#config-search", "context");
+    await page.fill("#config-search", "draft physical batch");
+    assert.equal(await input.inputValue(), "8", "Configure rebuild preserves the shared value");
+    await input.fill("0");
+    assert.match(await page.textContent("#command-preview-text"), /--spec-draft-n-ubatch 0(?: |$)/);
+    await input.fill("");
+    assert.doesNotMatch(await page.textContent("#command-preview-text"), /--spec-draft-n-ubatch/);
+}
+
 async function verifyNgramSimple(page) {
     await selectSection(page, "configure");
     await page.fill("#config-search", "ngram");
@@ -4580,6 +4600,7 @@ for (const phase of ["startup", "reload"]) {
 }
 
 for (const [name, verify = name] of [
+    ["draft physical batch size", verifyDraftBatchSize],
     ["preset imports and safe notifications"],
     ["mirrored launch controls and Configure search"],
     ["API key controls and masked command previews"],

@@ -788,6 +788,21 @@ function launchResult() {
 }
 
 for (const tool of ["llama-server", "llama-cli"]) {
+    for (const specType of ["auto", "none", "ngram-simple", "draft-mtp", "draft-simple"]) {
+        for (const size of [undefined, 0, 8]) {
+            vm.runInContext(`window.LlamaGui.flagCore.setCurrentToolValue(${JSON.stringify(tool)});
+                window.LlamaGui.flagCore.applyFlagValues({ spec_type: ${JSON.stringify(specType)},
+                    draft_ubatch_size: ${JSON.stringify(size)} });`, context);
+            const args = Array.from(flatLaunchArgs());
+            const index = args.indexOf("--spec-draft-n-ubatch");
+            const expected = size !== undefined && ["draft-mtp", "draft-simple"].includes(specType);
+            assert.equal(index >= 0, expected, `${tool}: draft batch ${size} with ${specType}`);
+            if (expected) assert.equal(args[index + 1], String(size));
+        }
+    }
+}
+
+for (const tool of ["llama-server", "llama-cli"]) {
     vm.runInContext(`
         window.LlamaGui.flagCore.setCurrentToolValue(${JSON.stringify(tool)});
         window.LlamaGui.flagCore.applyFlagValues({});
@@ -802,7 +817,7 @@ for (const tool of ["llama-server", "llama-cli"]) {
     vm.runInContext(`window.LlamaGui.flagCore.applyFlagValues({
         spec_type: "none", model_draft: "draft.gguf", hf_repo_draft: "org/draft",
         draft_sampling: "probabilistic",
-        draft_max: 8, draft_min: 2, draft_p_min: 0.5, draft_p_split: 0.1,
+        draft_max: 8, draft_min: 2, draft_ubatch_size: 8, draft_p_min: 0.5, draft_p_split: 0.1,
         gpu_layers_draft: "all", draft_device: "CUDA0",
         draft_cache_type_k: "q8_0", draft_cache_type_v: "q8_0",
         ngram_simple: true, ngram_mod: true, ngram_map_k4v: true,
@@ -824,6 +839,7 @@ for (const tool of ["llama-server", "llama-cli"]) {
     assert.equal(args[args.indexOf("--spec-type") + 1], "ngram-mod,ngram-map-k4v,ngram-simple");
     assert.equal(args[args.indexOf("-md") + 1], "draft.gguf", "switching back restores saved draft arguments");
     assert.equal(args[args.indexOf("--spec-draft-sampling") + 1], "probabilistic", "switching back restores draft sampling");
+    assert.equal(args[args.indexOf("--spec-draft-n-ubatch") + 1], "8", "switching back restores the draft batch size");
     vm.runInContext(`window.LlamaGui.flagCore.setMultipleFlagValues({
         ngram_simple: false, ngram_mod: false, ngram_map_k4v: false,
     })`, context);

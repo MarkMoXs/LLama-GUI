@@ -134,6 +134,7 @@ function collectUnsupportedFlags(flags, advertisedByTool, buildByTool) {
         // from upstream builds on purpose; never hold them against a binary.
         if (flag.fork_only) continue;
         const removedInBuild = parseRemovedInBuild(flag.removed_in);
+        const introducedAfterBuild = parseRemovedInBuild(flag.introduced_after);
         for (const option of [flag.flag, flag.false_flag].filter(Boolean)) {
             for (const tool of expectedTools(flag)) {
                 const advertised = advertisedByTool[tool];
@@ -143,6 +144,12 @@ function collectUnsupportedFlags(flags, advertisedByTool, buildByTool) {
                     // docs/upstream-changes.md) stay in the GUI for older
                     // builds; builds at or above the removal tag may lack them.
                     const build = buildByTool[tool];
+                    // Merged flags awaiting a release may be absent from known
+                    // older builds. Unknown/newer builds must advertise them.
+                    if (introducedAfterBuild !== null && build !== null && build <= introducedAfterBuild) {
+                        console.log(`llama flag compatibility: ${tool}: ${option} requires a build after b${introducedAfterBuild} (see docs/upstream-changes.md)`);
+                        continue;
+                    }
                     if (removedInBuild !== null && build !== null && build >= removedInBuild) {
                         removedExemptions.push({ tool, id: flag.id, option, build, removedInBuild });
                         continue;

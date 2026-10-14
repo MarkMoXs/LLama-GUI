@@ -411,6 +411,13 @@ test("Recover chat here explains ownership contention and retries after the owne
     assert.equal(await owner.locator("#chat-input").inputValue(), "Keep this unsent draft during recovery.");
 
     await owner.close();
+    // Closing the page can finish before Chromium releases its Web Lock.
+    // Recovery intentionally uses ifAvailable, so retry only after release.
+    await observer.waitForFunction(async () => {
+        const { held } = await navigator.locks.query();
+        const name = window.LlamaGui.chatWindow._hostView.coordinator.lockName;
+        return !held.some(lock => lock.name === name);
+    });
     await observer.locator(CHAT_RETURN_HERE).click();
     await observer.locator("#chat-layout").waitFor({ state: "visible" });
     assert.equal(await observer.locator("#chat-input").inputValue(), "Keep this unsent draft during recovery.");
