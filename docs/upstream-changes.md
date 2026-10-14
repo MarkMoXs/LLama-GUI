@@ -4,6 +4,13 @@ Track announced llama.cpp changes that may require coordinated Llama-GUI updates
 
 ## Pending
 
+### Draft physical batch size — release compatibility window
+
+- **Upstream:** [ggml-org/llama.cpp#30459](https://github.com/ggml-org/llama.cpp/pull/30459), merged October 14, 2026 as `3fb4767`.
+- **Local handling:** Configure → Speculative Decoding exposes **Draft Physical Batch Size** (`--spec-draft-n-ubatch`) for server and CLI. Blank omits the argument; 0 inherits the target physical batch size. Smaller values can reduce draft compute-buffer VRAM. The setting is retained but omitted when speculation is disabled or only ngram methods are active.
+- **Compatibility:** Verified the official b11617 Windows CPU server and CLI do not advertise this flag. Use a build containing the merge; leave the field blank on older binaries. The definition's temporary `introduced_after: "b11617"` allows known older builds (including the CI pin) to omit it in the compatibility check; newer and unknown builds remain strict. This records a last known unsupported build, not a promised first supported release.
+- **Remaining:** Verify the first release advertising the flag, update the CI binary pin with its checksum, and remove `introduced_after` and its compatibility exemption once the supported floor includes it.
+
 ### Direct reads for lazy embedding tables (`--lazy-mode on-direct`)
 
 - **Upstream:** [ggml-org/llama.cpp#28136](https://github.com/ggml-org/llama.cpp/pull/28136).

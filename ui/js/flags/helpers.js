@@ -101,6 +101,7 @@ function shouldOmitSpeculativeFlag(f, values) {
     const draftModelOnlyFlags = new Set([
         "draft_max",
         "draft_min",
+        "draft_ubatch_size",
         "draft_p_min",
         "draft_p_split",
         "gpu_layers_draft",

@@ -130,4 +130,18 @@ assert.match(oldBuild.output, /--no-legacy/);
 const unknownBuild = run({ ...removedPinned, version: { status: 0, stdout: "custom fork build\n" } });
 assert.equal(unknownBuild.exitCode, 1, "an unparseable binary version must keep the strict check");
 
+const pendingFlag = [{ id: "draft_ubatch_size", flag: "--spec-draft-n-ubatch", tool: "both", introduced_after: "b11617" }];
+for (const build of [11515, 11617, 11618, null]) {
+    const result = run({
+        ...pinned, flagDefs: pendingFlag,
+        version: { status: 0, stdout: build === null ? "custom fork" : `build ${build}` },
+    });
+    assert.equal(result.exitCode, build !== null && build <= 11617 ? 0 : 1,
+        "only known older builds may omit a newly merged flag");
+}
+assert.equal(run({ ...pinned, flagDefs: pendingFlag,
+    help: { status: 0, stdout: "--spec-draft-n-ubatch N" },
+    version: { status: 0, stdout: "build 11618" },
+}).exitCode, 0);
+
 console.log("llama flag runner selection, strict failures and compatibility checks passed");

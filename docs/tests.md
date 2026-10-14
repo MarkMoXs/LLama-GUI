@@ -63,7 +63,7 @@ $env:LLAMA_GUI_LLAMA_BIN_DIR = 'C:\path\to\llama\bin'
 node tests/frontend/llama_flags_supported_unit.cjs --require-binaries
 ```
 
-An explicit `LLAMA_GUI_LLAMA_BIN_DIR` (or legacy `LLAMA_CPP_BIN_DIR`) requires both executables and disables fallback to other installations. Missing binaries, failed/timed-out `--help`, and unsupported flags fail the check. `--require-binaries` also requires an explicit directory. This checks advertised flag names, including negated booleans; it does not validate enum values or GPU execution. Fork-only flags are excluded.
+An explicit `LLAMA_GUI_LLAMA_BIN_DIR` (or legacy `LLAMA_CPP_BIN_DIR`) requires both executables and disables fallback to other installations. Missing binaries, failed/timed-out `--help`, and unsupported flags fail the check. `--require-binaries` also requires an explicit directory. This checks advertised flag names, including negated booleans; it does not validate enum values or GPU execution. Fork-only flags are excluded. Temporary `introduced_after` metadata permits a newly merged flag to be absent only from known builds at or below the last verified unsupported tag; newer and unknown builds remain strict. These windows are tracked in `upstream-changes.md`.
 
 The Ubuntu and Windows/Python 3.13 CI jobs run `npm test`, including the unit and browser suites. The Ubuntu job also installs the `libgomp1` OpenMP runtime, downloads the exact CPU release in `tests/llama-cpp-pin.json`, verifies its SHA256, and sets the explicit directory for required binary compatibility. The Windows job uses the same optional binary check as the release workflow. Update the tag, asset, and checksum together from an official llama.cpp release, then run compatibility before accepting the new pin. No model or GPU is needed.
 
