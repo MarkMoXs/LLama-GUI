@@ -1,4 +1,4 @@
-// Chat package (4/8): request construction - thinking params, message shaping, delta text, body assembly.
+// Chat package (5/9): request construction - thinking params, message shaping, delta text, body assembly.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -33,7 +33,7 @@
     }
 
     function getChatRequestMessages(messages) {
-        return window.LlamaGui.chatTools.requestMessages(messages);
+        return window.LlamaGui.chatTools.requestMessages(messages.map(message => ({ ...message, content: I.imageContent(message) })));
     }
 
     function getChatDeltaText(delta, keys) {
@@ -55,7 +55,7 @@
         if (!message) return "";
         const content = String(message.content || "").trim();
         const text = content || String(message.reasoning || "").trim();
-        return text.replace(/\n/g, " ").slice(0, 60);
+        return (text || (message.attachments?.length ? "Image attachment" : "")).replace(/\n/g, " ").slice(0, 60);
     }
 
     function getExternalTarget() {
@@ -80,7 +80,7 @@
         return Boolean(getExternalTarget());
     }
 
-    function buildChatBody(history, draft = "", includeUsage = false) {
+    function buildChatBody(history, draft = "", includeUsage = false, draftImages = []) {
         const messages = [];
         const systemPrompt = [
             (document.getElementById("chat-system-prompt")?.value || "").trim(),
@@ -88,7 +88,7 @@
         ].filter(Boolean).join("\n\n");
         if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
         messages.push(...getChatRequestMessages(compaction.workingMessages(history, S.chatCompactions.at(-1))));
-        if (draft.trim()) messages.push({ role: "user", content: draft.trim() });
+        if (draft.trim() || draftImages.length) messages.push({ role: "user", content: I.imageContent({ content: draft.trim(), attachments: draftImages }) });
         const body = {
             model: I.getChatModelName(), messages, stream: true,
             ...(includeUsage ? { stream_options: { include_usage: true } } : {}),

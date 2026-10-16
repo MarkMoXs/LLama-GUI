@@ -1,4 +1,4 @@
-// Chat package (1/8): shared state object, package constants, tolerant
+// Chat package (1/9): shared state object, package constants, tolerant
 // storage helpers, and configure(). Loaded first; sibling files attach to
 // window.LlamaGui._chatInternal and read shared state through it.
 (function () {
@@ -20,6 +20,10 @@
 
         // Mutable chat/workspace state shared across the package.
         chatMessages: [],
+        draftImages: [],
+        imageImportPending: false,
+        visionSupported: null,
+        visionCapsKey: null,
         chatStreaming: false,
         chatAbortController: null,
         chatStreamPromise: null,
@@ -86,7 +90,7 @@
         CHAT_WORKSPACE_KIND: "llama-gui-chat-workspace",
         CHAT_MESSAGE_KEYS: [
             "role", "content", "reasoning", "reasoning_content", "sources", "status", "error", "metadata",
-            "toolMessages", "tool_calls", "tool_call_id", "name", "id", "function", "versions", "versionIndex",
+            "attachments", "toolMessages", "tool_calls", "tool_call_id", "name", "id", "function", "versions", "versionIndex",
         ],
         CHAT_MESSAGE_ROLES: ["user", "assistant", "tool", "system", "developer"],
         CHAT_SOURCE_KEYS: ["url", "title", "index", "snippet", "domain", "date"],

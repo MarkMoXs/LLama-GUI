@@ -1207,3 +1207,196 @@ test("insecure mapped origin keeps single-window Chat fallback usable", { timeou
     assert.equal(capabilities.placeholderHidden, true, "single-window fallback keeps the Chat layout usable");
     assert.equal(capabilities.inputDisabled, false, "single-window fallback keeps Send usable");
 });
+
+
+const IMAGE_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==", "base64");
+const imageFile = (name = "sample.png") => ({ name, mimeType: "image/png", buffer: IMAGE_PNG });
+
+async function waitForImageDraft(page, count = 1) {
+    await page.waitForFunction(expected => {
+        const images = [...document.querySelectorAll("#chat-image-drafts img")];
+        return images.length === expected && images.every(image => image.complete && image.naturalWidth > 0)
+            && !document.querySelector("#btn-chat-send").disabled;
+    }, count);
+}
+
+test("image attachments survive pop-out, send, history reload, retry, export and editing", { timeout: 90_000 }, async t => {
+    const server = await startUiServer();
+    t.after(() => server.close());
+    const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
+    const context = await browser.newContext({ acceptDownloads: true });
+    const { calls } = await installApiRoutes(context);
+    const errors = [];
+    context.on("page", page => page.on("pageerror", error => errors.push(error.message)));
+    const main = await context.newPage();
+    await main.goto(server.baseUrl);
+    await selectChat(main);
+    await main.locator("#chat-image-file").setInputFiles(imageFile());
+    await waitForImageDraft(main);
+    await main.setViewportSize({ width: 390, height: 560 });
+    const composerBounds = await main.locator("#btn-chat-send").boundingBox();
+    assert.ok(composerBounds && composerBounds.y + composerBounds.height <= 560, "attachment preview keeps Send on screen");
+    assert.equal(await main.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await main.setViewportSize({ width: 1280, height: 900 });
+    // Pending attachments transfer as references, never as base64 in checkpoints.
+    const snapshot = await main.evaluate(() => window.LlamaGui.chatUi.captureSnapshot());
+    assert.equal(snapshot.inputs.attachments[0].name, "sample.png");
+    assert.equal(JSON.stringify(snapshot).includes("data:image"), false);
+    const popupPromise = main.waitForEvent("popup");
+    await main.locator(CHAT_POP_OUT).click();
+    const popup = await popupPromise;
+    await popup.locator(CHAT_RETURN).waitFor({ state: "visible" });
+    await waitForImageDraft(popup);
+    await popup.locator("#btn-chat-send").click();
+    await popup.waitForFunction(() => document.querySelectorAll("#chat-messages .chat-message").length === 2
+        && !document.querySelector("#btn-chat-send").disabled);
+    const first = callsFor(calls, "/api/chat/completions").at(-1).body;
+    assert.deepEqual(first.messages[0].content.map(part => part.type), ["image_url"]);
+    assert.match(first.messages[0].content[0].image_url.url, /^data:image\/png;base64,/);
+    assert.equal((await readStoredConversations(popup))[0].messages[0].content, "");
+    assert.equal(JSON.stringify(await readStoredConversations(popup)).includes("data:image"), false);
+    await popup.locator(CHAT_RETURN).click();
+    await main.locator(CHAT_WINDOW_PLACEHOLDER).waitFor({ state: "hidden" });
+    await main.reload();
+    await selectChat(main);
+    await main.locator("#btn-open-history").click();
+    await main.locator(".chat-history-item-title").filter({ hasText: "Image conversation" }).click();
+    await main.waitForFunction(() => document.querySelector("#chat-messages img")?.naturalWidth === 1);
+    await main.locator("#btn-chat-regenerate").click();
+    await main.waitForFunction(() => !document.querySelector("#btn-chat-send").disabled);
+    const retry = callsFor(calls, "/api/chat/completions").at(-1).body;
+    assert.deepEqual(retry.messages, first.messages, "retry must resend the original image-only turn");
+    await main.locator("#chat-input").fill("Describe both images.");
+    const jpeg = await main.evaluate(() => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 2; canvas.height = 2;
+        return canvas.toDataURL("image/jpeg").split(",")[1];
+    });
+    await main.locator("#chat-image-file").setInputFiles({ name: "second.jpg", mimeType: "image/jpeg", buffer: Buffer.from(jpeg, "base64") });
+    await waitForImageDraft(main);
+    await main.locator("#btn-chat-send").click();
+    await main.waitForFunction(() => document.querySelectorAll("#chat-messages .chat-message").length === 4
+        && !document.querySelector("#btn-chat-send").disabled);
+    const followUp = callsFor(calls, "/api/chat/completions").at(-1).body;
+    assert.deepEqual(followUp.messages[0], first.messages[0], "later turns preserve earlier images");
+    assert.equal(followUp.messages.at(-1).content[0].text, "Describe both images.");
+    assert.match(followUp.messages.at(-1).content[1].image_url.url, /^data:image\/jpeg;base64,/);
+    assert.ok(callsFor(calls, "/api/chat/context").some(call => Array.isArray(call.body.messages.at(-1).content)),
+        "context preview must measure image content parts");
+    const downloadPromise = main.waitForEvent("download");
+    await main.locator(".chat-history-item-export").click();
+    const download = await downloadPromise;
+    const output = JSON.parse(fs.readFileSync(await download.path(), "utf8"));
+    assert.equal(Object.keys(output.images).length, 2);
+    assert.match(Object.values(output.images)[0], /^data:image\/png;base64,/);
+    await main.locator('#chat-messages button[aria-label="Edit and resend"]').first().click();
+    await main.locator("#confirm-modal-ok").click();
+    await waitForImageDraft(main);
+    await main.locator('#chat-image-drafts button').click();
+    await main.locator("#chat-input").fill("Replacement text without an image");
+    await main.locator("#btn-chat-send").click();
+    await main.waitForFunction(() => !document.querySelector("#btn-chat-send").disabled);
+    assert.equal(callsFor(calls, "/api/chat/completions").at(-1).body.messages[0].content, "Replacement text without an image");
+    const conversations = await readStoredConversations(main);
+    assert.equal(conversations.length, 2, "editing preserves the original image in its history branch");
+    assert.ok(conversations.some(conversation => conversation.messages[0].attachments?.length));
+    assert.deepEqual(errors, []);
+});
+
+test("image validation, missing storage and text-only models fail visibly", { timeout: 90_000 }, async t => {
+    const server = await startUiServer();
+    t.after(() => server.close());
+    const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
+    const context = await browser.newContext();
+    const { calls } = await installApiRoutes(context);
+    const page = await context.newPage();
+    await page.goto(server.baseUrl);
+    await selectChat(page);
+    const invalid = [
+        { file: { name: "document.txt", mimeType: "text/plain", buffer: Buffer.from("text") }, error: "Only JPEG and PNG" },
+        { file: { name: "fake.png", mimeType: "image/png", buffer: Buffer.from("not an image") }, error: "not a valid JPEG or PNG" },
+        { file: { name: "large.png", mimeType: "image/png", buffer: Buffer.alloc(2 * 1024 * 1024 + 1) }, error: "2 MiB" },
+    ];
+    for (const { file, error } of invalid) {
+        await page.locator("#chat-image-file").setInputFiles(file);
+        await page.waitForFunction(text => document.querySelector("#chat-image-status").textContent.includes(text)
+            && !document.querySelector("#btn-chat-send").disabled, error);
+        assert.equal(await page.locator("#chat-image-drafts img").count(), 0);
+    }
+    await page.locator("#chat-image-file").setInputFiles(Array.from({ length: 5 }, (_, index) => imageFile(`${index}.png`)));
+    await page.waitForFunction(() => document.querySelector("#chat-image-status").textContent.includes("four images"));
+    await page.locator("#chat-image-file").setInputFiles(imageFile());
+    await waitForImageDraft(page);
+    await page.locator("#btn-chat-send").click();
+    await page.waitForFunction(() => !document.querySelector("#btn-chat-send").disabled);
+    // Lose the persisted bytes and reload so the cache cannot conceal missing data.
+    await page.evaluate(async () => {
+        const db = await new Promise(resolve => { const request = indexedDB.open("llama_gui_chat_images", 1); request.onsuccess = () => resolve(request.result); });
+        await new Promise(resolve => { const tx = db.transaction("images", "readwrite"); tx.objectStore("images").clear(); tx.oncomplete = resolve; });
+        db.close();
+    });
+    await page.reload();
+    await selectChat(page);
+    await page.locator("#btn-open-history").click();
+    await page.locator(".chat-history-item-title").click();
+    await page.locator("#chat-input").fill("What was in that image?");
+    const before = callsFor(calls, "/api/chat/completions").length;
+    await page.locator("#btn-chat-send").click();
+    await page.waitForFunction(() => document.querySelector("#chat-image-status").textContent.includes("Image unavailable"));
+    assert.equal(callsFor(calls, "/api/chat/completions").length, before);
+    await context.route("**/api/llama/props", route => route.fulfill({ json: { modalities: { vision: false } } }));
+    await page.reload();
+    await selectChat(page);
+    await page.waitForFunction(() => document.querySelector("#btn-chat-attach").disabled);
+    assert.match(await page.locator("#btn-chat-attach").getAttribute("title"), /vision model/);
+    const blockedContext = await browser.newContext();
+    await installApiRoutes(blockedContext);
+    await blockedContext.addInitScript(() => Object.defineProperty(window, "indexedDB", { value: undefined }));
+    const blocked = await blockedContext.newPage();
+    await blocked.goto(server.baseUrl);
+    await selectChat(blocked);
+    await blocked.locator("#chat-image-file").setInputFiles(imageFile());
+    await blocked.waitForFunction(() => document.querySelector("#chat-image-status").textContent.includes("browser storage"));
+    assert.equal(await blocked.locator("#chat-image-drafts img").count(), 0);
+});
+
+
+test("image cleanup preserves history, drafts and recovery while collecting unused bytes", { timeout: 30_000 }, async t => {
+    const server = await startUiServer();
+    t.after(() => server.close());
+    const browser = await chromium.launch({ headless: true });
+    t.after(() => browser.close());
+    const context = await browser.newContext();
+    await installApiRoutes(context);
+    const page = await context.newPage();
+    await page.goto(server.baseUrl);
+    await selectChat(page);
+    await page.locator("#chat-image-file").setInputFiles(imageFile());
+    await waitForImageDraft(page);
+    const remaining = await page.evaluate(async () => {
+        const I = window.LlamaGui._chatInternal;
+        const db = await new Promise(resolve => { const request = indexedDB.open("llama_gui_chat_images", 1); request.onsuccess = () => resolve(request.result); });
+        const ref = id => ({ id, name: `${id}.png`, type: "image/png", size: 10 });
+        const ids = ["saved-image", "draft-image", "checkpoint-image", "orphan-image", "recent-unused"];
+        await new Promise(resolve => {
+            const tx = db.transaction("images", "readwrite");
+            for (const id of ids) tx.objectStore("images").put({ ...ref(id), data: "data:image/png;base64,AA==", created: id === "recent-unused" ? Date.now() : 1 });
+            tx.oncomplete = resolve;
+        });
+        localStorage.setItem("llama_gui_conversations", JSON.stringify([{ id: "saved", messages: [{ role: "user", content: "", attachments: [ref("saved-image")] }] }]));
+        I.state.draftImages = [ref("draft-image")];
+        localStorage.setItem("llama-gui:chat-recovery:v1", JSON.stringify({ snapshot: { inputs: { attachments: [ref("checkpoint-image")] } } }));
+        await I.pruneImages();
+        const keys = await new Promise(resolve => {
+            const tx = db.transaction("images", "readonly");
+            const request = tx.objectStore("images").getAllKeys();
+            request.onsuccess = () => resolve(request.result);
+        });
+        db.close();
+        return keys;
+    });
+    assert.ok(!remaining.includes("orphan-image"));
+    for (const id of ["checkpoint-image", "draft-image", "saved-image", "recent-unused"]) assert.ok(remaining.includes(id));
+});

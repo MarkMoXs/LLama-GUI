@@ -2239,6 +2239,36 @@ async function runAbortScenario(action) {
         coordinatorB.dispose();
     }
 
+
+    // Image references stay bounded and survive snapshots without image bytes.
+    {
+        const ctx = makeContext({ fetchImpl: async () => { throw new Error("No request expected"); } });
+        const I = ctx.window.LlamaGui._chatInternal;
+        const ref = { id: "image-fixture", name: "<sample>.png", type: "image/png", size: 100 };
+        assert.equal(I.validImageRef(ref), true);
+        for (const change of [{ id: "../image" }, { type: "image/svg+xml" }, { size: 0 }, { size: 2 * 1024 * 1024 + 1 }, { data: "secret" }]) {
+            assert.equal(I.validImageRef({ ...ref, ...change }), false);
+        }
+        I.state.draftImages = [ref];
+        I.state.chatMessages = [{ role: "user", content: "Look", attachments: [ref] }];
+        const snapshot = ctx.api.captureSnapshot();
+        assert.equal(snapshot.messages[0].attachments[0].id, ref.id);
+        assert.equal(snapshot.inputs.attachments[0].id, ref.id);
+        assert.equal(ctx.api.validateSnapshot(snapshot), true);
+        const invalid = JSON.parse(JSON.stringify(snapshot));
+        invalid.messages[0].attachments[0].type = "image/svg+xml";
+        assert.equal(ctx.api.validateSnapshot(invalid), false);
+        assert.throws(() => I.checkImageRequest({ messages: [{ role: "user", content: "x".repeat(10 * 1024 * 1024) }] }), /10 MiB/);
+        assert.throws(() => I.checkImageRequest({ messages: [{ role: "user", content: "\u754c".repeat(4 * 1024 * 1024) }] }), /10 MiB/,
+            "request size must measure UTF-8 bytes, not JavaScript string length");
+        I.state.visionSupported = false;
+        I.state.visionCapsKey = I.getTemplateCapsKey();
+        assert.throws(() => I.checkImageRequest({ messages: [{ role: "user", content: [{ type: "image_url", image_url: { url: "data:image/png;base64,AA==" } }] }] }), /vision model/);
+        assert.equal(I.generateConversationTitle(I.state.chatMessages), "Look");
+        assert.equal(I.generateConversationTitle([{ role: "user", content: "", attachments: [ref] }]), "Image conversation");
+        assert.equal(await I.compactConversation(), false, "image-containing turns must not be serialized as summary text");
+    }
+
     console.log("chat_ui_unit.cjs: all tests passed");
 })().catch((error) => {
     console.error(error);

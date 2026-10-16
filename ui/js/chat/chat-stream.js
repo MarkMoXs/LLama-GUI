@@ -1,4 +1,4 @@
-// Chat package (6/8): send/stream pipeline, scroll handling, edit flow, assistant rendering, undo and regenerate.
+// Chat package (7/9): send/stream pipeline, scroll handling, edit flow, assistant rendering, undo and regenerate.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -20,11 +20,15 @@
     const compaction = window.LlamaGui.chatCompaction;
 
     function sendMessage(userText, retry = false) {
-        if (!I.workspaceMutationAllowed() || S.chatStreaming || S.compactionController || S.sendPreflightPromise || !userText.trim()) return Promise.resolve(false);
+        if (!I.workspaceMutationAllowed() || S.chatStreaming || S.compactionController || S.sendPreflightPromise || S.imageImportPending || (!userText.trim() && !S.draftImages.length && !retry)) return Promise.resolve(false);
         S.autoCompactionAttempted = false;
         const attemptToken = ++S.sendAttemptToken;
         const ownerEpoch = S.workspaceEpoch;
-        const pending = runMessage(userText, retry, attemptToken, ownerEpoch);
+        const pending = runMessage(userText, retry, attemptToken, ownerEpoch).catch(error => {
+            console.warn("Chat send preparation failed", error);
+            I.reportImages(error.message || "Could not prepare image attachments.");
+            return false;
+        });
         S.sendPreflightPromise = pending;
         S.chatStreamPromise = pending;
         I.updateChatAvailability(I.isServerRunning());
@@ -126,8 +130,11 @@
         S.pendingEdit = {
             index,
             originalText: S.chatMessages[index].content,
+            originalDraftImages: I.copyImageRefs(S.draftImages),
             tail: S.chatMessages.slice(index + 1),
         };
+        S.draftImages = I.copyImageRefs(S.chatMessages[index].attachments);
+        I.renderDraftImages();
         input.value = S.chatMessages[index].content || "";
         input.focus?.();
         const status = document.getElementById("chat-edit-status");
@@ -142,6 +149,8 @@
         if (!S.pendingEdit) return;
         const input = document.getElementById("chat-input");
         if (input) input.value = S.pendingEdit.originalText || "";
+        S.draftImages = I.copyImageRefs(S.pendingEdit.originalDraftImages);
+        I.renderDraftImages();
         discardPendingEdit();
         const status = document.getElementById("chat-edit-status");
         if (status) { if (status.children[0]) status.children[0].textContent = ""; status.hidden = true; }
@@ -238,6 +247,12 @@
                 return;
             }
             const bubble = renderChatMessage(msg.role, msg.content, { reasoning: msg.reasoning });
+            if (msg.attachments?.length) {
+                const images = document.createElement("div");
+                images.className = "chat-images";
+                I.renderImages(images, msg.attachments);
+                bubble.appendChild(images);
+            }
             const previousElement = previousElements[index];
             if (previousElement) {
                 container.insertBefore(bubble.closest(".chat-message"), previousElement);
@@ -320,13 +335,21 @@
     }
 
     async function runMessage(userText, retry = false, attemptToken = S.sendAttemptToken, ownerEpoch = S.workspaceEpoch) {
-        if (!I.workspaceMutationAllowed(ownerEpoch) || S.chatStreaming || S.compactionController || !userText.trim()) return false;
+        if (!I.workspaceMutationAllowed(ownerEpoch) || S.chatStreaming || S.compactionController || S.imageImportPending || (!userText.trim() && !S.draftImages.length && !retry)) return false;
         if (!I.isServerRunning()) {
             I.updateStatusBadge();
             return;
         }
 
         const trimmedText = userText.trim();
+        const attachments = retry ? [] : I.copyImageRefs(S.draftImages);
+        const runtimeKey = I.getChatRuntimeKey();
+        const requestHistory = S.pendingEdit && !retry ? S.chatMessages.slice(0, S.pendingEdit.index)
+            : retry && S.chatMessages.at(-1)?.role === "assistant" ? S.chatMessages.slice(0, -1) : S.chatMessages;
+        const workingHistory = compaction.workingMessages(requestHistory, S.chatCompactions.at(-1));
+        if (!I.imagesReady(workingHistory, attachments)) await I.prepareImages(workingHistory, attachments);
+        if (!I.workspaceMutationAllowed(ownerEpoch) || runtimeKey !== I.getChatRuntimeKey()) return false;
+        I.checkImageRequest(I.buildChatBody(requestHistory, retry ? "" : trimmedText, true, attachments));
         if (!await I.maybeCompactBeforeSend(trimmedText, attemptToken, retry, ownerEpoch)
             || !I.workspaceMutationAllowed(ownerEpoch) || attemptToken !== S.sendAttemptToken) return false;
         const editing = S.pendingEdit && !retry ? S.pendingEdit : null;
@@ -350,7 +373,8 @@
                 return;
             }
             S.chatMessages = S.chatMessages.slice(0, editing.index + 1);
-            S.chatMessages[editing.index] = { ...S.chatMessages[editing.index], content: trimmedText };
+            S.chatMessages[editing.index] = { ...S.chatMessages[editing.index], content: trimmedText, attachments };
+            if (!attachments.length) delete S.chatMessages[editing.index].attachments;
             S.chatCompactions = S.chatCompactions.filter(record => record.end <= editing.index);
             S.pendingEdit = null;
             const editStatus = document.getElementById("chat-edit-status");
@@ -358,13 +382,16 @@
             renderConversationMessages(editing.index);
             I.saveCurrentConversation();
         } else if (!retry) {
-            S.chatMessages.push({ role: "user", content: trimmedText });
+            S.chatMessages.push({ role: "user", content: trimmedText, ...(attachments.length ? { attachments } : {}) });
             renderConversationMessages(S.chatMessages.length - 1);
             I.saveCurrentConversation();
         }
 
         const chatInput = document.getElementById("chat-input");
         if (!retry) {
+            S.draftImages = [];
+            I.renderDraftImages();
+            I.reportImages();
             chatInput.value = "";
             chatInput.style.height = "auto";
         }
@@ -400,6 +427,7 @@
                 S.chatAbortController.signal.throwIfAborted();
                 const toolCalls = [];
                 let roundFinishReason = "";
+                I.checkImageRequest(body);
                 const resp = await fetch("/api/chat/completions", {
                     method: "POST",
                     headers: S.getApiAuthorizationHeaders({ "Content-Type": "application/json" }),

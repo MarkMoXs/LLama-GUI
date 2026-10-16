@@ -1,4 +1,4 @@
-// Chat package (2/8): workspace ownership, transfer snapshots, validation and restore, sampler value plumbing.
+// Chat package (3/9): workspace ownership, transfer snapshots, validation and restore, sampler value plumbing.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -44,6 +44,7 @@
 
     function workspaceBusyReason() {
         if (S.confirmationPending) return "A confirmation is pending.";
+        if (S.imageImportPending) return "Images are being imported.";
         if (S.characterImportPending) return "A character card is being imported.";
         if (S.pendingEdit) return "An edit is pending.";
         if (S.compactionController) return "Compaction is in progress.";
@@ -261,7 +262,9 @@
         const result = {};
         for (const key of CHAT_MESSAGE_KEYS) {
             const source = value[key];
-            if (key === "sources" && Array.isArray(source)) {
+            if (key === "attachments" && Array.isArray(source)) {
+                result.attachments = I.copyImageRefs(source);
+            } else if (key === "sources" && Array.isArray(source)) {
                 result.sources = source.map(copySource).filter(Boolean);
             } else if (key === "metadata") {
                 const metadata = copyMetadata(source);
@@ -332,6 +335,7 @@
                 systemPrompt: String(document.getElementById("chat-system-prompt")?.value || ""),
                 thinkingEffort: I.getChatThinkingEffort(),
                 draft: String(input?.value || ""),
+                attachments: I.copyImageRefs(S.draftImages),
                 webSearchEnabled: I.isChatWebSearchEnabled(),
                 webSearchMaxResults: I.getChatWebSearchMaxResults(),
                 datetimeEnabled: Boolean(window.LlamaGui.chatTools.isEnabled?.()),
@@ -390,7 +394,9 @@
             || (allowMissingRole && value.role !== undefined && !CHAT_MESSAGE_ROLES.includes(value.role))
             || typeof value.content !== "string") return false;
         for (const [key, item] of Object.entries(value)) {
-            if (["sources"].includes(key)) {
+            if (key === "attachments") {
+                if (!Array.isArray(item) || item.length > 4 || item.some(image => !I.validImageRef(image))) return false;
+            } else if (["sources"].includes(key)) {
                 if (!Array.isArray(item) || item.some(source => !validateSource(source))) return false;
             } else if (["toolMessages", "versions"].includes(key)) {
                 if (!Array.isArray(item) || item.some(message => !validateMessage(message, key === "versions"))) return false;
@@ -423,7 +429,7 @@
             || typeof conversation.titleCustom !== "boolean") return false;
 
         const inputs = snapshot.inputs;
-        const inputKeys = ["systemPrompt", "thinkingEffort", "draft", "webSearchEnabled", "webSearchMaxResults", "datetimeEnabled", "autoCompaction"];
+        const inputKeys = ["systemPrompt", "thinkingEffort", "draft", "webSearchEnabled", "webSearchMaxResults", "datetimeEnabled", "autoCompaction", "attachments"];
         if (!hasOnlyKnownKeys(inputs, inputKeys)
             || typeof inputs.systemPrompt !== "string"
             || !CHAT_THINKING_EFFORTS.includes(inputs.thinkingEffort)
@@ -432,6 +438,9 @@
             || !Number.isInteger(inputs.webSearchMaxResults) || inputs.webSearchMaxResults < CHAT_WEB_SEARCH_MIN_RESULTS || inputs.webSearchMaxResults > CHAT_WEB_SEARCH_MAX_RESULTS
             || typeof inputs.datetimeEnabled !== "boolean"
             || typeof inputs.autoCompaction !== "boolean") return false;
+
+        if (inputs.attachments !== undefined && (!Array.isArray(inputs.attachments) || inputs.attachments.length > 4
+            || inputs.attachments.some(image => !I.validImageRef(image)))) return false;
 
         const view = snapshot.view;
         if (!hasOnlyKnownKeys(view, ["scroll", "draftSelection"])
@@ -467,6 +476,8 @@
             S.chatMessages = snapshot.messages.map(copyMessage).filter(Boolean);
             S.chatCompactions = snapshot.compactions.map(copyCompaction).filter(Boolean);
             const inputs = snapshot.inputs;
+            S.draftImages = I.copyImageRefs(inputs.attachments);
+            I.renderDraftImages();
             const systemPrompt = document.getElementById("chat-system-prompt");
             const sysCharCount = document.getElementById("chat-sys-char-count");
             if (systemPrompt) systemPrompt.value = inputs.systemPrompt;
@@ -546,6 +557,9 @@
             S.workspaceConversationTitle = null;
             S.workspaceConversationTitleCustom = false;
             S.chatMessages = [];
+            S.draftImages = [];
+            I.renderDraftImages();
+            I.reportImages();
             S.chatCompactions = [];
             S.streamingCheckpoint = null;
             S.workspaceCheckpointPending = false;

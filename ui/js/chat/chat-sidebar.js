@@ -1,4 +1,4 @@
-// Chat package (3/8): sidebar rendering, sampler inputs, web-search and thinking controls, status badge, template caps, focus mode, panel layout.
+// Chat package (4/9): sidebar rendering, sampler inputs, web-search and thinking controls, status badge, template caps, focus mode, panel layout.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -147,7 +147,15 @@
             && (lifecycle.phase === "starting" || lifecycle.phase === "loading")
         );
         const canOperate = I.workspaceMutationAllowed();
-        const canSend = Boolean(isRunning) && canOperate && !S.chatStreaming && !S.compactionController && !S.sendPreflightPromise;
+        const canSend = Boolean(isRunning) && canOperate && !S.chatStreaming && !S.compactionController && !S.sendPreflightPromise && !S.imageImportPending;
+        const attachButton = document.getElementById("btn-chat-attach");
+        if (attachButton) {
+            attachButton.disabled = !canSend || (S.visionSupported === false && S.visionCapsKey === getTemplateCapsKey());
+            attachButton.title = S.visionSupported === false && S.visionCapsKey === getTemplateCapsKey()
+                ? "Load a vision model with its matching multimodal projector to attach images."
+                : "Attach JPEG or PNG images (up to four, 2 MiB each). Requires a vision model.";
+        }
+        I.updateImageControls();
         const characterButton = document.getElementById("btn-chat-load-character");
         if (characterButton) characterButton.disabled = !canOperate || S.characterImportPending || S.chatStreaming || Boolean(S.compactionController) || Boolean(S.sendPreflightPromise);
         const workspaceInputIds = [
@@ -250,6 +258,8 @@
         const key = getTemplateCapsKey();
         if (key === null) {
             S.templateCapsKey = null;
+            S.visionSupported = null;
+            S.visionCapsKey = null;
             S.templateCapsRequest = null;
             setThinkingEffortCapHint(false);
             return;
@@ -266,6 +276,9 @@
             if (S.templateCapsRequest !== request || getTemplateCapsKey() !== key) return;
             const caps = props && props.chat_template_caps;
             S.templateCapsKey = key;
+            S.visionCapsKey = key;
+            S.visionSupported = typeof props?.modalities?.vision === "boolean" ? props.modalities.vision : null;
+            updateChatAvailability(I.isServerRunning());
             setThinkingEffortCapHint(Boolean(caps && caps.supports_reasoning_effort === false));
         } catch (error) {
             console.debug("Could not read chat template capabilities", error);

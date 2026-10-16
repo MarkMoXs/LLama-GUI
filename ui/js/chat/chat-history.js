@@ -1,4 +1,4 @@
-// Chat package (7/8): conversation persistence, history list rendering, clearChat, character card import.
+// Chat package (8/9): conversation persistence, history list rendering, clearChat, character card import.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -34,6 +34,7 @@
         if (!saved && typeof window.showToast === "function") {
             window.showToast("Conversation history could not be saved. Your active chat remains available for this session.", "warning");
         }
+        if (saved) I.scheduleImageCleanup();
         renderHistoryRetention(pruned.length);
         return saved;
     }
@@ -80,7 +81,7 @@
     function generateConversationTitle(messages) {
         const first = messages.find(m => m.role === "user");
         if (!first) return "Untitled";
-        const text = first.content.trim().replace(/\n/g, " ");
+        const text = first.content.trim().replace(/\n/g, " ") || (first.attachments?.length ? "Image conversation" : "Untitled");
         return text.length > 50 ? text.slice(0, 50) + "..." : text;
     }
 
@@ -110,6 +111,9 @@
         S.streamingCheckpoint = null;
         const compactStatus = document.getElementById("chat-compaction-status");
         if (compactStatus) { compactStatus.textContent = ""; compactStatus.hidden = true; }
+        S.draftImages = [];
+        I.renderDraftImages();
+        I.reportImages();
         S.chatMessages = convo.messages.slice();
         S.chatCompactions = (Array.isArray(convo.compactions) ? convo.compactions : [])
             .filter(record => compaction.valid(record, S.chatMessages));
@@ -166,9 +170,20 @@
     function exportConversation(id, format = "json") {
         const convo = getStoredConversations().find(item => item.id === id);
         if (!convo) return "";
+        if (format !== "text" && convo.messages.some(message => message.attachments?.length)) {
+            return I.exportImages(convo).then(images => downloadConversation({ ...convo, images }, format)).catch(error => {
+                console.warn("Could not export conversation images", error);
+                I.reportImages(error.message);
+                return "";
+            });
+        }
+        return downloadConversation(convo, format);
+    }
+
+    function downloadConversation(convo, format) {
         const isText = format === "text";
         const data = isText
-            ? convo.messages.map(message => `${String(message.role || "").toUpperCase()}:\n${message.content || ""}`).join("\n\n")
+            ? convo.messages.map(message => `${String(message.role || "").toUpperCase()}:\n${message.content || ""}${message.attachments?.length ? "\n[Images: " + message.attachments.map(image => image.name).join(", ") + "]" : ""}`).join("\n\n")
             : JSON.stringify(convo, null, 2);
         if (typeof Blob === "undefined" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function" || !document.createElement) return data;
         const blob = new Blob([data], { type: isText ? "text/plain" : "application/json" });
@@ -186,6 +201,9 @@
         S.workspaceConversationTitle = null;
         S.workspaceConversationTitleCustom = false;
         S.chatMessages = [];
+        S.draftImages = [];
+        I.renderDraftImages();
+        I.reportImages();
         S.chatCompactions = [];
         S.streamingCheckpoint = null;
         I.discardPendingEdit();
@@ -251,6 +269,9 @@
         S.workspaceConversationTitle = null;
         S.workspaceConversationTitleCustom = false;
         S.chatMessages = [];
+        S.draftImages = [];
+        I.renderDraftImages();
+        I.reportImages();
         S.chatCompactions = [];
         S.streamingCheckpoint = null;
         const compactStatus = document.getElementById("chat-compaction-status");
@@ -388,6 +409,9 @@
         }
         if (!I.invalidateWorkspace()) return false;
         S.chatMessages = [];
+        S.draftImages = [];
+        I.renderDraftImages();
+        I.reportImages();
         S.chatCompactions = [];
         const compactStatus = document.getElementById("chat-compaction-status");
         if (compactStatus) { compactStatus.textContent = ""; compactStatus.hidden = true; }

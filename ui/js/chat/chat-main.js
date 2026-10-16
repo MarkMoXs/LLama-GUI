@@ -1,4 +1,4 @@
-// Chat package (8/8): init() plus the public window.LlamaGui.chatUi assembly. Loaded last.
+// Chat package (9/9): init() plus the public window.LlamaGui.chatUi assembly. Loaded last.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -14,6 +14,7 @@
 
     function init() {
         I.initChatTools();
+        I.initImages();
         window.LlamaGui.chatTools.init(() => {
             I.scheduleContextPreview(true);
             I.requestWorkspaceCheckpoint({ reason: "datetime-preference" });

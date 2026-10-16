@@ -124,6 +124,17 @@ case covers every package contributor and pins the exported coordinator factory.
 
 The coordinator and Chat UI units share `fake_locks.cjs`, a deterministic single-lock stand-in with queued cancellation. Actual cross-context lock scheduling and window-close release belong to the browser fixtures. Roundtrip units assert durable transfer endpoints, revision progression, and shared history; staging a snapshot in an observer must not grant send or persistence permission.
 
+Image-attachment scenarios in `chat_popout_integration.cjs` use real browser
+IndexedDB and a tiny PNG fixture to verify pending-image pop-out transfer,
+image-only request content, reload persistence, regeneration, image-bearing JSON
+export, edit/remove with a preserved history branch, invalid type/signature/size/count
+rejection, missing stored bytes, explicit text-only capability feedback, and blocked
+IndexedDB errors. Cleanup fixtures protect history, pending drafts, recovery references
+and recent imports while collecting unused image bytes. `chat_ui_unit.cjs` checks reference validation, workspace schema
+round-trips, total UTF-8 request limits and unsupported-model request rejection.
+Run the focused browser cases with
+`node --test --test-name-pattern="^image " tests/frontend/chat_popout_integration.cjs`.
+
 `node --test tests/frontend/chat_popout_integration.cjs` runs the actual application in isolated same-context main/popup pages. It covers a full detach/use/return cycle with a synthetic transcript, tools, answer versions, compaction, draft, focus layout, authoritative sampler updates/unset values, authenticated request construction, and secret exclusion. It verifies a fresh popup after Return, explicit recovery after close/reload, and main-page reload during a checkpointed partial response without auto-resend. Desktop and 390px expanded-panel/Context checks keep Send and the sticky Return action accessible. The popup starts no lifecycle actions or independent status/inference polling. A mapped non-loopback HTTP hostname verifies Chromium's actual insecure-context/Web Locks fallback without contacting an external host. This is browser-engine evidence, not a native LAN or embedded-host test. These scenarios are included in `npm run test:frontend` and never use a real model or existing browser profile.
 
 Successful use/return, blocked or blank opening with a fresh retry, and idle close/deletion recovery run in independent browser contexts. A controlled owner-ack delay closes a real popup during handoff, then checks that the delayed continuation leaves explicit recovery available and cannot reclaim ownership. Detached reload has one pinned contract: its consumed one-shot proof yields an unavailable Chat shell; closing that popup permits explicit recovery in the main window. Partial-stream reload waits for the matching durable checkpoint instead of a fixed delay.

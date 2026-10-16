@@ -1,4 +1,4 @@
-// Chat package (5/8): compaction controls, chat tools menu, context budget preview, pre-send auto-compaction.
+// Chat package (6/9): compaction controls, chat tools menu, context budget preview, pre-send auto-compaction.
 (function () {
     window.LlamaGui = window.LlamaGui || {};
 
@@ -21,10 +21,12 @@
     function updateCompactionControls() {
         const button = document.getElementById("btn-chat-compact");
         if (!button) return;
-        const available = compaction.boundary(S.chatMessages) > (S.chatCompactions.at(-1)?.end || 0);
-        button.disabled = !S.compactionController && (!available || S.chatStreaming || !I.isServerRunning() || !I.workspaceMutationAllowed());
+        const imageBoundary = S.chatMessages.some(message => message.attachments?.length);
+        const available = !imageBoundary && compaction.boundary(S.chatMessages) > (S.chatCompactions.at(-1)?.end || 0);
+        button.disabled = !S.compactionController && (!available || S.imageImportPending || S.chatStreaming || !I.isServerRunning() || !I.workspaceMutationAllowed());
         button.textContent = S.compactionController ? "Cancel compaction" : "Compact conversation";
-        button.title = "Summarize older messages; keep the transcript and last two turns unchanged.";
+        button.title = imageBoundary ? "Compaction of image-containing turns is not supported yet. Start a new chat or remove those images."
+            : "Summarize older messages; keep the transcript and last two turns unchanged.";
         for (const id of ["btn-chat-undo-compaction", "btn-chat-tools-undo-compaction"]) {
             const undo = document.getElementById(id);
             if (undo) undo.disabled = !I.workspaceMutationAllowed() || S.chatStreaming || Boolean(S.compactionController);
@@ -80,7 +82,12 @@
     }
 
     function compactConversation(draftOverride = null) {
-        if (!I.workspaceMutationAllowed() || S.chatStreaming || S.compactionController || !I.isServerRunning()) return Promise.resolve(false);
+        if (!I.workspaceMutationAllowed() || S.imageImportPending || S.chatStreaming || S.compactionController || !I.isServerRunning()) return Promise.resolve(false);
+        const imageBoundary = S.chatMessages.some(message => message.attachments?.length);
+        if (imageBoundary) {
+            I.reportImages("Compaction of image-containing turns is not supported yet. Start a new chat or remove those images.");
+            return Promise.resolve(false);
+        }
         const ownerEpoch = S.workspaceEpoch;
         const controller = new AbortController();
         S.compactionController = controller;
@@ -300,7 +307,20 @@
             return;
         }
         const status = S.getLatestStatus ? S.getLatestStatus() : null;
-        const body = I.buildChatBody(S.chatMessages, document.getElementById("chat-input")?.value || "");
+        const previewHistory = S.pendingEdit ? S.chatMessages.slice(0, S.pendingEdit.index) : S.chatMessages;
+        const workingHistory = compaction.workingMessages(previewHistory, S.chatCompactions.at(-1));
+        if (!I.imagesReady(workingHistory, S.draftImages)) {
+            const epoch = S.workspaceEpoch;
+            cancelContextPreview();
+            void I.prepareImages(workingHistory, S.draftImages).then(() => {
+                if (I.workspaceMutationAllowed(epoch)) scheduleContextPreview(true);
+            }).catch(error => {
+                console.warn("Chat image context unavailable", error);
+                if (I.workspaceMutationAllowed(epoch)) renderContextBudget({ message: error.message });
+            });
+            return;
+        }
+        const body = I.buildChatBody(previewHistory, document.getElementById("chat-input")?.value || "", false, S.draftImages);
         const key = JSON.stringify([I.getTemplateCapsKey(), status?.active_runtime,
             status?.external_chat_target, body]);
         if (!force && key === S.contextKey) return;
@@ -337,6 +357,7 @@
         const controller = new AbortController();
         S.contextController = controller;
         try {
+            I.checkImageRequest(body);
             const response = await fetch("/api/chat/context", {
                 method: "POST", headers: S.getApiAuthorizationHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify(body), signal: controller.signal,
@@ -366,7 +387,7 @@
             ? S.chatMessages.length - 1 : -1;
         const history = replacementIndex >= 0 ? S.chatMessages.slice(0, replacementIndex) : S.chatMessages;
         const draft = replacementIndex >= 0 ? "" : userText;
-        const body = I.buildChatBody(history, draft);
+        const body = I.buildChatBody(history, draft, false, retry ? [] : S.draftImages);
         const runtimeKey = getChatRuntimeKey();
         const stale = () => !I.workspaceMutationAllowed(ownerEpoch) || attemptToken !== S.sendAttemptToken || runtimeKey !== getChatRuntimeKey();
         cancelContextPreview();
@@ -384,7 +405,7 @@
         if (!compacted) return false;
 
         const afterHistory = replacementIndex >= 0 ? S.chatMessages.slice(0, replacementIndex) : S.chatMessages;
-        const afterBody = I.buildChatBody(afterHistory, draft);
+        const afterBody = I.buildChatBody(afterHistory, draft, false, retry ? [] : S.draftImages);
         cancelContextPreview();
         const afterRevision = S.contextRevision;
         const measured = await refreshContextPreview(afterBody, afterRevision);
