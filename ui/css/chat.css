@@ -604,6 +604,13 @@ body.chat-window-detached .chat-header-bar {
 .chat-context-bar[data-status="warning"] #chat-context-prompt { background: var(--yellow-solid); }
 .chat-context-bar[data-status="overflow"] #chat-context-prompt { background: var(--red); }
 .chat-input-row { display: flex; gap: var(--space-2); align-items: flex-end; }
+.chat-images { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-2); }
+.chat-images[hidden] { display: none; }
+#chat-image-drafts { max-height: 180px; overflow-y: auto; overscroll-behavior: contain; }
+.chat-image-item { display: flex; flex-direction: column; gap: var(--space-1); max-width: 160px; overflow-wrap: anywhere; font-size: 12px; }
+.chat-image-preview { max-width: 100%; max-height: 160px; object-fit: contain; border-radius: var(--radius-sm); }
+.chat-image-status { color: var(--fg-muted); font-size: 13px; }
+#btn-chat-attach { align-self: flex-end; min-width: 40px; }
 .chat-input-row:has(#chat-edit-status:not([hidden])) { flex-wrap: wrap; }
 
 #chat-edit-status {

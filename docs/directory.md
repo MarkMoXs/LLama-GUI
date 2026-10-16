@@ -209,7 +209,7 @@ The frontend loads scripts in a strict dependency order via `ui/index.html`:
 22. `quick-launch-ui.js` — Quick Launch controls and shared-state UI sync (`window.LlamaGui.quickLaunchUi`)
 23. `chat-compaction.js` — reversible working-context summaries, chunk budgeting, and summary stream validation (`window.LlamaGui.chatCompaction`)
 24. `character-cards.js` — local JSON/PNG character-card decoding and prompt construction (`window.LlamaGui.characterCards`)
-25. `chat/*` package, loaded in order: `chat-internal.js` (shared state, constants, storage helpers, `configure()`), `chat-workspace.js` (ownership, transfer snapshots), `chat-sidebar.js` (sidebar controls, samplers, status badge), `chat-request.js` (request building), `chat-context.js` (compaction controls, context preview), `chat-stream.js` (send/stream, edit, undo), `chat-history.js` (conversation persistence, history), `chat-main.js` (`init()` and the `window.LlamaGui.chatUi` assembly)
+25. `chat/*` package, loaded in order: `chat-internal.js` (shared state, constants, storage helpers, `configure()`), `chat-images.js` (image validation, IndexedDB storage, previews and request hydration), `chat-workspace.js` (ownership, transfer snapshots), `chat-sidebar.js` (sidebar controls, samplers, status badge), `chat-request.js` (request building), `chat-context.js` (compaction controls, context preview), `chat-stream.js` (send/stream, edit, undo), `chat-history.js` (conversation persistence, history), `chat-main.js` (`init()` and the `window.LlamaGui.chatUi` assembly)
 26. `chat-window/` package, loaded in order: `chat-window-protocol.js`, `chat-window-host-adapter.js`, `chat-window-bootstrap.js`, `chat-window-coordinator.js`, `chat-window-flag-core-bridge.js`, `chat-window-host-view.js`, `chat-window-detached-view.js`, then `chat-window-main.js` (`window.LlamaGui.chatWindow` facade)
 27. `benchmark-ui.js` — Benchmarking tab controls, argument adapter, output polling, and session-only summaries (`window.LlamaGui.benchmarkUi`)
 28. `inference-stats.js` — pure metrics/slots normalization and target-keyed inference snapshot engine (`window.LlamaGui.inferenceStats`)
@@ -363,6 +363,7 @@ versioning, and the detached Chat document uses this same index and stylesheet o
 | `ui/js/chat-compaction.js` | `window.LlamaGui.chatCompaction` | Manual summary generation with counted chunks, selected context, and preserved recent turns |
 | `ui/js/character-cards.js` | `window.LlamaGui.characterCards` | Bounded local JSON/PNG character-card parsing, field validation, basic name macros, and conversion to an editable prompt and greeting |
 | `ui/js/chat/chat-internal.js` | `window.LlamaGui._chatInternal` (private) | Chat package foundation, loaded before its siblings: the shared state object (`I.state`), package constants (`I.consts`), tolerant localStorage helpers, and `configure()` |
+| `ui/js/chat/chat-images.js` | `window.LlamaGui._chatInternal` (private) | Bounded JPEG/PNG attachments, IndexedDB persistence and cleanup, image previews, request hydration and export |
 | `ui/js/chat/chat-workspace.js` | `window.LlamaGui._chatInternal` (private) | Chat workspace ownership epochs, transfer snapshot capture/validate/restore, and sampler value plumbing |
 | `ui/js/chat/chat-sidebar.js` | `window.LlamaGui._chatInternal` (private) | Chat sidebar rendering, sampler inputs, web-search and thinking-effort controls, status badge, template-capability hint, focus mode, and panel layout |
 | `ui/js/chat/chat-request.js` | `window.LlamaGui._chatInternal` (private) | Chat request construction: thinking params, message shaping, delta text, and body assembly |
@@ -944,6 +945,35 @@ When the web search toggle is enabled:
 - Search context is injected into the system prompt with source citations.
 - Sources are rendered as clickable chips below the assistant's response.
 - Web search status messages (e.g., "Searching: ...", "Reading: ...") are streamed during processing.
+
+### Image Attachments
+
+The **+** button beside the composer accepts JPEG and PNG images: up to four per
+message, 2 MiB each and 16 megapixels each. Image-only turns are supported. Users
+need a vision-capable model and matching multimodal projector; the shared `/props`
+request reads `modalities.vision`, disabling attachment selection when explicitly
+false. Older servers without this field remain usable and validate requests themselves.
+
+`chat-images.js` stores image data URLs in the browser's `llama_gui_chat_images`
+IndexedDB database. Conversations and workspace checkpoints contain only bounded
+attachment references, keeping image bytes out of localStorage and pop-out messages.
+Images remain available across reload, edits (including the before-edit branch),
+regeneration, and main/detached Chat transfers. Missing bytes and storage failures
+produce visible errors; requests never silently omit missing images. JSON exports
+include an `images` map from attachment IDs to data URLs; text exports list filenames.
+
+Request construction hydrates references into OpenAI-style `text`/`image_url` parts.
+The complete UTF-8 JSON body must fit the existing 10 MiB request limit, including
+base64 overhead and images from earlier turns. Context preview sends the same image
+parts to the existing native token-count endpoint. Compaction is unavailable for
+conversations containing image attachments, avoiding base64 serialization into text
+summaries. Other files, remote image URLs, paste/drop input, and image summarization
+are outside this initial feature.
+
+The workspace owner collects unreferenced IndexedDB images after history writes,
+draft changes, and startup, preserving saved conversations, current drafts, edit
+state and recovery checkpoints. A one-minute grace period protects recent imports;
+cleanup retries after that period. Browser site-data clearing removes these images.
 
 ### Conversation History
 

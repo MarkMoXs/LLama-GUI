@@ -1221,7 +1221,13 @@
                             <span>Start llama-server, or connect to a running one on the API tab, before sending chat messages.</span>
                             <button class="btn btn-xs" id="btn-chat-open-quick-launch" type="button">Open Quick Launch</button>
                         </div>
+                        <div id="chat-image-drafts" class="chat-images" hidden></div>
+                        <p id="chat-image-status" class="chat-image-status" role="status" hidden></p>
                         <div class="chat-input-row">
+                            <input id="chat-image-file" type="file" accept="image/jpeg,image/png" multiple hidden>
+                            <button class="btn" id="btn-chat-attach" type="button" aria-label="Attach images" title="Attach JPEG or PNG images (up to four, 2 MiB each)">
+                                <span class="icon icon-sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l10.6-10.6a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l9.9-9.9"/></svg></span>
+                            </button>
                             <textarea class="chat-input" id="chat-input" placeholder="Type a message..." rows="1"></textarea>
                             <button class="btn btn-primary" id="btn-chat-send">
                                 <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>
@@ -1929,6 +1935,7 @@
 <script src="/js/chat-compaction.js?v=revamp-1"></script>
 <script src="/js/character-cards.js?v=revamp-1"></script>
 <script src="/js/chat/chat-internal.js?v=chat-split-1"></script>
+<script src="/js/chat/chat-images.js?v=chat-images-1"></script>
 <script src="/js/chat/chat-workspace.js?v=chat-split-1"></script>
 <script src="/js/chat/chat-sidebar.js?v=chat-split-1"></script>
 <script src="/js/chat/chat-request.js?v=chat-split-1"></script>
