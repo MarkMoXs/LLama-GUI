@@ -27,13 +27,13 @@
 
     function renderCodeBlock(block, index) {
         const lang = block.lang || "";
-        const label = lang || "Code";
+        const label = lang || "代码";
         const langAttr = lang ? ` data-lang="${escapeHtml(lang)}"` : "";
         return [
             `<div class="chat-code-block" data-code-index="${index}">`,
             '<div class="chat-code-header">',
             `<span class="chat-code-lang">${escapeHtml(label)}</span>`,
-            `<button class="chat-code-copy" type="button" data-code-index="${index}" title="Copy code">Copy</button>`,
+            `<button class="chat-code-copy" type="button" data-code-index="${index}" title="复制代码">复制</button>`,
             "</div>",
             `<pre${langAttr}><code>${escapeHtml(block.code)}</code></pre>`,
             "</div>",
@@ -261,11 +261,11 @@
             button.addEventListener("click", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                if (!button.textContent) button.textContent = "Copy";
+                if (!button.textContent) button.textContent = "复制";
                 void copyTextToClipboard(block.code).then((copied) => {
-                    button.textContent = copied ? "Copied" : "Copy failed";
+                    button.textContent = copied ? "已复制" : "复制失败";
                     window.setTimeout(() => {
-                        button.textContent = "Copy";
+                        button.textContent = "复制";
                     }, 1200);
                 });
             });
@@ -297,17 +297,17 @@
             button.setAttribute("aria-label", label);
             button.innerHTML = `<span class="icon icon-sm" aria-hidden="true"><svg viewBox="0 0 24 24">${paths}</svg></span>`;
         };
-        showIcon("Copy response", copyIcon);
+        showIcon("复制回复", copyIcon);
         button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             const text = getChatResponseRawText(bubble);
             if (!text.trim()) return;
             void copyTextToClipboard(text).then((copied) => {
-                showIcon(copied ? "Response copied" : "Copy failed", copied
+                showIcon(copied ? "已复制回复" : "复制失败", copied
                     ? '<polyline points="20 6 9 17 4 12"/>' : '<path d="m18 6-12 12M6 6l12 12"/>');
                 window.setTimeout(() => {
-                    showIcon("Copy response", copyIcon);
+                    showIcon("复制回复", copyIcon);
                 }, 1200);
             });
         });
@@ -333,7 +333,7 @@
 
         const title = document.createElement("span");
         title.className = "chat-reasoning-title";
-        title.textContent = "Thinking";
+        title.textContent = "思考过程";
 
         const meta = document.createElement("span");
         meta.className = "chat-reasoning-meta";
@@ -353,7 +353,7 @@
         const meta = details ? details.querySelector(".chat-reasoning-meta") : null;
         if (!meta) return;
         const trimmed = String(text || "").trim();
-        meta.textContent = trimmed ? `${trimmed.length.toLocaleString()} chars` : "";
+        meta.textContent = trimmed ? `${trimmed.length.toLocaleString()} 个字符` : "";
     }
 
     function ensureChatReasoningBlock(bubble) {
@@ -469,11 +469,11 @@
     function formatStopReason(value) {
         const normalized = String(value || "").trim().toLowerCase();
         const labels = {
-            stop: "Finished",
-            length: "Output limit reached",
-            content_filter: "Filtered",
-            tool_calls: "Tool call",
-            function_call: "Function call",
+            stop: "已完成",
+            length: "此对话已达到输出限制",
+            content_filter: "已过滤",
+            tool_calls: "工具调用",
+            function_call: "函数调用",
         };
         if (labels[normalized]) return labels[normalized];
         return String(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
@@ -500,17 +500,17 @@
         ]) ?? getResponseMetadataValue(source.timings, ["predicted_per_second", "predictedPerSecond"]);
         const stopReason = getResponseMetadataValue(source, ["stop_reason", "stopReason", "finish_reason", "finishReason"]);
         const fields = [];
-        if (promptTokens !== undefined) fields.push(["Prompt", formatResponseNumber(promptTokens)]);
-        if (completionTokens !== undefined) fields.push(["Completion", formatResponseNumber(completionTokens)]);
-        if (totalTokens !== undefined) fields.push(["Total", formatResponseNumber(totalTokens)]);
-        if (speed !== undefined) fields.push(["Speed", formatResponseNumber(speed, " tok/s")]);
-        if (stopReason !== undefined) fields.push(["Stop", formatStopReason(stopReason)]);
+        if (promptTokens !== undefined) fields.push(["提示词", formatResponseNumber(promptTokens)]);
+        if (completionTokens !== undefined) fields.push(["生成", formatResponseNumber(completionTokens)]);
+        if (totalTokens !== undefined) fields.push(["总计", formatResponseNumber(totalTokens)]);
+        if (speed !== undefined) fields.push(["速度", formatResponseNumber(speed, " tok/s")]);
+        if (stopReason !== undefined) fields.push(["停止原因", formatStopReason(stopReason)]);
         if (fields.length === 0) return null;
 
         const footer = document.createElement("div");
         footer.className = "chat-response-metadata";
         footer.setAttribute("role", "status");
-        footer.setAttribute("aria-label", "Response details");
+        footer.setAttribute("aria-label", "响应详情");
         for (const [label, value] of fields) {
             const item = document.createElement("span");
             item.className = "chat-response-metadata-item";
@@ -554,7 +554,7 @@
                 chip.target = "_blank";
                 chip.rel = "noopener noreferrer";
             }
-            const title = source.title || source.url || "Source";
+            const title = source.title || source.url || "配置来源";
             chip.title = source.url || title;
             chip.textContent = `[${source.index || sourceWrap.children.length + 1}] ${title}`;
             sourceWrap.appendChild(chip);

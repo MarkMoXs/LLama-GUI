@@ -6,14 +6,11 @@
     const S = I.state;
     const { CHAT_AUTO_COMPACTION_STORAGE_KEY } = I.consts;
     const compaction = window.LlamaGui.chatCompaction;
-    const IMAGE_COMPACTION_NOTICE = "Older images are no longer sent to the model. Originals remain in chat history and exports. Undo compaction to restore the previous context, or reattach an image to use it again.";
 
     function getCompactionKey() {
         const status = S.getLatestStatus ? S.getLatestStatus() : null;
-        // Track attachment references, so loading their bytes does not invalidate compaction.
         return JSON.stringify([I.getTemplateCapsKey(), status?.active_runtime, status?.external_chat_target,
-            { ...I.buildChatBody(S.chatMessages), messages: undefined }, S.chatMessages,
-            document.getElementById("chat-input")?.value || "", S.draftImages]);
+            I.buildChatBody(S.chatMessages), document.getElementById("chat-input")?.value || ""]);
     }
 
     function getChatRuntimeKey() {
@@ -24,10 +21,12 @@
     function updateCompactionControls() {
         const button = document.getElementById("btn-chat-compact");
         if (!button) return;
-        const available = compaction.boundary(S.chatMessages) > (S.chatCompactions.at(-1)?.end || 0);
+        const imageBoundary = S.chatMessages.some(message => message.attachments?.length);
+        const available = !imageBoundary && compaction.boundary(S.chatMessages) > (S.chatCompactions.at(-1)?.end || 0);
         button.disabled = !S.compactionController && (!available || S.imageImportPending || S.chatStreaming || !I.isServerRunning() || !I.workspaceMutationAllowed());
         button.textContent = S.compactionController ? "Cancel compaction" : "Compact conversation";
-        button.title = "Summarize older messages; omit older images from model context. Keep the transcript and last two turns unchanged.";
+        button.title = imageBoundary ? "Compaction of image-containing turns is not supported yet. Start a new chat or remove those images."
+            : "Summarize older messages; keep the transcript and last two turns unchanged.";
         for (const id of ["btn-chat-undo-compaction", "btn-chat-tools-undo-compaction"]) {
             const undo = document.getElementById(id);
             if (undo) undo.disabled = !I.workspaceMutationAllowed() || S.chatStreaming || Boolean(S.compactionController);
@@ -37,7 +36,7 @@
             if (action) action.hidden = !S.chatCompactions.length;
         }
         const trigger = document.getElementById("btn-chat-tools");
-        if (trigger) trigger.title = S.compactionController ? "Compacting conversation — open to cancel" : "Context usage and compaction";
+        if (trigger) trigger.title = S.compactionController ? "正在压缩对话 — 打开可取消" : "上下文的使用与压缩";
     }
 
     function renderCompactionMarker() {
@@ -45,15 +44,13 @@
         container?.querySelectorAll(".chat-compaction-marker").forEach(el => el.remove());
         const record = S.chatCompactions.at(-1);
         if (!container || !record) return;
-        const omittedImages = S.chatMessages.slice(0, record.end).some(message => message.attachments?.length);
         const marker = document.createElement("details");
         marker.className = "chat-compaction-marker";
         const heading = document.createElement("summary");
-        heading.textContent = `Earlier ${record.end} messages compacted${omittedImages ? " · Older images omitted from model context" : ""} · View summary`;
+        heading.textContent = `较早 ${record.end} 条消息已压缩 · 查看摘要`;
         marker.appendChild(heading);
         const note = document.createElement("p");
-        note.textContent = "The original messages remain above. Only this summary and the recent messages are sent to the model. Summaries may omit details; review before continuing.";
-        if (omittedImages) note.textContent += " " + IMAGE_COMPACTION_NOTICE;
+        note.textContent = "原始消息保留在上方，只有此摘要和最近的消息会被发送给模型，摘要可能会省略部分细节；请在继续对话前进行检查。";
         marker.appendChild(note);
         const summary = document.createElement("pre");
         summary.textContent = record.summary;
@@ -62,7 +59,7 @@
         undo.id = "btn-chat-undo-compaction";
         undo.type = "button";
         undo.className = "btn btn-xs";
-        undo.textContent = "Undo compaction";
+        undo.textContent = "撤销压缩";
         undo.addEventListener("click", undoCompaction);
         marker.appendChild(undo);
         container.insertBefore(marker, container.querySelectorAll(".chat-message")[record.end] || null);
@@ -84,8 +81,13 @@
         return true;
     }
 
-    function compactConversation(draftOverride = null, draftImagesOverride = null) {
+    function compactConversation(draftOverride = null) {
         if (!I.workspaceMutationAllowed() || S.imageImportPending || S.chatStreaming || S.compactionController || !I.isServerRunning()) return Promise.resolve(false);
+        const imageBoundary = S.chatMessages.some(message => message.attachments?.length);
+        if (imageBoundary) {
+            I.reportImages("Compaction of image-containing turns is not supported yet. Start a new chat or remove those images.");
+            return Promise.resolve(false);
+        }
         const ownerEpoch = S.workspaceEpoch;
         const controller = new AbortController();
         S.compactionController = controller;
@@ -94,18 +96,15 @@
         I.updateChatAvailability(I.isServerRunning());
         const status = document.getElementById("chat-compaction-status");
         const report = message => { if (status) { status.textContent = message; status.hidden = !message; } };
-        report("Measuring space for a summary…");
+        report("正在为摘要测量可用空间…");
         const draft = draftOverride === null ? document.getElementById("chat-input")?.value || "" : draftOverride;
-        const draftImages = I.copyImageRefs(draftImagesOverride === null ? S.draftImages : draftImagesOverride);
         const pending = (async () => {
             let applied = false;
             try {
-                await I.prepareImages(compaction.workingMessages(S.chatMessages, S.chatCompactions.at(-1)), draftImages);
-                controller.signal.throwIfAborted();
                 const record = await compaction.compact({
-                    messages: S.chatMessages.map(msg => ({ role: msg.role, content: msg.content, attachments: I.copyImageRefs(msg.attachments), reasoning_content: msg.reasoning || msg.reasoning_content, sources: msg.sources, status: msg.status, toolMessages: msg.toolMessages })),
+                    messages: S.chatMessages.map(msg => ({ role: msg.role, content: msg.content, reasoning_content: msg.reasoning || msg.reasoning_content, sources: msg.sources, status: msg.status, toolMessages: msg.toolMessages })),
                     previous: S.chatCompactions.at(-1), body: I.buildChatBody(S.chatMessages),
-                    draft, draftImages, requestMessages: I.getChatRequestMessages, signal: controller.signal,
+                    draft, signal: controller.signal,
                     headers: S.getApiAuthorizationHeaders({ "Content-Type": "application/json" }), onProgress: report,
                 });
                 if (controller.signal.aborted || !I.workspaceMutationAllowed(ownerEpoch) || !I.isServerRunning() || S.compactionKey !== getCompactionKey()) {
@@ -114,17 +113,16 @@
                 S.chatCompactions.push(record);
                 if (!I.saveCurrentConversation()) {
                     S.chatCompactions.pop();
-                    throw new Error("Could not save the compaction.");
+                    throw new Error("无法保存压缩。");
                 }
                 I.requestWorkspaceCheckpoint({ reason: "compaction" });
                 renderCompactionMarker();
-                report(S.chatMessages.slice(0, record.end).some(message => message.attachments?.length)
-                    ? IMAGE_COMPACTION_NOTICE : "");
+                report("");
                 applied = true;
             } catch (error) {
                 console.debug("Chat compaction did not apply", error);
-                report(error.name === "AbortError" ? "Compaction cancelled; previous context kept."
-                    : `${error.message} Previous context kept. You can retry Compact conversation.`);
+                report(error.name === "AbortError" ? "压缩已取消；已保留之前的上下文。"
+                    : `${error.message} 已保留之前的上下文。你可以重试“压缩对话”。`);
             } finally {
                 S.compactionController = null;
                 S.compactionKey = null;
@@ -204,9 +202,9 @@
         promptFill.style.width = `${measured ? Math.min(100, 100 * used / budget.capacity) : 0}%`;
         reserveFill.style.width = `${measured ? Math.max(0, Math.min(100 - 100 * used / budget.capacity, 100 * reserve / budget.capacity)) : 0}%`;
         label.textContent = measured
-            ? `${used.toLocaleString()} prompt + ${reserve.toLocaleString()} reply ${budget.reserve_source === "planning" ? "headroom" : "reserved"} / ${budget.capacity.toLocaleString()} tokens. ${Math.max(0, budget.remaining).toLocaleString()} free. ${budget.message || ""}`
-            : budget.message || "Context count unavailable.";
-        if (budget.search_pending) label.textContent += " Web results are added and checked when you send.";
+            ? `${used.toLocaleString()} 提示 + ${reserve.toLocaleString()} 回复${budget.reserve_source === "planning" ? "余量" : "保留"} / ${budget.capacity.toLocaleString()} tokens。${Math.max(0, budget.remaining).toLocaleString()} 空闲。${budget.message || ""}`
+            : budget.message || "上下文计数不可用。";
+        if (budget.search_pending) label.textContent += " 发送时，网页结果会被添加并检查。";
         if (budget.includes_search) label.textContent += " Includes web results.";
         bar.setAttribute("aria-valuetext", label.textContent);
         const warning = document.getElementById("chat-context-warning");
@@ -214,7 +212,7 @@
         if (warning && warningText) {
             warning.hidden = !["warning", "overflow"].includes(budget.status);
             warningText.textContent = budget.status === "overflow"
-                ? "This request exceeds the context limit." : "Context is nearly full.";
+                ? "当前请求超出了模型设定的上下文长度限制" : "上下文大小即将达到上限";
         }
     }
 
@@ -267,8 +265,8 @@
             parent.appendChild(label);
         }
         toggle.checked = I.getStoredItem(CHAT_AUTO_COMPACTION_STORAGE_KEY) === "true";
-        toggle.title = "Before sending, summarize older turns only when the current context preview is near or over capacity.";
-        toggle.setAttribute("aria-label", "Compact automatically when context is nearly full");
+        toggle.title = "发送前，仅当当前上下文预览接近或超过容量时，才摘要较早的轮次。";
+        toggle.setAttribute("aria-label", "当上下文接近满时自动压缩");
         if (!toggle.dataset.chatAutoCompactionWired) {
             toggle.dataset.chatAutoCompactionWired = "1";
             toggle.addEventListener("change", () => {
@@ -291,7 +289,7 @@
         const cancel = document.createElement("button");
         cancel.type = "button";
         cancel.className = "btn btn-xs";
-        cancel.textContent = "Cancel edit";
+        cancel.textContent = "取消编辑";
         cancel.addEventListener("click", I.cancelEdit);
         status.appendChild(message);
         status.appendChild(cancel);
@@ -305,7 +303,7 @@
             cancelContextPreview();
             S.latestContextBudget = null;
             S.latestContextBodyKey = null;
-            renderContextBudget({ message: S.workspaceOwned ? "Chat context preview is paused during transfer." : "Chat is open in another window." });
+            renderContextBudget({ message: S.workspaceOwned ? "请使用独立的聊天窗口继续此对话" : "聊天窗口已在另一个窗口中打开" });
             return;
         }
         const status = S.getLatestStatus ? S.getLatestStatus() : null;
@@ -335,17 +333,17 @@
         if (!I.isServerRunning()) {
             S.latestContextBudget = null;
             S.latestContextBodyKey = null;
-            renderContextBudget({ message: "Start or connect to a server to measure context." });
+            renderContextBudget({ message: "启动或连接到一个服务器，以便测量上下文大小。" });
             return;
         }
         if (S.chatStreaming) return;
         if (!body.messages.some(msg => msg.role !== "system" && msg.role !== "developer")) {
             S.latestContextBudget = null;
             S.latestContextBodyKey = null;
-            renderContextBudget({ status: "empty", message: "Type a message to measure context." });
+            renderContextBudget({ status: "empty", message: "输入一条消息以评估上下文" });
             return;
         }
-        renderContextBudget({ message: "Measuring context…" });
+        renderContextBudget({ message: "正在测量上下文…" });
         const revision = S.contextRevision;
         S.contextTimer = setTimeout(() => {
             S.contextTimer = null;
@@ -374,7 +372,7 @@
         } catch (error) {
             if (error.name !== "AbortError" && revision === S.contextRevision) {
                 console.debug("Could not measure chat context", error);
-                renderContextBudget({ message: "Context count unavailable; the server will validate the request." });
+                renderContextBudget({ message: "无法计数上下文；服务器会在发送前校验请求。" });
             }
             return null;
         } finally {
@@ -402,7 +400,7 @@
         if (!nearFull || compaction.boundary(S.chatMessages) <= (S.chatCompactions.at(-1)?.end || 0)) return true;
 
         S.autoCompactionAttempted = true;
-        const compacted = await compactConversation(draft, retry ? [] : S.draftImages);
+        const compacted = await compactConversation(draft);
         if (stale()) return false;
         if (!compacted) return false;
 
@@ -415,7 +413,7 @@
         if (!measured) {
             const status = document.getElementById("chat-compaction-status");
             if (status) {
-                status.textContent = "The summary was saved, but context could not be rechecked. Sending is paused; try again when the server is ready.";
+                status.textContent = "摘要已保存，但无法重新检查上下文。发送已暂停；请在服务器就绪后重试。";
                 status.hidden = false;
             }
             return false;
@@ -423,7 +421,7 @@
         if (measured.status === "overflow") {
             const status = document.getElementById("chat-compaction-status");
             if (status) {
-                status.textContent = "The compacted context still exceeds the limit. Shorten the draft, lower Max Tokens, or increase context before sending.";
+                status.textContent = "压缩后的上下文仍然超出限制。请在发送前缩短草稿、降低最大 Token 数，或增大上下文。";
                 status.hidden = false;
             }
             return false;

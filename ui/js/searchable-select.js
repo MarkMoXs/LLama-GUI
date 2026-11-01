@@ -79,7 +79,7 @@
         search.setAttribute("role", "combobox");
         search.setAttribute("aria-autocomplete", "list");
         search.setAttribute("aria-expanded", "false");
-        search.setAttribute("aria-label", accessibleLabel ? `Search ${accessibleLabel}` : "Search options");
+        search.setAttribute("aria-label", accessibleLabel ? `搜索 ${accessibleLabel}` : "搜索选项");
 
         const list = document.createElement("div");
         list.className = "ss-list";
@@ -191,7 +191,7 @@
             if (!visibleCount) {
                 const empty = document.createElement("div");
                 empty.className = "ss-empty";
-                empty.textContent = "No matches.";
+                empty.textContent = "没有匹配项。";
                 list.appendChild(empty);
                 return;
             }

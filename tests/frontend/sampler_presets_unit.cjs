@@ -260,7 +260,7 @@ assertJsonEqual(
 
 assert.equal(
     samplerPresets.getSamplerRenameMessage("builtin"),
-    "Built-in sampler presets cannot be renamed.",
+    "内置采样预设无法重命名",
     "rename messages should be resolvable by reason"
 );
 assert.ok(

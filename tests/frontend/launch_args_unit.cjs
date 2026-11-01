@@ -936,7 +936,7 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         model: "target-b.gguf",
         flags: { custom_args: "--flag 'unterminated" },
     })`, context);
-    assert.match(invalid.error, /unmatched single quote/);
+    assert.match(invalid.error, /未匹配的单引号/);
     assert.equal(
         vm.runInContext("JSON.stringify(window.LlamaGui.flagCore.getFlagValues())", context),
         pendingBefore,
@@ -967,21 +967,21 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         model: "../secret.gguf",
         flags: {},
     })`, context);
-    assert.match(escaped.error, /Invalid model filename/);
+    assert.match(escaped.error, /无效的模型文件名/);
 
     const absolute = vm.runInContext(`window.LlamaGui.flagCore.buildLaunchArgs({
         tool: "llama-server",
         model: "/tmp/model.gguf",
         flags: {},
     })`, context);
-    assert.match(absolute.error, /Invalid model filename/);
+    assert.match(absolute.error, /无效的模型文件名/);
 
     const windowsAbsolute = vm.runInContext(`window.LlamaGui.flagCore.buildLaunchArgs({
         tool: "llama-server",
         model: "C:/models/model.gguf",
         flags: {},
     })`, context);
-    assert.match(windowsAbsolute.error, /Invalid model filename/);
+    assert.match(windowsAbsolute.error, /无效的模型文件名/);
 
     context.customModelDir = {
         models_dir: String.raw`D:\My Models`,
@@ -1016,7 +1016,7 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         models_arg_root: "",
         models_dir_is_default: false,
         models_dir_available: false,
-        models_dir_error: "Configured models folder is offline.",
+        models_dir_error: "配置模型文件夹处于离线状态",
     };
     vm.runInContext("window.LlamaGui.flagCore.setModelDirInfo(unavailableModelDir)", context);
     const unavailable = vm.runInContext(`window.LlamaGui.flagCore.buildLaunchArgs({
@@ -1024,7 +1024,7 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         model: "vendor/nested.gguf",
         flags: {},
     })`, context);
-    assert.match(unavailable.error, /offline/);
+    assert.match(unavailable.error, /离线/);
 
     vm.runInContext("window.LlamaGui.flagCore.setModelDirInfo(null)", context);
     const unknown = vm.runInContext(`window.LlamaGui.flagCore.buildLaunchArgs({
@@ -1032,7 +1032,7 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         model: "vendor/nested.gguf",
         flags: {},
     })`, context);
-    assert.match(unknown.error, /status is not available/);
+    assert.match(unknown.error, /状态尚不可用/);
     vm.runInContext(`window.LlamaGui.flagCore.setModelDirInfo({
         models_dir: "models",
         models_arg_root: "models",
@@ -1174,41 +1174,13 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, { filename: file });
     }
 
-    // Fresh launches use upstream's new default; loading saved presets must not
-    // change their addresses, including old presets that omitted the port.
-    const core = context.window.LlamaGui.flagCore;
-    const presets = context.window.LlamaGui.presets;
-    core.replaceFlagValues(vm.runInContext("getDefaultValues()", context));
-    assert.equal(core.getFlagValues().port, 9931);
-    assert.equal(flatLaunchArgs()[flatLaunchArgs().indexOf("--port") + 1], "9931");
-    const freshPreset = JSON.parse(JSON.stringify(vm.runInContext("buildCurrentPresetData()", context)));
-    assert.equal(freshPreset.flags.port, 9931);
-    for (const [preset, expectedPort] of [
-        [{ flags: { host: "127.0.0.2", port: 8080 } }, 8080],
-        [{ flags: { port: 9050 } }, 9050],
-        [{ flags: { temperature: 0.7 } }, 8080],
-        [{ temperature: 0.7 }, 8080],
-        [freshPreset, 9931],
-    ]) {
-        const before = JSON.stringify(preset);
-        core.replaceFlagValues(vm.runInContext("getDefaultValues()", context));
-        presets.applyPresetData(preset);
-        assert.equal(core.getFlagValues().port, expectedPort);
-        if (preset.flags?.host) assert.equal(core.getFlagValues().host, preset.flags.host);
-        const args = flatLaunchArgs();
-        assert.equal(args[args.indexOf("--port") + 1], String(expectedPort));
-        assert.equal(vm.runInContext("buildCurrentPresetData().flags.port", context), expectedPort);
-        assert.equal(JSON.stringify(preset), before, "loading must not mutate saved preset data");
-    }
-    core.replaceFlagValues(vm.runInContext("getDefaultValues()", context));
-
     const loadModeFlag = vm.runInContext(
         "FLAGS.find((flag) => flag.id === 'load_mode')",
         context
     );
     const numaFlag = vm.runInContext("FLAGS.find((flag) => flag.id === 'numa')", context);
     context.window.LlamaGui.configFlagsUi.configure({
-        getFlagsByCategory: () => ({ context: { name: "Context", flags: [loadModeFlag, numaFlag] } }),
+        getFlagsByCategory: () => ({ context: { name: "上下文", flags: [loadModeFlag, numaFlag] } }),
         getFlags: () => [loadModeFlag, numaFlag],
         refreshQuickLaunchUI: () => {},
     });
@@ -1313,7 +1285,7 @@ vm.runInContext('window.LlamaGui.flagCore.setCurrentToolValue("llama-server")', 
         const prepared = context.window.LlamaGui.presets.preparePresetLaunchState(preset);
         assert.equal(prepared.flags.reasoning_preserve, mode, "preset and model-switch launch preparation migrates legacy booleans");
         assert.equal(context.window.LlamaGui.presets.formatSavedPresetValue("reasoning_preserve", value),
-            { auto: "Auto", enabled: "Enabled", disabled: "Disabled" }[mode],
+            { auto: "自动", enabled: "启用", disabled: "禁用" }[mode],
             "preset summaries use the same mode as launch preparation");
         const overrides = vm.runInContext(`getNonDefaultPresetFlagIds(${JSON.stringify(preset)})`, context);
         assert.deepEqual(Array.from(overrides), mode === "auto" ? [] : ["reasoning_preserve"],

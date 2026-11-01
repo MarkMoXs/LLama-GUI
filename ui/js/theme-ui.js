@@ -25,6 +25,7 @@
         { id: "graphite", label: "Graphite", hint: "Mid", scheme: "dark", swatchBg: "#383b41", swatchAccent: "#d9a05b" },
         { id: "cappuccino", label: "Cappuccino", hint: "Light", scheme: "light", swatchBg: "#fff4e6", swatchAccent: "#4b3832" },
         { id: "mint", label: "Mint", hint: "Light", scheme: "light", swatchBg: "#e3f0e9", swatchAccent: "#276947" },
+        { id: "sexylight", label: "Sexylight", hint: "Light", scheme: "light", swatchBg: "#ffffff", swatchAccent: "#8b5cf6" },
     ];
 
     const DEFAULT_THEME = THEMES[0].id;

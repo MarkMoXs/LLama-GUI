@@ -40,12 +40,12 @@ def measure(body, target, authorization=""):
     result = {"status": "unavailable", "capacity": None, "prompt_tokens": None,
               "reply_reserve": None, "reserve_source": "unknown", "remaining": None}
     if not target:
-        return {**result, "message": "Start or connect to a server to measure context."}
+        return {**result, "message": "启动或连接到一个服务器，以便测量上下文大小。"}
     try:
         # Templates may remove system instructions before checking for chat turns.
         # Empty and instructions-only previews are not valid generation prompts.
         if not any(msg.get("role") not in ("system", "developer") for msg in (body.get("messages") or [])):
-            return {**result, "status": "empty", "message": "Type a message to measure context."}
+            return {**result, "status": "empty", "message": "输入一条消息以评估上下文"}
         props_path = "/props"
         if body.get("model"):
             props_path += "?" + urllib.parse.urlencode({"model": body["model"]})
@@ -53,7 +53,7 @@ def measure(body, target, authorization=""):
         defaults = (props or {}).get("default_generation_settings") or {}
         capacity = _integer(defaults.get("n_ctx"))
         if capacity is None or capacity <= 0:
-            return {**result, "message": "The server did not report its usable context capacity."}
+            return {**result, "message": "服务器未报告可用的上下文容量。"}
         result["capacity"] = capacity
         requested = _integer(body.get("max_completion_tokens", body.get("max_tokens")))
         server_limit = _integer((defaults.get("params") or {}).get("n_predict"))
@@ -84,21 +84,21 @@ def measure(body, target, authorization=""):
             token_list = (tokenized or {}).get("tokens")
             tokens = len(token_list) if isinstance(token_list, list) else None
         if tokens is None or tokens < 0:
-            return {**result, "message": "The server did not return a valid token count."}
+            return {**result, "message": "服务器未返回有效的 token 数量。"}
         remaining = capacity - tokens - reserve
         # A planning reserve for unlimited generation is advisory, not a hidden cap.
         overflow = tokens >= capacity or (source != "planning" and remaining < 0)
         result.update(prompt_tokens=tokens, remaining=remaining,
                       status="overflow" if overflow else "warning" if remaining < capacity * .1 else "ok")
         if overflow:
-            result["message"] = ("Context limit exceeded. Shorten the message or system prompt, "
-                                 "undo older turns, start a new chat, or lower Max Tokens. "
-                                 "With web search, try fewer sources or turn search off.")
+            result["message"] = ("上下文已超出限制，请缩短消息或系统提示词，"
+                                 "撤销较早的对话、开始新聊天，或降低最大 token 数。"
+                                 "如果启用了网页搜索，请减少来源数量或关闭搜索。")
         elif source == "planning":
-            result["message"] = "Reply headroom is a planning reserve; generation has no fixed output limit."
+            result["message"] = "回复余量是规划保留值；生成没有固定的输出上限。"
         else:
-            result["message"] = "Reply reserve includes reasoning tokens."
+            result["message"] = "回复保留值包含推理 token。"
         return result
     except Exception as exc:
         print(f"[chat context] count unavailable: {exc}", file=sys.stderr)
-        return {**result, "message": "Context count unavailable; the server will validate the request."}
+        return {**result, "message": "无法计数上下文；服务器会在发送前校验请求。"}

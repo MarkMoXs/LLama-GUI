@@ -19,7 +19,7 @@
 - **Frontend:** Vanilla HTML/CSS/JS loaded as ordered global `<script>` tags (no bundler, no ES modules). Each module attaches to `window.LlamaGui`.
 - **Entry point:** `python server.py` → compat wrapper with early crash logging → delegates to `backend/app.py`.
 - **GUI server:** `127.0.0.1:5240` by default; `LLAMA_GUI_HOST` and `LLAMA_GUI_PORT` can override the bind address for headless/LAN access.
-- **llama-server:** Runs separately (default port 9931) as a subprocess. Saved preset ports are preserved; presets without a port retain the historical 8080 default.
+- **llama-server:** Runs separately (default port 8080) as a subprocess.
 - **Dependencies:** `certifi` (SSL cert bundle), `ddgs` (DuckDuckGo web search), `huggingface_hub` (HF model downloads), `hf-xet` (Xet-accelerated HF transfers).
 - **State persistence:** `config.json` (installed version, active backend, tag).
 - **Thread safety:** All stateful operations (process, download, tunnel, install) use threading locks.
@@ -88,7 +88,7 @@
 - Runs `llama-server`, `llama-cli`, `llama-bench`, or `llama-perplexity` as a subprocess and streams stdout/stderr.
 - Downloads the official WikiText-2 raw test file for Benchmarking clean perplexity runs.
 - Handles preset, model file, and Hugging Face download APIs.
-- Selects binary based on platform (`win32`/`darwin`/`linux`) and backend type (e.g., `cuda-12.4`, `cuda-13.4`, `vulkan`, `hip`, `rocm-10.0`, `sycl`, `openvino`, `metal`). Release listing and updates require both the binary and any companion runtime archives; updates retain the installed backend selection. Upstream retired the CUDA 13.3 and ROCm 7.14 packages, so those specs are marked `legacy` wherever they appear (built-in or discovered from releases), and `/api/status` omits them from `available_backends` unless the id is the active `backend` or the `official_install.backend` a custom backend keeps; existing installs stay updatable, repairable, and activatable without offering retired backends for new installs.
+- Selects binary based on platform (`win32`/`darwin`/`linux`) and backend type (e.g., `cuda-12.4`, `cuda-13.4`, legacy `cuda-13.3`, `vulkan`, `hip`, `sycl`, `openvino`, `metal`). Release listing and updates require both the binary and any companion runtime archives; updates retain the installed backend selection.
 - Proxies OpenAI-compatible chat completions (`/v1/chat/completions`) to `llama-server` with streaming SSE support.
 - Built-in web search via DuckDuckGo (`ddgs` + page fetching with HTML-to-text parsing), with an optional self-hosted SearXNG backend (`LLAMA_GUI_SEARXNG_URL`) that is preferred when set and falls back to `ddgs`.
 - Cloudflare tunnel management (auto-downloads `cloudflared`, starts/stops tunnel, returns public URL).
@@ -1338,8 +1338,6 @@ Upstream behavior checked against [server-context.cpp](https://github.com/ggml-o
 `Compact conversation` lives in the composer’s ⋯ tools menu and is enabled when older messages exist beyond the last two user turns. It becomes Cancel during summarization, with progress and recovery details inside the popup. After compaction, the menu offers View summary (opens the transcript marker) and Undo compaction. The collapsed marker also retains its Undo action.
 
 The same menu contains the opt-in automatic-compaction toggle. Manual and automatic compaction share the same reversible summary records and transcript-preservation rules.
-
-Chats with images use the same boundary: images in the last two user turns and pending draft stay in model context. Summary input replaces older attachments with text placeholders; the working summary also includes a deterministic list of omitted images derived from the original messages. No visual descriptions are generated, so visual details survive only when discussed in the conversation. Token checks include the actual retained images and draft attachments. The compaction marker and status explain when older images leave model context; Undo restores the previous context, or an image can be reattached. Saved history and exports retain the originals.
 
 `chat-compaction.js` counts each summary request, including its instructions and a fixed output reserve (up to 1,024 tokens, at most a quarter of capacity). Oversized history is processed in progressively smaller message chunks, merging the previous summary each time. A single message that cannot fit causes an actionable failure; no text is silently truncated. Search is off for summaries, and reasoning is requested off without changing the user's settings. Only complete, nonempty summaries that reduce tokens and fit the recent history, draft, and reply reserve are applied.
 

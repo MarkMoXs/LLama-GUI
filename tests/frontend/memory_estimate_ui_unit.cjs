@@ -47,10 +47,10 @@ test("memory estimates load/configure inertly and debounce the current shared ar
     h.calls[0].resolve({ accelerator_mib: 2048, ram_mib: 512,
         rows: [{ device: "<GPU>", total_mib: 2048, model_mib: 1024, context_mib: 512, compute_mib: 512 }] });
     await flush();
-    assert.equal(h.text("state"), "Ready");
+    assert.equal(h.text("state"), "准备就绪");
     assert.equal(h.text("accelerator"), "2.00 GB");
     assert.equal(h.text("ram"), "512 MiB");
-    assert.match(h.text("detail"), /^<GPU>: 2.00 GB \(model 1.00 GB/);
+    assert.match(h.text("detail"), /^<GPU>: 2.00 GB \(模型 1.00 GB/);
 });
 
 for (const staleOutcome of ["success", "failure"]) {
@@ -63,15 +63,15 @@ for (const staleOutcome of ["success", "failure"]) {
         if (staleOutcome === "success") h.calls[0].resolve({ accelerator_mib: 1 });
         else h.calls[0].reject(new Error("obsolete"));
         await flush();
-        assert.equal(h.text("state"), "Ready");
+        assert.equal(h.text("state"), "准备就绪");
         assert.equal(h.text("accelerator"), "4.00 GB");
     });
 }
 
 test("invalid arguments and missing models invalidate pending estimates without fetching", async () => {
     for (const [result, state, detail] of [
-        [{ error: "unmatched quote" }, "Unavailable", "unmatched quote"],
-        [{ args: [] }, "Idle", "Select a model to estimate."],
+        [{ error: "unmatched quote" }, "不可用", "unmatched quote"],
+        [{ args: [] }, "空闲", "选择一个模型进行评估"],
     ]) {
         const h = fixture();
         h.schedule(); await h.tick(700);
@@ -93,7 +93,7 @@ test("estimate failures and optional null responses retain useful messages", asy
         if (outcome instanceof Error) h.calls[0].reject(outcome);
         else h.calls[0].resolve(outcome);
         await flush();
-        assert.equal(h.text("state"), "Unavailable");
-        assert.equal(h.text("detail"), outcome?.message || outcome?.error || "Memory estimate failed.");
+        assert.equal(h.text("state"), "不可用");
+        assert.equal(h.text("detail"), outcome?.message || outcome?.error || "内存估算失败");
     }
 });

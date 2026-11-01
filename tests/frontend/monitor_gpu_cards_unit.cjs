@@ -64,13 +64,13 @@ test("GPU identity and hostile names", async (t) => {
         assert.equal(
             second.querySelector(`.monitor-metric-row[data-metric="${metric}"]`)
                 .querySelector(".monitor-metric-reading").textContent,
-            "Not available",
+            "暂无数据",
             `${metric} renders as unavailable instead of inventing zero`,
         );
     }
     assert.equal(
         second.querySelector(".monitor-drag-handle").getAttribute("aria-label"),
-        `Move GPU 1 · ${hostileName} monitor; use arrow keys`,
+        `移动 GPU 1 · ${hostileName} 监视器；使用方向键`,
     );
     // No element was created from the hostile name.
     assert.equal(second.querySelectorAll("img").length, 0);
@@ -189,9 +189,9 @@ test("generic guidance", async (t) => {
     await wait(80);
     const stateCards = documentStub.getElementById("monitor-gpu-states").children;
     assert.deepEqual(stateCards.map(card => card.dataset.monitorKey), ["state:generic"]);
-    assert.ok(stateCards[0].textContent.includes("No supported GPU telemetry detected"));
+    assert.ok(stateCards[0].textContent.includes("未检测到受支持的GPU遥测数据"));
     const guide = stateCards[0].querySelector("a");
-    assert.equal(guide.textContent, "GPU monitoring setup guide");
+    assert.equal(guide.textContent, "GPU 监控设置指南");
     assert.equal(
         guide.href,
         "https://github.com/thomas9120/LLama-GUI/blob/main/docs/gpu-monitoring.md",
@@ -387,7 +387,7 @@ test("clipboard success", async (t) => {
     t.after(fixture.dispose);
 
     const toasts = await copyButtonScenario(fixture, () => Promise.resolve(true));
-    assert.deepEqual(toasts, ["info:Command copied"], "success announces the copy");
+    assert.deepEqual(toasts, ["info:命令已复制"], "success announces the copy");
 
 });
 
@@ -396,7 +396,7 @@ test("clipboard refusal", async (t) => {
     t.after(fixture.dispose);
 
     const toasts = await copyButtonScenario(fixture, () => Promise.resolve(false));
-    assert.deepEqual(toasts, ["error:Could not copy command"],
+    assert.deepEqual(toasts, ["error:无法复制命令"],
         "a rejected clipboard does not claim success");
 
 });
@@ -406,7 +406,7 @@ test("clipboard error", async (t) => {
     t.after(fixture.dispose);
 
     const toasts = await copyButtonScenario(fixture, () => Promise.reject(new Error("denied")));
-    assert.deepEqual(toasts, ["error:Could not copy command"],
+    assert.deepEqual(toasts, ["error:无法复制命令"],
         "a throwing clipboard reports failure instead of crashing");
 
 });

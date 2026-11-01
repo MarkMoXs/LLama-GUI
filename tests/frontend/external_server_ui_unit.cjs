@@ -89,8 +89,8 @@ function resetForm(host, port, apiKey) {
 // --- rendering -------------------------------------------------------------
 
 externalServerUi.render(null);
-assert.equal(byId("external-server-badge").textContent, "Not connected");
-assert.equal(byId("btn-connect-external-server").textContent, "Connect");
+assert.equal(byId("external-server-badge").textContent, "未连接");
+assert.equal(byId("btn-connect-external-server").textContent, "连接");
 assert.ok(
     byId("btn-disconnect-external-server").classList.contains("hidden"),
     "disconnect should stay hidden while nothing is registered"
@@ -100,7 +100,7 @@ assert.ok(byId("external-server-summary").classList.contains("hidden"));
 externalServerUi.render({ connected: true, host: "127.0.0.1", port: 9001, label: "Workstation" });
 assert.equal(byId("external-server-badge").textContent, "Connected");
 assert.equal(byId("external-server-target").textContent, "Workstation (127.0.0.1:9001)");
-assert.equal(byId("btn-connect-external-server").textContent, "Reconnect");
+assert.equal(byId("btn-connect-external-server").textContent, "重新连接");
 assert.equal(byId("btn-disconnect-external-server").classList.contains("hidden"), false);
 
 assert.equal(
@@ -193,7 +193,7 @@ assert.equal(externalServerUi.getTarget().port, 9001);
     assert.equal(byId("external-server-note").textContent, "No server answered at 127.0.0.1:9001.");
     assert.ok(byId("external-server-note").classList.contains("error"));
     assert.equal(byId("btn-connect-external-server").disabled, false);
-    assert.equal(byId("external-server-badge").textContent, "Not connected");
+    assert.equal(byId("external-server-badge").textContent, "未连接");
 
     // --- disconnect --------------------------------------------------------
 
@@ -208,8 +208,8 @@ assert.equal(externalServerUi.getTarget().port, 9001);
     assert.equal(disconnectRequest.url, "/api/chat/target");
     assert.equal(disconnectRequest.options.method, "DELETE");
     assert.equal(byId("external-server-key").value, "", "the key field should not survive a disconnect");
-    assert.equal(byId("external-server-badge").textContent, "Not connected");
-    assert.equal(byId("external-server-note").textContent, "Disconnected.");
+    assert.equal(byId("external-server-badge").textContent, "未连接");
+    assert.equal(byId("external-server-note").textContent, "已断开连接。");
     assert.equal(refreshCount, refreshBefore + 1);
 
     // --- restoring a remembered address ------------------------------------
@@ -222,7 +222,7 @@ assert.equal(externalServerUi.getTarget().port, 9001);
     await externalServerUi.restore();
     assert.equal(requests.length, 1, "restore should only read the target");
     assert.equal(requests[0].options, undefined, "the read must be a plain GET");
-    assert.equal(byId("external-server-badge").textContent, "Not connected");
+    assert.equal(byId("external-server-badge").textContent, "未连接");
 
     // A keyless address reconnects on its own.
     requests.length = 0;
@@ -273,7 +273,7 @@ assert.equal(externalServerUi.getTarget().port, 9001);
         "Re-enter the API key for 127.0.0.1:9001 to reconnect."
     );
     assert.ok(byId("external-server-note").classList.contains("warning"));
-    assert.equal(byId("external-server-badge").textContent, "Not connected");
+    assert.equal(byId("external-server-badge").textContent, "未连接");
 
     // A saved address whose port is now something else reports the failure.
     // Only the reconnect fails here; reading the target still succeeds.
@@ -296,7 +296,7 @@ assert.equal(externalServerUi.getTarget().port, 9001);
     assert.equal(requests.length, 2);
     assert.match(byId("external-server-note").textContent, /did not answer/);
     assert.ok(byId("external-server-note").classList.contains("error"));
-    assert.equal(byId("external-server-badge").textContent, "Not connected");
+    assert.equal(byId("external-server-badge").textContent, "未连接");
 
     // An already-registered target is adopted without a second POST.
     requests.length = 0;

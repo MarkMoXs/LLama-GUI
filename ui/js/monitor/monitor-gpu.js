@@ -86,17 +86,17 @@
     function makeGpuCard(gpu) {
         const card = cardShell(gpuCardKey(gpu), "", "", "", "icon-green", GPU_ICON_SVG);
         const utilBlock = I.dom.makeEl("div", "monitor-metric-block");
-        utilBlock.appendChild(I.dom.makeMetricRow("Utilization", "utilization"));
+        utilBlock.appendChild(I.dom.makeMetricRow("使用率", "utilization"));
         utilBlock.appendChild(I.dom.makeProgressBar("", null));
         card.appendChild(utilBlock);
 
         const memBlock = I.dom.makeEl("div", "monitor-metric-block");
-        memBlock.appendChild(I.dom.makeMetricRow("VRAM", "vram"));
+        memBlock.appendChild(I.dom.makeMetricRow("内存", "vram"));
         memBlock.appendChild(I.dom.makeProgressBar("", null));
         card.appendChild(memBlock);
 
         const meta = I.dom.makeEl("div", "monitor-gpu-meta");
-        meta.appendChild(I.dom.makeMetricRow("Temperature", "temperature"));
+        meta.appendChild(I.dom.makeMetricRow("温度", "temperature"));
         meta.appendChild(I.dom.makeMetricRow("GPU ID", "gpu-id"));
         card.appendChild(meta);
 
@@ -117,13 +117,13 @@
         I.dom.setText(card.querySelector(".card-title"), name);
         const hideBtn = card.querySelector(".monitor-hide-btn");
         if (hideBtn) {
-            hideBtn.setAttribute("aria-label", `Hide ${label} monitor`);
-            hideBtn.title = `Hide ${label}`;
+            hideBtn.setAttribute("aria-label", `隐藏 ${label} 监视器`);
+            hideBtn.title = `隐藏 ${label}`;
         }
         const dragHandle = card.querySelector(".monitor-drag-handle");
         if (dragHandle) {
-            dragHandle.setAttribute("aria-label", `Move ${label} monitor; use arrow keys`);
-            dragHandle.title = `Drag ${label} to reorder; use arrow keys to move`;
+            dragHandle.setAttribute("aria-label", `移动 ${label} 监视器；使用方向键`);
+            dragHandle.title = `拖动 ${label} 以重新排序；使用方向键移动`;
         }
 
         const util = gpu && gpu.utilization_percent;
@@ -165,7 +165,7 @@
             ? unsupported
                 ? `${providerLabel(provider)} SMI monitoring unavailable`
                 : `${providerLabel(provider)} telemetry unavailable`
-            : "No supported GPU telemetry detected";
+            : "未检测到受支持的GPU遥测数据";
         const card = I.dom.makeEl("div", "card");
         card.dataset.monitorKey = key;
         card.dataset.monitorLabel = title;
@@ -180,11 +180,11 @@
         empty.appendChild(I.dom.makeEl("div", "empty-state-title", title));
         const message = String(entry && entry.message || "").trim()
             || (provider
-                ? `System metrics keep updating. Use the ${providerLabel(provider)} setup card and Recheck when ready.`
+                ? `系统基础指标将持续更新，请使用对应 ${providerLabel(provider)} 配置引导卡片完成设置，准备就绪后点击「重新检测」。`
                 : "No supported vendor tool or GPU backend identified NVIDIA or AMD hardware. System metrics keep updating; Recheck after changing the installed backend or driver environment.");
         empty.appendChild(I.dom.makeEl("p", "", message));
         appendProbeDetailRows(empty, entry && entry.details);
-        const guide = I.dom.makeEl("a", "btn btn-sm monitor-setup-guide", "GPU monitoring setup guide");
+        const guide = I.dom.makeEl("a", "btn btn-sm monitor-setup-guide", "GPU 监控设置指南");
         guide.href = GPU_MONITORING_GUIDE_URL;
         guide.target = "_blank";
         guide.rel = "noopener noreferrer";
@@ -223,26 +223,26 @@
                 row.appendChild(command);
                 const copyBtn = I.dom.makeEl("button", "btn btn-sm", "Copy");
                 copyBtn.type = "button";
-                copyBtn.title = "Copy install command";
+                copyBtn.title = "复制安装命令";
                 copyBtn.addEventListener("click", () => {
                     const copyText = I.dependencies.copyText;
                     const notify = (message, type) => {
                         if (typeof I.dependencies.showToast === "function") I.dependencies.showToast(message, type);
                     };
                     if (typeof copyText !== "function") {
-                        notify("Could not copy command", "error");
+                        notify("无法复制命令", "error");
                         return;
                     }
                     // copyText resolves to a success flag; only claim a copy
                     // that actually reached the clipboard.
                     Promise.resolve(copyText(entry.command)).then(
                         (copied) => notify(
-                            copied ? "Command copied" : "Could not copy command",
+                            copied ? "命令已复制" : "无法复制命令",
                             copied ? "info" : "error",
                         ),
                         (error) => {
-                            console.warn("Could not copy install command", error);
-                            notify("Could not copy command", "error");
+                            console.warn("无法复制安装命令", error);
+                            notify("无法复制命令", "error");
                         },
                     );
                 });
@@ -381,8 +381,8 @@
         setupSection.classList.toggle("hidden", actionable.length === 0);
 
         I.dom.setText(I.dom.byId("monitor-gpu-summary"), gpus.length
-            ? stateEntries.length ? "Some GPU telemetry is unavailable" : `GPU telemetry · ${gpus.length} ${gpus.length === 1 ? "device" : "devices"}`
-            : "GPU telemetry is unavailable");
+            ? stateEntries.length ? "部分GPU遥测数据不可用" : `GPU 遥测 · ${gpus.length} ${gpus.length === 1 ? "device" : "devices"}`
+            : "GPU 遥测数据不可用");
 
         I.preferences.applyHiddenCardsToDom();
         I.preferences.applyCardOrderToDom();

@@ -36,13 +36,13 @@
     ]);
 
     const BENCHMARK_SOURCE_LABELS = {
-        current: "Current Configure",
-        preset: "Saved Preset",
-        manual: "Manual Model",
+        current: "当前配置",
+        preset: "已保存的预设",
+        manual: "手动选择模型",
     };
     const BENCHMARK_TYPE_LABELS = {
-        bench: "Throughput",
-        perplexity: "Perplexity",
+        bench: "吞吐量",
+        perplexity: "困惑度",
     };
     const PERPLEXITY_PRESETS = {
         gui: {
@@ -158,7 +158,7 @@
     }
 
     function getFlagLabel(flag) {
-        return flag && (flag.label || flag.id || flag.flag) || "Unknown";
+        return flag && (flag.label || flag.id || flag.flag) || "未知";
     }
 
     function isEmptyFlagValue(value) {
@@ -215,7 +215,7 @@
         const winner = getLoadModeArgValue(args);
         return winner
             ? `Superseded by --load-mode ${winner} from another Legacy toggle; only one load mode can be emitted`
-            : "Superseded by --load-mode from another Legacy toggle";
+            : "被另一个 Legacy 开关的 --load-mode 取代";
     }
 
     function pushFlagArg(args, tool, flag, value) {
@@ -342,18 +342,18 @@
         if (model) {
             const buildModelPath = root.flagCore && root.flagCore.buildLocalModelPath;
             if (typeof buildModelPath !== "function") {
-                return { tool, args, applied, excluded, error: "Model path generation is unavailable." };
+                return { tool, args, applied, excluded, error: "模型路径生成不可用。" };
             }
             const localModel = buildModelPath(model);
             if (localModel.error) {
                 return { tool, args, applied, excluded, error: localModel.error };
             }
             args.push(["-m", localModel.path]);
-            applied.push({ label: "Model", value: model });
+            applied.push({ label: "模型", value: model });
         }
 
         if (benchmarkType === "perplexity" && !hasSelectedModelArg(args)) {
-            return { tool, args, applied, excluded, error: "Select a manual model before running perplexity." };
+            return { tool, args, applied, excluded, error: "在运行困惑度测试前，请先选择一个手动模型。" };
         }
 
         if (benchmarkType === "bench") {
@@ -365,14 +365,14 @@
 
                 if (!BENCH_COMPATIBLE_IDS.has(flag.id)) {
                     if (!Object.prototype.hasOwnProperty.call(defaultFlags, flag.id) || !valuesEqual(value, defaultFlags[flag.id])) {
-                        excluded.push({ label: getFlagLabel(flag), reason: "Not used by benchmark tools" });
+                        excluded.push({ label: getFlagLabel(flag), reason: "基准测试工具不使用" });
                     }
                     continue;
                 }
 
                 if (flag.id === "threads_batch") {
                     if (!Object.prototype.hasOwnProperty.call(defaultFlags, flag.id) || !valuesEqual(value, defaultFlags[flag.id])) {
-                        excluded.push({ label: getFlagLabel(flag), reason: "llama-bench uses one thread setting" });
+                        excluded.push({ label: getFlagLabel(flag), reason: "llama-bench 使用单一线程设置" });
                     }
                     continue;
                 }
@@ -382,7 +382,7 @@
                     applied.push({ label: getFlagLabel(flag), value: flag.sensitive ? "<redacted>" : Array.isArray(value) ? value.join(",") : String(value) });
                 } else {
                     if (!Object.prototype.hasOwnProperty.call(defaultFlags, flag.id) || !valuesEqual(value, defaultFlags[flag.id])) {
-                        excluded.push({ label: getFlagLabel(flag), reason: loadModeConflictReason(flag, args) || "Not supported for this benchmark" });
+                        excluded.push({ label: getFlagLabel(flag), reason: loadModeConflictReason(flag, args) || "此基准测试不支持" });
                     }
                 }
             }
@@ -394,10 +394,10 @@
             args.push(["-p", String(nPrompt)]);
             args.push(["-n", String(nGen)]);
             args.push(["-o", outputFormat]);
-            applied.push({ label: "Repetitions", value: String(repetitions) });
-            applied.push({ label: "Prompt Tokens", value: String(nPrompt) });
-            applied.push({ label: "Generation Tokens", value: String(nGen) });
-            applied.push({ label: "Output Format", value: outputFormat });
+            applied.push({ label: "重复次数", value: String(repetitions) });
+            applied.push({ label: "提示词 Token 数", value: String(nPrompt) });
+            applied.push({ label: "生成 Token 数", value: String(nGen) });
+            applied.push({ label: "输出格式", value: outputFormat });
         } else {
             const cleanRun = options.pplCleanRun === true;
             const contextSize = options.pplContextSize || 4096;
@@ -409,12 +409,12 @@
             const cacheTypeK = options.pplCacheTypeK || "f16";
             const cacheTypeV = options.pplCacheTypeV || "f16";
             if (!options.promptFile) {
-                return { tool, args, applied, excluded, error: "Choose a prompt/data file before running perplexity." };
+                return { tool, args, applied, excluded, error: "在运行困惑度测试前，请先选择一个提示词/数据文件。" };
             }
             if (cleanRun) {
                 args.push(["-f", String(options.promptFile)]);
-                applied.push({ label: "Mode", value: "llama.cpp clean run" });
-                excluded.push({ label: "Perplexity Controls", reason: "Clean run only passes model and prompt/data file" });
+                applied.push({ label: "模式", value: "llama.cpp 干净运行" });
+                excluded.push({ label: "困惑度控制", reason: "干净运行仅传递模型和提示词/数据文件" });
             } else {
                 args.push(["-c", String(contextSize)]);
                 args.push(["-b", String(batchSize)]);
@@ -430,31 +430,31 @@
                 if (options.chunks !== undefined && options.chunks !== "") args.push(["--chunks", String(options.chunks)]);
                 if (options.pplStride !== undefined && options.pplStride !== "") args.push(["--ppl-stride", String(options.pplStride)]);
                 args.push([options.warmup === false ? "--no-warmup" : "--warmup"]);
-                applied.push({ label: "Context Size", value: String(contextSize) });
-                applied.push({ label: "Batch Size", value: String(batchSize) });
-                applied.push({ label: "Micro Batch Size", value: String(ubatchSize) });
-                applied.push({ label: "Threads", value: String(threads) });
-                if (gpuLayers) applied.push({ label: "GPU Layers", value: gpuLayers });
-                if (flashAttention) applied.push({ label: "Flash Attention", value: flashAttention });
-                if (cacheTypeK) applied.push({ label: "K Cache Type", value: cacheTypeK });
-                if (cacheTypeV) applied.push({ label: "V Cache Type", value: cacheTypeV });
-                applied.push({ label: "Memory Mapping", value: options.pplMmap === false ? `Off (${mmapOffArg.join(" ")})` : "On" });
-                applied.push({ label: "Chunks", value: options.chunks === undefined || options.chunks === "" ? "-1" : String(options.chunks) });
-                applied.push({ label: "PPL Stride", value: options.pplStride === undefined || options.pplStride === "" ? "0" : String(options.pplStride) });
-                applied.push({ label: "Warmup", value: options.warmup === false ? "Off" : "On" });
+                applied.push({ label: "上下文大小", value: String(contextSize) });
+                applied.push({ label: "批处理大小", value: String(batchSize) });
+                applied.push({ label: "微批处理大小", value: String(ubatchSize) });
+                applied.push({ label: "线程数", value: String(threads) });
+                if (gpuLayers) applied.push({ label: "GPU 层数", value: gpuLayers });
+                if (flashAttention) applied.push({ label: "Flash 注意力", value: flashAttention });
+                if (cacheTypeK) applied.push({ label: "K 缓存类型", value: cacheTypeK });
+                if (cacheTypeV) applied.push({ label: "V 缓存类型", value: cacheTypeV });
+                applied.push({ label: "内存映射", value: options.pplMmap === false ? `关闭 (${mmapOffArg.join(" ")})` : "开启" });
+                applied.push({ label: "分块数", value: options.chunks === undefined || options.chunks === "" ? "-1" : String(options.chunks) });
+                applied.push({ label: "困惑度步长", value: options.pplStride === undefined || options.pplStride === "" ? "0" : String(options.pplStride) });
+                applied.push({ label: "预热", value: options.warmup === false ? "关闭" : "开启" });
             }
-            if (options.promptFile) applied.push({ label: "Prompt/Data File", value: String(options.promptFile) });
+            if (options.promptFile) applied.push({ label: "提示词/数据文件", value: String(options.promptFile) });
             if (Object.keys(flags).length > 0) {
-                excluded.push({ label: "Configure/Preset Flags", reason: "Perplexity uses only the settings shown here" });
+                excluded.push({ label: "配置/预设标志", reason: "困惑度仅使用此处显示的设置" });
             }
         }
 
         if (!hasSelectedModelArg(args)) {
-            return { tool, args, applied, excluded, error: "Select a model, saved preset with a model, or HF repo before running a benchmark." };
+            return { tool, args, applied, excluded, error: "在开始测试之前，请先选择一个模型、或已保存预设的模型，也可以直接输入 Hugging Face 的仓库地址。" };
         }
 
         if (typeof flags.custom_args === "string" && flags.custom_args.trim()) {
-            excluded.push({ label: "Custom Launch Args", reason: "Excluded for benchmark safety" });
+            excluded.push({ label: "自定义启动参数", reason: "出于基准测试安全性而排除" });
         }
 
         const environment = root.flagCore.parseEnvironmentVariables(flags.custom_env);
@@ -565,9 +565,9 @@
         if (!fetchJson) return;
         const button = byId("btn-benchmark-wikitext-clean");
         const previousText = button ? button.textContent : "";
-        if (button) {
-            button.disabled = true;
-            button.textContent = "Preparing WikiText-2...";
+            if (button) {
+                button.disabled = true;
+                button.textContent = "正在准备 WikiText-2...";
         }
         try {
             const result = await fetchJson("/api/benchmark/wikitext2", { method: "POST" });
@@ -576,14 +576,14 @@
             selectBenchmarkModelFromConfigure();
             renderCommand();
             if (showToast) {
-                showToast(result.downloaded ? "Downloaded WikiText-2 test file." : "Using existing WikiText-2 test file.", "success");
+                    showToast(result.downloaded ? "已下载 WikiText-2 测试文件。" : "正在使用现有的 WikiText-2 测试文件。", "success");
             }
         } catch (e) {
-            if (showToast) showToast("WikiText-2 setup failed: " + e.message, "error");
+                if (showToast) showToast("WikiText-2 初始化失败：" + e.message, "error");
         } finally {
             if (button) {
                 button.disabled = false;
-                button.textContent = previousText || "Use WikiText-2 clean run";
+                    button.textContent = previousText || "使用 WikiText-2 干净运行";
             }
         }
     }
@@ -593,7 +593,7 @@
         if (getSelectedBenchmarkType() === "perplexity") {
             return {
                 sourceType: "manual",
-                label: "Manual Model",
+                label: "选择模型",
                 model: byId("benchmark-manual-model")?.value || "",
                 flags: {},
             };
@@ -601,19 +601,19 @@
         if (sourceType === "preset") {
             const preset = cachedPresets.find((entry) => entry.name === selectedPresetName);
             const data = normalizePresetData(preset && preset.data);
-            return { sourceType, label: selectedPresetName || "Saved Preset", model: data.model, flags: data.flags };
+            return { sourceType, label: selectedPresetName || "已保存的预设", model: data.model, flags: data.flags };
         }
         if (sourceType === "manual") {
             return {
                 sourceType,
-                label: "Manual Model",
+                label: "选择模型",
                 model: byId("benchmark-manual-model")?.value || "",
                 flags: {},
             };
         }
         return {
             sourceType,
-            label: "Current Configure",
+                label: "当前配置",
             model: flagCore ? flagCore.getSelectedModel() : "",
             flags: flagCore ? flagCore.getFlagValues() : {},
         };
@@ -656,13 +656,13 @@
         if (sourceLabel) {
             const source = getSourceSnapshot();
             if (getSelectedBenchmarkType() === "perplexity") {
-                sourceLabel.textContent = `Perplexity uses the manual model and settings below -> ${source.model || "No model selected"}`;
+                sourceLabel.textContent = `困惑度「Perplexity」使用下方手动指定的模型与参数 -> ${source.model || "未选择模型"}`;
             } else {
-                sourceLabel.textContent = `${BENCHMARK_SOURCE_LABELS[source.sourceType]} -> ${source.model || source.flags.hf_repo || "No model selected"}`;
+                sourceLabel.textContent = `${BENCHMARK_SOURCE_LABELS[source.sourceType]} -> ${source.model || source.flags.hf_repo || "未选择模型"}`;
             }
         }
         if (command) {
-            command.textContent = result.error ? `Cannot run: ${result.error}` : result.command;
+            command.textContent = result.error ? `无法运行： ${result.error}` : result.command;
             command.classList.toggle("command-preview-error", Boolean(result.error));
         }
         if (status) {
@@ -675,15 +675,15 @@
             }
         }
         if (runBtn) runBtn.disabled = Boolean(result.error);
-        renderList(byId("benchmark-applied-list"), result.applied, "No compatible settings applied yet.");
-        renderList(byId("benchmark-excluded-list"), result.excluded, "No configured settings were excluded.");
+        renderList(byId("benchmark-applied-list"), result.applied, "尚未应用任何兼容的配置设置");
+        renderList(byId("benchmark-excluded-list"), result.excluded, "没有排除任何已配置的设置");
         return result;
     }
 
     function setBadge(id, ok, label) {
         const el = byId(id);
         if (!el) return;
-        el.textContent = `${label}: ${ok ? "Ready" : "Missing"}`;
+        el.textContent = `${label}: ${ok ? "就绪" : "缺失"}`;
         el.className = ok ? "badge badge-green" : "badge badge-yellow";
     }
 
@@ -693,7 +693,7 @@
             try {
                 status = await fetchJson("/api/status");
             } catch (e) {
-                console.debug("Benchmark status refresh failed", e);
+                console.debug("基准测试状态刷新失败", e);
                 status = null;
             }
         }
@@ -731,7 +731,7 @@
         try {
             cachedPresets = await fetchJson("/api/presets") || [];
         } catch (e) {
-            console.debug("Benchmark presets failed to load", e);
+            console.debug("基准测试预设加载失败", e);
             cachedPresets = [];
         }
         const select = byId("benchmark-preset-select");
@@ -740,7 +740,7 @@
         if (cachedPresets.length === 0) {
             const opt = document.createElement("option");
             opt.value = "";
-            opt.textContent = "No saved presets";
+                opt.textContent = "没有已保存的预设";
             select.appendChild(opt);
             selectedPresetName = "";
             renderCommand();
@@ -766,9 +766,9 @@
         try {
             cachedModels = await fetchJson("/api/models") || [];
         } catch (e) {
-            console.debug("Benchmark models failed to load", e);
+            console.debug("基准测试模型加载失败", e);
             cachedModels = [];
-            loadError = e && e.message ? e.message : "Models could not be loaded.";
+            loadError = e && e.message ? e.message : "模型加载失败";
         }
         const select = byId("benchmark-manual-model");
         if (!select) return;
@@ -776,7 +776,7 @@
         select.textContent = "";
         const empty = document.createElement("option");
         empty.value = "";
-        empty.textContent = loadError ? `Models unavailable: ${loadError}` : "-- Select Model --";
+        empty.textContent = loadError ? `模型不可用： ${loadError}` : "-- 选择模型 --";
         select.appendChild(empty);
         for (const model of cachedModels) {
             const name = getModelName(model);
@@ -828,12 +828,12 @@
         const summary = parseBenchSummary(outputLines);
         el.textContent = "";
         if (summary.length) {
-            el.textContent = `Throughput observed: ${summary.join(", ")}`;
+            el.textContent = `实测吞吐量：${summary.join(", ")}`;
             return;
         }
         const empty = document.createElement("div");
         empty.className = "empty-state empty-state-sm";
-        empty.textContent = "Summary appears here when benchmark output includes recognizable throughput data.";
+        empty.textContent = "当基准测试输出包含可识别的吞吐量数据时，摘要会显示在这里。";
         el.appendChild(empty);
     }
 
@@ -878,7 +878,7 @@
             if (!consumed.current) return;
             if (!data.running) {
                 stopOutputPolling();
-                appendOutput("--- Benchmark process exited ---");
+                appendOutput("--- 基准测试进程已退出 ---");
                 setRunningState(false);
                 syncLifecycleAfterExit();
             }
@@ -891,10 +891,10 @@
             // available even once we do give up watching.
             outputPollFailCount += 1;
             if (outputPollFailCount < OUTPUT_POLL_MAX_FAILS) return;
-            appendOutput("Output polling error: " + e.message);
+            appendOutput("输出轮询错误：" + e.message);
             appendOutput(
                 "--- Stopped reading output; the benchmark may still be running. "
-                + "Use Stop to end it. ---"
+                + "使用「停止」结束它。---"
             );
             stopOutputPolling();
         } finally {
@@ -922,7 +922,7 @@
         }
         clearOutput();
         setRunningState(true);
-        appendOutput("Started " + result.tool);
+        appendOutput("已启动 " + result.tool);
         appendOutput(result.command);
         appendOutput("---");
         const outcome = await processLifecycle.launch(
@@ -932,12 +932,12 @@
                 invalidateOutput: stopOutputPolling,
                 invalidateStats: () => {},
                 startOutput: (cursor, _runtime, _state, launchResult) => {
-                    appendOutput("PID: " + launchResult.pid);
+                    appendOutput("PID：" + launchResult.pid);
                     startOutputPolling(cursor);
                 },
                 postReady: () => refreshRuntimeStatusPanels && refreshRuntimeStatusPanels(),
                 onFailed: (message) => {
-                    appendOutput("ERROR: " + message);
+                    appendOutput("错误：" + message);
                     setRunningState(false);
                     if (refreshRuntimeStatusPanels) refreshRuntimeStatusPanels();
                 },
@@ -956,13 +956,13 @@
             invalidateOutput: stopOutputPolling,
             invalidateStats: () => {},
             onFailed: (message) => {
-                appendOutput("Stop request failed: " + message);
+                appendOutput("停止请求失败：" + message);
                 setRunningState(true);
                 startOutputPolling();
             },
         });
         if (outcome.ok) {
-            appendOutput("--- Benchmark stopped ---");
+            appendOutput("--- 基准测试已停止 ---");
             setRunningState(false);
             if (refreshRuntimeStatusPanels) refreshRuntimeStatusPanels();
         }
@@ -1031,7 +1031,7 @@
         if (tool !== "llama-bench" && tool !== "llama-perplexity") return false;
         clearOutput();
         setRunningState(true);
-        appendOutput("--- Reconnected to running " + tool + " process ---");
+        appendOutput("--- 已重新连接到正在运行的 " + tool + " 进程 ---");
         startOutputPolling();
         return true;
     }

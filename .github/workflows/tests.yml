@@ -22,12 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Ubuntu 26.04 lacks Python 3.9 builds and support in our pinned Playwright.
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             python-version: "3.9"
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             python-version: "3.12"
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             python-version: "3.13"
           - os: windows-latest
             python-version: "3.12"
@@ -66,7 +65,7 @@ jobs:
         run: npx playwright install chromium
 
       - name: Prepare pinned llama.cpp CPU binaries
-        if: runner.os == 'Linux' && matrix.python-version == '3.13'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         shell: bash
         run: |
           sudo apt-get update

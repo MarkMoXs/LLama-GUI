@@ -68,13 +68,13 @@
         if (!normalized) {
             return allowEmpty
                 ? { value: "", error: null }
-                : { value: "", error: "Preset name is required." };
+                : { value: "", error: "预设名称不能为空。" };
         }
         if (CONTROL_CHARACTER_PATTERN.test(normalized)) {
-            return { value: "", error: "Preset name contains control characters." };
+            return { value: "", error: "预设名称包含控制字符。" };
         }
         if (Array.from(normalized).length > MAX_PRESET_NAME_CODE_POINTS) {
-            return { value: "", error: `Preset name must be ${MAX_PRESET_NAME_CODE_POINTS} characters or fewer.` };
+            return { value: "", error: `预设名称必须为 ${MAX_PRESET_NAME_CODE_POINTS} 个字符或更少。` };
         }
         return { value: normalized, error: null };
     }
@@ -84,8 +84,8 @@
         const first = value.slots.a.preset;
         const second = value.slots.b.preset;
         if (first && second && first === second) {
-            nextIssues.a = "Both slots reference the same preset.";
-            nextIssues.b = "Both slots reference the same preset.";
+            nextIssues.a = "两个槽位引用了同一个预设。";
+            nextIssues.b = "两个槽位引用了同一个预设。";
         }
         return nextIssues;
     }
@@ -94,10 +94,10 @@
         const record = createEmptyAssignments();
         const nextIssues = {};
         if (!value || typeof value !== "object" || Array.isArray(value)) {
-            return { record, issues: { record: "Saved slot assignments are invalid." } };
+            return { record, issues: { record: "已保存的槽位分配无效。" } };
         }
         if (value.version !== STORAGE_VERSION) {
-            return { record, issues: { record: "Saved slot assignments use an unsupported version." } };
+            return { record, issues: { record: "已保存的槽位分配使用了不支持的版本。" } };
         }
         const slots = value.slots && typeof value.slots === "object" && !Array.isArray(value.slots)
             ? value.slots
@@ -131,7 +131,7 @@
         try {
             raw = localStorage.getItem(STORAGE_KEY);
         } catch (error) {
-            reportStorageFailure("Model switcher assignments are available for this session only.", error);
+            reportStorageFailure("模型切换器分配仅在本次会话中可用。", error);
             return cloneAssignments();
         }
         if (!raw) return cloneAssignments();
@@ -145,7 +145,7 @@
                 persistAssignments();
             }
         } catch (error) {
-            warning = "Saved model switcher assignments could not be read.";
+            warning = "无法读取已保存的模型切换器分配。";
             issues = { record: warning };
             console.warn(warning, error);
         }
@@ -162,7 +162,7 @@
             persistent = true;
             warning = "";
         } catch (error) {
-            reportStorageFailure("Model switcher assignments are available for this session only.", error);
+            reportStorageFailure("模型切换器分配仅在本次会话中可用。", error);
         }
     }
 
@@ -173,7 +173,7 @@
 
     function assertSlotId(slotId) {
         if (!SLOT_IDS.includes(slotId)) {
-            throw new Error("Model switcher slot must be \"a\" or \"b\".");
+            throw new Error("模型切换器槽位必须是 \"a\" 或 \"b\"。");
         }
     }
 
@@ -184,7 +184,7 @@
         if (normalized.error) throw new Error(normalized.error);
         const otherSlot = slotId === "a" ? "b" : "a";
         if (assignments.slots[otherSlot].preset === normalized.value) {
-            throw new Error("Both slots cannot reference the same preset.");
+            throw new Error("两个槽位不能引用同一个预设。");
         }
         assignments.slots[slotId].preset = normalized.value;
         clearSlotFailures(slotId);
@@ -284,15 +284,15 @@
 
     function statePresentation(state) {
         const presentations = {
-            unassigned: { badge: "Unassigned", tone: "neutral", message: "Choose a saved llama-server preset." },
-            standby: { badge: "Standby", tone: "accent", message: "Configuration saved and ready to preflight." },
-            active: { badge: "Active", tone: "active", message: "This is the active runtime." },
-            loading: { badge: "Loading", tone: "warning", message: "Switch in progress…" },
-            missing: { badge: "Missing", tone: "error", message: "The assigned preset no longer exists." },
-            invalid: { badge: "Invalid", tone: "error", message: "Assign a full llama-server preset." },
-            drift: { badge: "Modified", tone: "warning", message: "Preset changed since this runtime launched." },
-            failure: { badge: "Failed", tone: "error", message: "The last switch attempt failed." },
-            "other-tool": { badge: "Unavailable", tone: "neutral", message: "Another llama.cpp tool is running." },
+            unassigned: { badge: "未分配", tone: "neutral", message: "请选择一个已保存的 llama-server 预设" },
+            standby: { badge: "待命", tone: "accent", message: "配置已保存，准备进行预检。" },
+            active: { badge: "运行中", tone: "active", message: "当前为正在运行的活动运行时" },
+            loading: { badge: "正在加载", tone: "warning", message: "正在切换中…" },
+            missing: { badge: "缺失", tone: "error", message: "所分配的预设已不存在" },
+            invalid: { badge: "无效", tone: "error", message: "请指定一个完整的 llama-server 预设" },
+            drift: { badge: "已修改", tone: "warning", message: "自该运行时启动以来，预设配置已发生更改。" },
+            failure: { badge: "失败", tone: "error", message: "最近一次切换尝试失败" },
+            "other-tool": { badge: "不可用", tone: "neutral", message: "另一个 llama.cpp 工具正在运行" },
         };
         return presentations[state] || presentations.invalid;
     }
@@ -357,7 +357,7 @@
             else state = "standby";
             const presentation = statePresentation(state);
             const message = !presetName && activeIdentity && state === "active"
-                ? "This runtime is active; its slot assignment has been cleared."
+                ? "此运行时处于活动状态；其槽位分配已清除。"
                 : state === "failure"
                     ? failure || presentation.message
                     : assignmentIssues[slotId] || presentation.message;
@@ -416,12 +416,12 @@
         const target = list.find(view => view && view.id === targetSlot);
         const busy = Boolean(lifecycle.busy || pendingSlot || loading);
         const enabled = Boolean(active && target && target.actionable && !busy && canSwitch);
-        let status = "Drag to switch";
-        if (loading) status = `Switching to Model ${loading.id.toUpperCase()}`;
-        else if (!active) status = "Launch a slot in Quick Launch first";
-        else if (busy) status = "Model switcher is busy";
-        else if (!canSwitch) status = "Model switching is unavailable";
-        else if (!target || !target.actionable) status = `Model ${targetSlot.toUpperCase()} is not ready`;
+        let status = "拖动以切换";
+        if (loading) status = `正在切换到模型 ${loading.id.toUpperCase()}`;
+        else if (!active) status = "请先在 Quick Launch 中启动一个槽位";
+        else if (busy) status = "模型切换器正忙";
+        else if (!canSwitch) status = "模型切换不可用";
+        else if (!target || !target.actionable) status = `模型 ${targetSlot.toUpperCase()} 尚未就绪`;
         return {
             activeSlot: active ? active.id : "",
             committedSlot,
@@ -438,10 +438,10 @@
         const fetchEntries = dependencies.fetchPresetEntries
             || (root.presets && root.presets.fetchPresetEntries);
         if (typeof fetchEntries !== "function") {
-            throw new Error("Preset lookup is not available.");
+            throw new Error("预设查找不可用。");
         }
         const entries = await fetchEntries();
-        if (!Array.isArray(entries)) throw new Error("Preset lookup returned an invalid response.");
+        if (!Array.isArray(entries)) throw new Error("预设查找返回了无效的响应。");
         presetEntries = entries;
         return presetEntries;
     }
@@ -485,12 +485,12 @@
         select.textContent = "";
         const empty = document.createElement("option");
         empty.value = "";
-        empty.textContent = "Assign preset…";
+        empty.textContent = "指定预设…";
         select.appendChild(empty);
         if (current && !validNames.has(current)) {
             const missing = document.createElement("option");
             missing.value = current;
-            missing.textContent = `${current} (missing or unsupported)`;
+            missing.textContent = `${current}（缺失或不支持）`;
             select.appendChild(missing);
         }
         for (const entry of validEntries) {
@@ -510,7 +510,7 @@
         const badge = byId(`model-switch-slot-${view.id}-badge`);
         const action = byId(`model-switch-slot-${view.id}-action`);
         if (slot) slot.dataset.state = view.state;
-        setText(`model-switch-slot-${view.id}-title`, view.displayPresetName || view.presetName || "Unassigned");
+        setText(`model-switch-slot-${view.id}-title`, view.displayPresetName || view.presetName || "未分配");
         setText(`model-switch-slot-${view.id}-model`, view.model);
         setText(`model-switch-slot-${view.id}-gguf`, view.gguf);
         setText(`model-switch-slot-${view.id}-message`, view.message);
@@ -526,7 +526,7 @@
             ? actionSlots.includes(view.id)
             : actionSlots === view.id;
         if (action) {
-            action.textContent = view.state === "loading" ? "Switching…" : `Switch to ${view.label}`;
+            action.textContent = view.state === "loading" ? "正在切换…" : `切换至 · ${view.label}`;
             action.disabled = Boolean(
                 lifecycle.busy
                 || pendingSlot
@@ -547,7 +547,7 @@
         if (slider) {
             slider.style.setProperty("--model-switch-progress", String(normalizedProgress));
             slider.setAttribute("aria-valuenow", visibleSlot === "b" ? "1" : "0");
-            slider.setAttribute("aria-valuetext", `Model ${visibleSlot.toUpperCase()}`);
+            slider.setAttribute("aria-valuetext", `模型 ${visibleSlot.toUpperCase()}`);
         }
         for (const slotId of SLOT_IDS) {
             const label = byId(`sidebar-model-switcher-label-${slotId}`);
@@ -577,7 +577,7 @@
             || (sidebarKeyboardArmed && sidebarPreviewSlot)
             || sidebarCommittedSlot;
         const status = sidebarKeyboardArmed && sidebarPreviewSlot !== sidebarCommittedSlot
-            ? `Press Enter to switch to Model ${sidebarPreviewSlot.toUpperCase()}`
+            ? `按 Enter 键切换至模型 ${sidebarPreviewSlot.toUpperCase()}`
             : sidebarSliderState.status;
         slider.setAttribute("aria-disabled", String(!sidebarSliderState.enabled));
         slider.setAttribute("aria-busy", String(sidebarSliderState.busy));
@@ -588,14 +588,14 @@
 
     function summaryText(views, lifecycle, runtime) {
         const loading = views.find(view => view.state === "loading");
-        if (loading) return `Switching to ${loading.label}…`;
+        if (loading) return `正在切换到 ${loading.label}…`;
         const active = views.find(view => view.state === "active" || view.state === "drift");
-        if (active) return `${active.label} is active — ${active.displayPresetName || active.presetName || "runtime"}`;
+        if (active) return `${active.label} 已激活 — ${active.displayPresetName || active.presetName || "运行时"}`;
         if (runtime && runtime.tool && runtime.tool !== "llama-server") {
-            return `${runtime.tool} is running; model switching is unavailable.`;
+            return `${runtime.tool} 正在运行，模型切换不可用。`;
         }
         const configured = views.filter(view => view.presetName).length;
-        return configured ? `${configured} standby slot${configured === 1 ? "" : "s"} configured.` : "Assign two saved server presets for quick switching.";
+        return configured ? `${configured} 个待命槽位配置。` : "指定两个已保存的服务器预设，以便快速切换。";
     }
 
     function render(viewState) {
@@ -618,7 +618,7 @@
             await loadPresetEntries(Boolean(options.reloadPresets));
             presetLoadError = "";
         } catch (error) {
-            presetLoadError = error && error.message ? error.message : "Failed to load saved presets.";
+            presetLoadError = error && error.message ? error.message : "加载已保存预设失败。";
             // Deliberately leave presetEntries null. Caching [] here poisoned the
             // loadPresetEntries() guard below, which only checks truthiness — an
             // empty array is truthy, so one failed fetch made every later
@@ -684,7 +684,7 @@
             }
             clearSlotFailures(slotId);
         } catch (error) {
-            uiWarning = error && error.message ? error.message : "Failed to update the model slot.";
+            uiWarning = error && error.message ? error.message : "更新模型槽位失败。";
         }
         return refresh({ reloadPresets: true });
     }
@@ -698,7 +698,7 @@
         if (pendingSlot) return;
         const switchSlot = dependencies.switchSlot;
         if (typeof switchSlot !== "function") {
-            uiWarning = "Model switching is not available yet.";
+            uiWarning = "模型切换暂不可用。";
             await refresh();
             return;
         }
@@ -712,10 +712,10 @@
             if (outcome && outcome.ok === true) {
                 clearSlotFailures();
             } else if (outcome && outcome.ok === false && !outcome.cancelled) {
-                slotFailures[slotId] = outcome.error || "The model switch failed.";
+                slotFailures[slotId] = outcome.error || "模型切换失败。";
             }
         } catch (error) {
-            slotFailures[slotId] = error && error.message ? error.message : "The model switch failed.";
+            slotFailures[slotId] = error && error.message ? error.message : "模型切换失败。";
         } finally {
             pendingSlot = "";
             sidebarPreviewSlot = "";
@@ -760,7 +760,7 @@
         setSidebarSliderPresentation(
             sidebarCommittedSlot,
             sidebarCommittedSlot === "b" ? 1 : 0,
-            `Drag to Model ${sidebarSliderState.targetSlot.toUpperCase()} and release`
+            `拖动到模型 ${sidebarSliderState.targetSlot.toUpperCase()} 并松开`
         );
     }
 
@@ -773,7 +773,7 @@
         setSidebarSliderPresentation(
             visibleSlot,
             progress,
-            `Release near Model ${sidebarSliderState.targetSlot.toUpperCase()} to switch`
+            `靠近模型 ${sidebarSliderState.targetSlot.toUpperCase()} 松开以切换`
         );
     }
 
@@ -851,7 +851,7 @@
                 if (action) action.addEventListener("click", () => handleSwitch(slotId));
                 if (select) select.addEventListener("change", () => handleAssignmentChange(slotId, select.value));
                 if (select && root.searchableSelect) {
-                    root.searchableSelect.enhance(select, { searchPlaceholder: "Search presets..." });
+                    root.searchableSelect.enhance(select, { searchPlaceholder: "搜索预设..." });
                 }
                 if (refreshButton) refreshButton.addEventListener("click", handlePresetRefresh);
                 if (clear) clear.addEventListener("click", () => handleAssignmentChange(slotId, ""));

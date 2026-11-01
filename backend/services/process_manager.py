@@ -229,9 +229,9 @@ def claim_install_slot(ctx: AppContext) -> Optional[tuple[str, int]]:
     """
     with ctx.state.install_lock:
         if ctx.state.install_in_progress:
-            return "Installation already in progress", 409
+            return "安装已在进行中", 409
         if is_process_running(ctx):
-            return "Stop running process first", 400
+            return "请先停止运行中的进程", 400
         ctx.state.install_in_progress = True
     return None
 
@@ -1315,9 +1315,9 @@ def launch_process(
     # Launch, or during an install) does not pay for the validation below.
     with ctx.state.install_lock:
         if ctx.state.install_in_progress:
-            return {"error": "Installation in progress. Wait for it to finish before launching."}
+            return {"error": "正在安装，请等待安装完成后再启动。"}
     if is_process_running(ctx):
-        return {"error": "A process is already running"}
+        return {"error": "当前进程正在运行"}
 
     # Deliberately outside both locks. On Linux/macOS this shells out to ldd or
     # otool once per packaged ggml library and can take tens of seconds cold;
@@ -1332,9 +1332,9 @@ def launch_process(
 
     with ctx.state.install_lock:
         if ctx.state.install_in_progress:
-            return {"error": "Installation in progress. Wait for it to finish before launching."}
+            return {"error": "正在安装，请等待安装完成后再启动。"}
     if is_process_running(ctx):
-        return {"error": "A process is already running"}
+        return {"error": "当前进程正在运行"}
 
     flat_launch_args = []
     try:
@@ -1355,10 +1355,10 @@ def launch_process(
     # these mutually exclusive operations.
     with ctx.state.install_lock, ctx.state.process_lock:
         if ctx.state.install_in_progress:
-            return {"error": "Installation in progress. Wait for it to finish before launching."}
+            return {"error": "正在安装，请等待安装完成后再启动。"}
         _reap_finished_process(ctx)
         if ctx.state.process is not None:
-            return {"error": "A process is already running"}
+            return {"error": "当前进程正在运行"}
 
         args = [str(exe_path), *flat_launch_args]
         launch_api_keys = parse_launch_api_keys(flat_launch_args) if tool == "llama-server" else ()

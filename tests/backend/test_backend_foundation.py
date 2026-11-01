@@ -96,8 +96,8 @@ class ServerStateTests(unittest.TestCase):
             {"total": 0, "downloaded": 0, "status": "idle", "message": ""},
         )
         self.assertEqual(state.model_download.snapshot()["status"], "idle")
-        self.assertEqual(state.remote_tunnel.snapshot()["message"], "Remote tunnel is not running.")
-        self.assertEqual(state.llama_api_target.snapshot(), {"host": "127.0.0.1", "port": 9931})
+        self.assertEqual(state.remote_tunnel.snapshot()["message"], "远程隧道未运行。")
+        self.assertEqual(state.llama_api_target.snapshot(), {"host": "127.0.0.1", "port": 8080})
         self.assertIsNone(state.active_runtime)
         self.assertEqual(state.runtime_generation, 0)
         self.assertEqual(state.remote_tunnel_generation, 0)

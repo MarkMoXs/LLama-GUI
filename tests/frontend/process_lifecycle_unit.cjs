@@ -232,7 +232,7 @@ async function testRestartRejectsChangedGeneration() {
             applyTarget: () => { throw new Error("Must not apply a stale restart"); },
         });
         assert.equal(result.conflict, true);
-        assert.match(result.error, /changed before restart/);
+        assert.match(result.error, /在重启前发生了变化/);
         assert.deepEqual(calls, [], "a replaced or exited process prevents stop and launch");
         assert.equal(lifecycle.getSnapshot().busy, false);
     }
@@ -272,9 +272,9 @@ async function testStopRefusalPreventsApplyAndLaunch() {
     const response = await lifecycle.switchRuntime({ slot: "b" });
 
     assert.equal(response.ok, false);
-    assert.match(response.error, /refused to stop/i);
+    assert.match(response.error, /拒绝停止/);
     assert.deepEqual(order, [
-        "resolve", "prepare", "abort", "output", "stats", "failed:The running process refused to stop.",
+        "resolve", "prepare", "abort", "output", "stats", "failed:正在运行的进程拒绝停止。",
     ]);
     assert.equal(calls.filter(([url]) => url === "/api/stop").length, 1);
     assert.equal(calls.some(([url]) => url === "/api/launch"), false);
@@ -497,7 +497,7 @@ async function testLaunchFailureAndEarlyExit() {
         });
         const response = await lifecycle.launch({ tool: "llama-server", args: ["-m", "models/exits.gguf"] });
         assert.equal(response.ok, false);
-        assert.match(response.error, /exited before it became ready/i);
+        assert.match(response.error, /在就绪前已退出/);
         assert.equal(lifecycle.getSnapshot().phase, "failed");
         assert.equal(lifecycle.getSnapshot().activeRuntime, null);
     }
@@ -574,7 +574,7 @@ async function testMissingAuthoritativeStatusCannotConfirmStop() {
 
     const response = await lifecycle.stop();
     assert.equal(response.ok, false);
-    assert.match(response.error, /authoritative process status/i);
+    assert.match(response.error, /权威进程状态/);
     assert.notEqual(lifecycle.getSnapshot().phase, "idle");
 }
 

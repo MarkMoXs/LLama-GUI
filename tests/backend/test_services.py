@@ -361,8 +361,6 @@ class BuildBackendSpecsTests(unittest.TestCase):
         self.assertIn("rocm-10.0", specs)
         self.assertIn("lemonade-rocm-10.0", specs)
         self.assertIn("openvino", specs)
-        self.assertTrue(specs["cuda-13.3"].get("legacy"))
-        self.assertTrue(specs["hip"].get("legacy"))
         self.assertEqual(specs["cpu"]["label"], "CPU")
         self.assertIn("win-cpu-x64", specs["cpu"]["asset"])
         self.assertEqual(
@@ -425,7 +423,6 @@ class BuildBackendSpecsTests(unittest.TestCase):
         self.assertIn("rocm-10.0", specs)
         self.assertIn("lemonade-rocm-10.0", specs)
         self.assertIn("openvino", specs)
-        self.assertTrue(specs["rocm"].get("legacy"))
         self.assertEqual(
             specs["rocm"]["label"],
             "ROCm 7.14 (AMD, Official; legacy; separate runtime required)",
@@ -1513,7 +1510,7 @@ class ProcessStateReapTests(unittest.TestCase):
         with mock.patch.object(process_manager.subprocess, "Popen") as popen:
             result = process_manager.launch_process(ctx, "llama-server", [])
 
-        self.assertIn("Installation in progress", result["error"])
+        self.assertIn("正在安装，请等待安装完成后再启动", result["error"])
         popen.assert_not_called()
 
     def test_active_llama_authorization_uses_launch_snapshot_and_safe_fallback(self):

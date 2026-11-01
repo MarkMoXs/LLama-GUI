@@ -22,7 +22,7 @@ def reset_shared_server_state():
     server.set_remote_tunnel_state(
         status="idle",
         url="",
-        message="Remote tunnel is not running.",
+        message="远程隧道未运行",
         log="",
     )
     server.set_llama_api_target(server.LLAMA_HOST, server.LLAMA_PORT)
@@ -656,9 +656,9 @@ class StateSnapshotTests(ServerStateIsolationMixin, unittest.TestCase):
 class ValidationTests(ServerStateIsolationMixin, unittest.TestCase):
     def test_parse_port_defaults_for_invalid_values(self):
         self.assertEqual(server.parse_port("1234"), 1234)
-        self.assertEqual(server.parse_port("0"), 9931)
-        self.assertEqual(server.parse_port("70000"), 9931)
-        self.assertEqual(server.parse_port("not-a-port"), 9931)
+        self.assertEqual(server.parse_port("0"), 8080)
+        self.assertEqual(server.parse_port("70000"), 8080)
+        self.assertEqual(server.parse_port("not-a-port"), 8080)
 
     def test_local_proxy_target_normalizes_wildcard_hosts(self):
         target = server.set_llama_api_target("0.0.0.0", "9090")

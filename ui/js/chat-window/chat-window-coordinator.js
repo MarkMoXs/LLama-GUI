@@ -1026,22 +1026,22 @@
             invalidateSession,
             abortActiveStream() {
                 const failed = reason => Promise.reject(new Error(reason));
-                if (disposed) return failed("Chat window coordinator is disposed.");
-                if (!state.hostAvailable) return failed("Chat host is unavailable.");
+                if (disposed) return failed("聊天窗口协调器已释放。");
+                if (!state.hostAvailable) return failed("聊天主机不可用。");
                 if (ownershipActive) return uiAwait("abortActiveStream", [], false).then(ok => {
-                    if (ok === false) throw new Error("The active Chat stream could not be stopped.");
+                    if (ok === false) throw new Error("无法停止正在进行的聊天流。");
                     return true;
                 });
-                if (!peerVerified) return failed("The active Chat owner is unavailable.");
+                if (!peerVerified) return failed("活动聊天所有者不可用。");
                 const requestId = randomId("abort", config);
                 const key = `abort:${requestId}`;
                 addPending(key);
                 if (!send("abort", undefined, { epoch: localEpoch, requestId })) {
                     pending.delete(key);
-                    return failed("The active Chat owner could not be reached.");
+                    return failed("无法联系到活动聊天所有者。");
                 }
                 return waitForPending(key, 5000).then(message => {
-                    if (!message || message.payload?.ok !== true) throw new Error("The active Chat stream could not be stopped.");
+                    if (!message || message.payload?.ok !== true) throw new Error("无法停止正在进行的聊天流。");
                     return true;
                 });
             },

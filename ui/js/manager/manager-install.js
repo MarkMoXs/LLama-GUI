@@ -64,7 +64,7 @@
             : "/api/releases";
         const requestId = ++releaseFetchRequestId;
         releasesBackendInFlight = backendParam;
-        sel.innerHTML = '<option value="">Loading...</option>';
+        sel.innerHTML = '<option value="">正在加载...</option>';
         try {
             const releases = await I.dependencies.fetchJson(url);
             if (requestId !== releaseFetchRequestId) return;
@@ -93,7 +93,7 @@
             if (requestId !== releaseFetchRequestId) return;
             releasesBackendInFlight = null;
             sel.innerHTML = '<option value="">Failed to load</option>';
-            showStatus("error", "Failed to fetch releases: " + e.message);
+            showStatus("error", "获取版本失败：" + e.message);
         }
     }
 
@@ -108,7 +108,7 @@
         }
         const tag = document.getElementById("release-select").value;
         if (!tag) {
-            showStatus("error", "Select a version first");
+            showStatus("error", "请先选择一个版本");
             return;
         }
 
@@ -118,14 +118,14 @@
     async function repairInstall() {
         const status = I.status.getLatestStatus() || await I.status.checkStatus();
         if (!status || !status.version || !status.backend) {
-            showStatus("error", "No saved installation config found to repair.");
+            showStatus("error", "未找到要修复的已保存安装配置。");
             return;
         }
 
         const ok = await I.dependencies.confirmAction(
             "Repair Install",
             `Repair installation for ${status.version} (${status.backend})? This will replace existing llama.cpp runtime files.`,
-            "Repair"
+            "修复"
         );
         if (!ok) return;
 
@@ -146,7 +146,7 @@
         const ok = await I.dependencies.confirmAction(
             "Remove llama.cpp Files",
             "Delete all files under llama/bin, llama/dll, and llama/grammars, and clear official install metadata? Both Custom slots, models, and presets will be kept.",
-            "Remove"
+            "移除"
         );
         if (!ok) return;
 
@@ -155,7 +155,7 @@
             showStatus("success", `Removed ${result.removed_files || 0} llama.cpp file(s).`);
             I.status.checkStatus();
         } catch (e) {
-            showStatus("error", "Cleanup failed: " + e.message);
+            showStatus("error", "清理失败：" + e.message);
         }
     }
 
@@ -189,28 +189,28 @@
                 pollInstallProgress();
             }
         } catch (e) {
-            showStatus("error", "Install request failed: " + e.message);
+            showStatus("error", "安装请求失败：" + e.message);
             showProgress(false);
             setInstallButtonsDisabled(false);
         }
     }
 
     async function checkForUpdates() {
-        showStatus("info", "Checking for updates...");
+        showStatus("info", "正在检查更新...");
         try {
             const result = await I.dependencies.fetchJson("/api/update", { method: "POST" });
             if (result.error) {
                 showStatus("error", result.error);
             } else if (result.status === "already_latest") {
-                showStatus("success", "Already on the latest version");
+                showStatus("success", "已是最新版本");
             } else if (result.status === "started") {
-                showStatus("info", `Updating from ${result.from} to ${result.to}...`);
+                showStatus("info", `正在从 ${result.from} 更新到 ${result.to}...`);
                 setInstallButtonsDisabled(true);
                 showProgress(true);
                 pollInstallProgress();
             }
         } catch (e) {
-            showStatus("error", "Update check failed: " + e.message);
+            showStatus("error", "检查更新失败：" + e.message);
         }
     }
 
@@ -278,7 +278,7 @@
         } else if (prog.status === "extracting") {
             document.getElementById("progress-fill").style.width = "100%";
             document.getElementById("progress-fill").style.background = "var(--yellow)";
-            document.getElementById("progress-text").textContent = "Extracting files...";
+            document.getElementById("progress-text").textContent = "正在提取文件...";
         } else {
             document.getElementById("progress-text").textContent = prog.message || prog.status;
         }
@@ -290,7 +290,7 @@
             el.classList.remove("hidden");
             document.getElementById("progress-fill").style.width = "0%";
             document.getElementById("progress-fill").style.background = "var(--accent)";
-            document.getElementById("progress-text").textContent = "Starting...";
+            document.getElementById("progress-text").textContent = "运行中...";
         } else {
             el.classList.add("hidden");
         }
@@ -318,7 +318,7 @@
                 showStatus("info", `Opened ${label} folder.`);
             })
             .catch((e) => {
-                showStatus("error", "Failed to open folder: " + e.message);
+                showStatus("error", "打开文件夹失败：" + e.message);
             });
     }
 

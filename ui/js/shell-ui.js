@@ -84,22 +84,22 @@
         const target = dependencies.getLatestStatus()?.external_chat_target;
         const external = !runtime && state.phase === "idle" && target?.connected;
         const phase = external ? "external" : state.phase;
-        const labels = { idle: "Stopped", starting: "Starting", loading: "Loading model", ready: "Ready", running: "Running", stopping: "Stopping", failed: "Action failed", external: "External server" };
+        const labels = { idle: "已停止", starting: "开始", loading: "加载模型", ready: "准备就绪", running: "运行", stopping: "停止", failed: "操作失败", external: "外部服务器" };
         const status = document.getElementById("sidebar-runtime-state");
-        const label = labels[phase] || "Checking…";
+        const label = labels[phase] || "正在检查…";
         if (status.textContent !== label) status.textContent = label;
         status.dataset.phase = phase;
         const model = document.getElementById("sidebar-runtime-model");
-        const fullModel = runtime ? String(runtime.alias || runtime.model || "Model unavailable") : external ? String(target.label || "Managed outside this app") : "No local process running";
+        const fullModel = runtime ? String(runtime.alias || runtime.model || "Model 模型不可用") : external ? String(target.label || "由本应用外部托管") : "没有正在运行的本地进程";
         model.textContent = runtime && !runtime.alias ? fullModel.split(/[\\/]/).pop() : fullModel;
         model.title = fullModel;
         document.getElementById("sidebar-runtime-build").textContent = runtime
-            ? `${runtime.tool} · ${[runtime.backend, runtime.version].filter(Boolean).join(" · ") || "Build unavailable"}`
-            : external ? "Managed outside Llama GUI" : "Launch from Quick Launch or Configure.";
+            ? `${runtime.tool} · ${[runtime.backend, runtime.version].filter(Boolean).join(" · ") || "Build 构建版本不可用"}`
+            : external ? "由 Llama GUI 外部托管" : "请从 Quick Launch 或配置页面发起启动";
         const endpoint = runtime?.tool === "llama-server" ? runtime : external ? target : null;
         document.getElementById("sidebar-runtime-endpoint").textContent = endpoint?.host && endpoint?.port
-            ? `Endpoint: ${endpoint.host}:${endpoint.port}` : "";
-        document.getElementById("btn-sidebar-runtime-details").textContent = external ? "Open API" : "Open Monitor";
+            ? `端点：${endpoint.host}:${endpoint.port}` : "";
+        document.getElementById("btn-sidebar-runtime-details").textContent = external ? "Open API" : "打开监视器";
     }
 
     window.LlamaGui.shellUi = { init, onTabChanged, renderRuntime };

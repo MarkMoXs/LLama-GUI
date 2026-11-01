@@ -38,11 +38,11 @@ api.setAssignment("a", "  Model A  ");
 api.setAssignment("b", "Model B");
 assert.equal(api.getAssignments().slots.a.preset, "Model A");
 assert.equal(api.getAssignments().slots.b.preset, "Model B");
-assert.throws(() => api.setAssignment("b", "Model A"), /same preset/);
-assert.throws(() => api.setAssignment("c", "Model C"), /slot/);
+assert.throws(() => api.setAssignment("b", "Model A"), /同一个预设/);
+assert.throws(() => api.setAssignment("c", "Model C"), /槽位/);
 assert.throws(() => api.setAssignment("a", "x".repeat(129)), /128/);
-assert.throws(() => api.setAssignment("a", "bad\u0000name"), /control/);
-assert.throws(() => api.setAssignment("a", "bad\u202ename"), /control/);
+assert.throws(() => api.setAssignment("a", "bad\u0000name"), /\u63a7\u5236\u5b57\u7b26/);
+assert.throws(() => api.setAssignment("a", "bad\u202ename"), /\u63a7\u5236\u5b57\u7b26/);
 
 const snapshot = api.getAssignments();
 snapshot.slots.a.preset = "mutated";
@@ -68,7 +68,7 @@ storedValue = JSON.stringify({
 api.reloadAssignments();
 assert.equal(api.getAssignments().slots.a.preset, "Same");
 assert.equal(api.getAssignments().slots.b.preset, "Same");
-assert.match(api.getAssignmentIssues().a, /same preset/);
+assert.match(api.getAssignmentIssues().a, /同一个预设/);
 assert.ok(!storedValue.includes("api_key"), "loading v1 storage should remove unexpected secrets");
 assert.ok(!storedValue.includes("flags"), "loading v1 storage should remove embedded flag state");
 assert.ok(!storedValue.includes("Ignored"), "loading v1 storage should remove unsupported slots");
@@ -77,12 +77,12 @@ assert.equal(api.getAssignmentIssues().a, undefined);
 
 storedValue = JSON.stringify({ version: 2, slots: {} });
 api.reloadAssignments();
-assert.match(api.getStorageStatus().warning, /unsupported version/);
+assert.match(api.getStorageStatus().warning, /不支持的版本/);
 assert.equal(api.getAssignments().slots.a.preset, "");
 
 storedValue = "{not json";
 api.reloadAssignments();
-assert.match(api.getStorageStatus().warning, /could not be read/);
+assert.match(api.getStorageStatus().warning, /无法读取/);
 
 const blocked = createContext({
     getItem() { throw new Error("blocked read"); },
@@ -91,7 +91,7 @@ const blocked = createContext({
 blocked.api.setAssignment("a", "Session Model");
 assert.equal(blocked.api.getAssignments().slots.a.preset, "Session Model");
 assert.equal(blocked.api.getStorageStatus().persistent, false);
-assert.match(blocked.api.getStorageStatus().warning, /session only/);
+assert.match(blocked.api.getStorageStatus().warning, /本次会话中可用/);
 assert.ok(blocked.warnings.length >= 2, "storage failures should be logged");
 
 // DOM wiring, refresh buttons, drag/keyboard guards, and layout containment are
@@ -175,12 +175,12 @@ assert.equal(sidebarState.activeSlot, "a");
 assert.equal(sidebarState.committedSlot, "a");
 assert.equal(sidebarState.targetSlot, "b");
 assert.equal(sidebarState.enabled, true);
-assert.equal(sidebarState.status, "Drag to switch");
+assert.equal(sidebarState.status, "拖动以切换");
 
 sidebarState = api.buildSidebarSliderState(slotViews(), { phase: "idle", busy: false }, "a", true);
 assert.equal(sidebarState.committedSlot, "a", "the inactive slider should default visually to A");
 assert.equal(sidebarState.enabled, false, "the sidebar shortcut must not become an initial launch surface");
-assert.match(sidebarState.status, /Quick Launch first/);
+assert.match(sidebarState.status, /Quick Launch 中启动/);
 
 sidebarState = api.buildSidebarSliderState(views, { phase: "ready", busy: true }, "a", true);
 assert.equal(sidebarState.enabled, false, "a busy lifecycle must lock the sidebar slider");
@@ -240,7 +240,7 @@ assert.equal(views[0].state, "active", "clearing an assignment must not hide its
 assert.equal(views[0].presetName, "", "the cleared assignment must remain empty");
 assert.equal(views[0].displayPresetName, "Model A Preset", "the card should use the launched preset snapshot");
 assert.equal(views[0].gguf, "alpha.gguf");
-assert.match(views[0].message, /assignment has been cleared/);
+assert.match(views[0].message, /槽位分配已清除/);
 
 views = slotViews({
     assignments: { version: 1, slots: { a: { preset: "Deleted" }, b: { preset: "Model B Preset" } } },
@@ -297,7 +297,7 @@ assert.equal(typeof api.handleSwitch, "function");
 
     views = slotViews({ pendingSlot: "b", failures: { b: "Earlier failure" } });
     assert.equal(views[1].state, "loading");
-    assert.match(views[1].message, /Switch in progress/);
+    assert.match(views[1].message, /正在切换中/);
 
     switchOutcome = { ok: false, error: "Model B failed again" };
     await api.handleSwitch("b");

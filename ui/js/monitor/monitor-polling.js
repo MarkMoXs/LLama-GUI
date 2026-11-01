@@ -36,13 +36,13 @@
         if (!badge) return;
         const state = currentStatusState();
         const labels = {
-            live: "Live \u00b7 ~2 s",
-            refreshing: "Refreshing\u2026",
-            stale: "Stale \u00b7 retrying",
-            unavailable: "Unavailable",
-            paused: "Paused",
+            live: "实时 · 约 2 秒",
+            refreshing: "正在刷新…",
+            stale: "数据已过期 · 正在重试",
+            unavailable: "不可用",
+            paused: "已暂停",
         };
-        badge.textContent = `System telemetry · ${labels[state]}`;
+        badge.textContent = `系统监控 · ${labels[state]}`;
         badge.classList.toggle("badge-green", state === "live");
         badge.classList.toggle("badge-neutral", state === "refreshing" || state === "paused");
         badge.classList.toggle("badge-yellow", state === "stale");

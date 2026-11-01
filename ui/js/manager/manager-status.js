@@ -37,7 +37,7 @@
             if (requestId !== statusRequestId) return null;
             markSelectFailedToLoad("backend-select");
             markSelectFailedToLoad("release-select");
-            I.install.showStatus("error", "Could not check installation status: " + e.message);
+            I.install.showStatus("error", "无法检查安装状态：" + e.message);
             return null;
         }
     }

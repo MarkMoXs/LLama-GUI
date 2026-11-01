@@ -84,13 +84,13 @@ def start_install(request, response, ctx):
     backend = body.get("backend")
     activate_existing = body.get("activate_existing") is True
     if not backend or (not activate_existing and not tag):
-        response.error("tag and backend required", 400)
+        response.error("需要 tag 和后端", 400)
         return
     if llama_manager.is_custom_backend(backend):
-        response.error("Use /api/activate-custom to set up the custom backend", 400)
+        response.error("请使用 /api/activate-custom 设置自定义后端", 400)
         return
     if backend not in backend_specs:
-        response.error(f"Unsupported backend: {backend}", 400)
+        response.error(f"不支持的后端：{backend}", 400)
         return
     claim_error = _claim_install_slot(ctx)
     if claim_error is not None:
@@ -104,7 +104,7 @@ def start_install(request, response, ctx):
                 response.json(result)
             else:
                 response.error(
-                    result.get("error") or "Could not activate existing backend", 400
+                    result.get("error") or "无法激活现有后端", 400
                 )
         except Exception as exc:
             print(f"[install] activate existing backend failed: {exc}", file=sys.stderr)
@@ -137,22 +137,22 @@ def start_update(request, response, ctx):
     tag = cfg.get("tag")
     backend = cfg.get("backend")
     if not tag or not backend:
-        response.error("Nothing installed to update", 400)
+        response.error("没有可更新的已安装内容", 400)
         return
     if llama_manager.is_custom_backend(backend):
-        response.error("Cannot auto-update a custom backend installation", 400)
+        response.error("无法自动更新自定义后端安装", 400)
         return
     if backend not in backend_specs:
-        response.error(f"Unsupported configured backend: {backend}", 400)
+        response.error(f"不支持的后端配置：{backend}", 400)
         return
     if process_manager.is_process_running(ctx):
-        response.error("Stop running process first", 400)
+        response.error("请先停止运行中的进程", 400)
         return
     # Cheap early reject so a duplicate request fails fast instead of spending
     # a GitHub round trip (and rate-limit quota) only to be refused below.
     # This read is advisory; the authoritative check-and-set is under the lock.
     if ctx.state.install_in_progress:
-        response.error("Installation already in progress", 409)
+        response.error("安装已在进行中", 409)
         return
 
     # The release lookup runs before the install slot is claimed: holding
@@ -219,7 +219,7 @@ def start_update(request, response, ctx):
 def activate_custom(request, response, ctx):
     backend = (request.body or {}).get("backend", "custom")
     if not llama_manager.is_custom_backend(backend):
-        response.error("Unsupported custom backend", 400)
+        response.error("不支持的自定义后端", 400)
         return
     try:
         claim_error = _claim_install_slot(ctx)

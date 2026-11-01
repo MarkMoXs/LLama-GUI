@@ -76,17 +76,17 @@ def completions(request, response, ctx):
             latest_user = chat_service.get_latest_user_message(messages)
             queries = chat_service.build_search_queries(latest_user)
             if not queries:
-                writer.write({"error": {"message": "Add a text question to search the web for."}})
+                writer.write({"error": {"message": "请添加一个文本问题以进行网页搜索。"}})
                 writer.write("[DONE]")
                 return
             all_results = []
             fetched_pages = {}
 
             for query in queries:
-                writer.write({"type": "web_status", "content": f"Searching: {query}"})
+                writer.write({"type": "web_status", "content": f"正在搜索：{query}"})
                 search_response = web_search.web_search(query, max_results=max_results)
                 if not search_response.get("ok"):
-                    writer.write({"error": {"message": search_response.get("error", "Search unavailable")}})
+                    writer.write({"error": {"message": search_response.get("error", "搜索不可用")}})
                     writer.write("[DONE]")
                     return
                 for result in search_response.get("results", []):
@@ -100,17 +100,17 @@ def completions(request, response, ctx):
                 host = urllib.parse.urlparse(url).hostname or url
                 if host.startswith("www."):
                     host = host[4:]
-                writer.write({"type": "web_status", "content": f"Reading: {host}"})
+                writer.write({"type": "web_status", "content": f"正在阅读：{host}"})
                 fetched_pages[url] = web_search.fetch_page_text(url, ssl_context=ctx.services.ssl_context)
 
             context, sources = chat_service.build_search_context(all_results, fetched_pages)
             if not context:
-                writer.write({"error": {"message": "Search returned no usable sources."}})
+                writer.write({"error": {"message": "搜索未返回可用的来源。"}})
                 writer.write("[DONE]")
                 return
 
             writer.write({"type": "web_sources", "sources": sources})
-            writer.write({"type": "web_status", "content": "Answering..."})
+            writer.write({"type": "web_status", "content": "正在回答..."})
 
             proxied_messages = []
             inserted_context = False
@@ -154,7 +154,7 @@ def completions(request, response, ctx):
             _write_stream_error(writer, budget["message"])
             return
         if require_context and budget["status"] not in ("ok", "warning"):
-            _write_stream_error(writer, "Compaction needs a valid context count. Retry when counting is available.")
+            _write_stream_error(writer, "压缩需要有效的上下文计数。请在计数可用后重试。")
             return
         # Pinned connect: the destination host was validated above, and is
         # resolved and pinned again here so it cannot re-resolve off-machine
@@ -173,7 +173,7 @@ def completions(request, response, ctx):
                 tunnel_active = bool(ctx.state.remote_tunnel.snapshot().get("url"))
                 if tunnel_active:
                     print(f"[sanitize_sse_error] HTTPError {resp.status}: {err}", file=sys.stderr)
-                    _write_stream_error(writer, "Chat request failed.")
+                    _write_stream_error(writer, "聊天请求失败。")
                 else:
                     _write_stream_error(writer, f"llama-server returned HTTP {resp.status}: {err}")
                 return

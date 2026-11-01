@@ -31,7 +31,7 @@
 
     function formatHfBytes(bytes) {
         const value = Number(bytes || 0);
-        if (!value) return "unknown size";
+        if (!value) return "未知大小";
         if (value >= 1073741824) return `${(value / 1073741824).toFixed(2)} GB`;
         return `${(value / 1048576).toFixed(1)} MB`;
     }
@@ -68,14 +68,14 @@
 
         if (status === "done") {
             fill.style.width = "100%";
-            text.textContent = `Download complete (${formatHfBytes(prog.total)})`;
+            text.textContent = `下载完成（${formatHfBytes(prog.total)}）`;
         } else if (prog.total > 0) {
             const pct = Math.min(100, Math.round((prog.downloaded / prog.total) * 100));
             fill.style.width = pct + "%";
-            text.textContent = `${prog.current_file || "Downloading"} ${pct}% (${formatHfBytes(prog.downloaded)} / ${formatHfBytes(prog.total)})`;
+            text.textContent = `${prog.current_file || "正在下载"} ${pct}%（${formatHfBytes(prog.downloaded)} / ${formatHfBytes(prog.total)}）`;
         } else {
             fill.style.width = active ? "25%" : "100%";
-            text.textContent = prog.message || status || "Working...";
+            text.textContent = prog.message || status || "正在处理...";
         }
     }
 
@@ -89,7 +89,7 @@
         for (const file of files || []) {
             const opt = document.createElement("option");
             opt.value = file.name;
-            opt.textContent = `${file.name}  (${formatHfBytes(file.size)}${file.shard_count > 1 ? `, ${file.shard_count} shards` : ""})`;
+            opt.textContent = `${file.name}（${formatHfBytes(file.size)}${file.shard_count > 1 ? `，${file.shard_count} 个分片` : ""}）`;
             select.appendChild(opt);
         }
     }
@@ -107,11 +107,11 @@
 
         const repoId = repoInput.value.trim();
         if (!repoId) {
-            showStatus("warning", "Enter a Hugging Face repo ID first.");
+            showStatus("warning", "请先输入 Hugging Face 仓库 ID。");
             return;
         }
 
-        showStatus("info", "Looking for GGUF files...");
+        showStatus("info", "正在查找 GGUF 文件...");
         setBusy(true);
         try {
             const result = await fetchJson("/api/hf/repo-files", {
@@ -123,8 +123,8 @@
                     token: tokenInput ? tokenInput.value.trim() : "",
                 }),
             });
-            populateFileSelect(modelSelect, result.models || [], "-- Select model file --");
-            populateFileSelect(mmprojSelect, result.mmproj || [], "None");
+            populateFileSelect(modelSelect, result.models || [], "-- 选择模型文件 --");
+            populateFileSelect(mmprojSelect, result.mmproj || [], "无");
             if (result.models && result.models.length === 1) modelSelect.value = result.models[0].name;
             if (mmprojGroup) mmprojGroup.classList.toggle("hidden", !(result.mmproj && result.mmproj.length));
             if (options) options.classList.remove("hidden");
@@ -133,12 +133,12 @@
             showStatus(
                 modelCount ? "success" : "warning",
                 modelCount
-                    ? `Found ${modelCount} model file${modelCount === 1 ? "" : "s"}${mmprojCount ? ` and ${mmprojCount} mmproj companion${mmprojCount === 1 ? "" : "s"}` : ""}.`
-                    : "No launchable GGUF model files were found in this repo."
+                        ? `找到 ${modelCount} 个模型文件${mmprojCount ? `和 ${mmprojCount} 个 mmproj 配套文件` : ""}。`
+                        : "在此仓库中没有找到可启动的 GGUF 模型文件。"
             );
         } catch (e) {
             if (options) options.classList.add("hidden");
-            showStatus("error", "Hugging Face lookup failed: " + e.message);
+                    showStatus("error", "Hugging Face 仓库查询失败：" + e.message);
         } finally {
             setBusy(false);
         }
@@ -156,11 +156,11 @@
 
         const modelFile = modelSelect.value;
         if (!modelFile) {
-            showStatus("warning", "Choose a model file to download.");
+            showStatus("warning", "请选择要下载的模型文件。");
             return;
         }
 
-        showStatus("info", "Starting download...");
+        showStatus("info", "正在启动下载...");
         setBusy(true);
         try {
             await fetchJson("/api/hf/download", {
@@ -179,15 +179,15 @@
         } catch (e) {
             setBusy(false);
             if (e.message && e.message.startsWith("Already exists:")) {
-                const ok = await confirmAction(`${e.message}. Replace the existing file?`);
+                const ok = await confirmAction(`${e.message}。是否替换现有文件？`);
                 if (ok) {
                     startDownload(true);
                     return;
                 }
-                showStatus("info", "Download cancelled. Existing file was kept.");
+                showStatus("info", "已取消下载，保留现有文件。");
                 return;
             }
-            showStatus("error", "Download failed to start: " + e.message);
+            showStatus("error", "无法启动下载：" + e.message);
         }
     }
 
@@ -197,7 +197,7 @@
         const refreshQuickLaunchUI = requireDependency("refreshQuickLaunchUI");
         const flagCore = deps.flagCore;
 
-        showStatus("success", prog.message || "Download complete.");
+        showStatus("success", prog.message || "下载完成。");
         setBusy(false);
         await refreshModels();
         if (prog.model_name) {
@@ -283,14 +283,14 @@
                 } else if (["error", "cancelled"].includes(prog.status)) {
                     clearPollTimer();
                     setBusy(false);
-                    showStatus(prog.status === "cancelled" ? "warning" : "error", prog.message || "Download stopped.");
+                    showStatus(prog.status === "cancelled" ? "warning" : "error", prog.message || "下载已停止。");
                 } else if (Date.now() - hfDownloadLastProgressAt > HF_DOWNLOAD_STALL_TIMEOUT_MS) {
                     clearPollTimer();
                     setBusy(false);
                     showStatus(
                         "error",
-                        "Download has not progressed for several minutes. It may still be running "
-                        + "on the server - reload the page to pick it back up."
+                        "下载已数分钟没有进展，但服务器上可能仍在继续。"
+                        + "请重新加载页面以恢复查看进度。"
                     );
                 }
             } catch (e) {
@@ -298,7 +298,7 @@
                 if (hfDownloadFailCount >= HF_DOWNLOAD_POLL_MAX_FAILS) {
                     clearPollTimer();
                     setBusy(false);
-                    showStatus("error", "Lost contact with the server during download. The download may still be in progress - try restarting Llama GUI.");
+                    showStatus("error", "下载期间与服务器失去连接。下载可能仍在进行，请尝试重启 Llama GUI。 ");
                 }
             } finally {
                 hfDownloadPollInFlight = false;
@@ -310,9 +310,9 @@
         const fetchJson = requireDependency("fetchJson");
         try {
             await fetchJson("/api/hf/download-cancel", { method: "POST" });
-            showStatus("warning", "Cancelling download...");
+            showStatus("warning", "正在取消下载...");
         } catch (e) {
-            showStatus("error", "Failed to cancel download: " + e.message);
+            showStatus("error", "取消下载失败：" + e.message);
         }
     }
 

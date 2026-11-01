@@ -69,7 +69,7 @@ test("polling lifecycle", async (t) => {
     await wait(10);
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, "/api/system-stats");
-    assert.equal(documentStub.getElementById("monitor-live-badge").textContent.includes("Live"), true);
+    assert.equal(documentStub.getElementById("monitor-live-badge").textContent.includes("实时"), true);
     await wait(120);
     assert.ok(calls.length >= 3, `scheduled polls continue (saw ${calls.length})`);
 
@@ -79,7 +79,7 @@ test("polling lifecycle", async (t) => {
     const countBeforeSlow = calls.length;
     await wait(120);
     assert.equal(calls.length, countBeforeSlow + 1, "at most one in-flight request");
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Live"),
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("实时"),
         "routine background polls do not flash a transient Refreshing state");
     gate.resolve(makeSample());
     await wait(120);
@@ -94,7 +94,7 @@ test("polling lifecycle", async (t) => {
     const recheckCall = calls[calls.length - 1];
     assert.equal(recheckCall.url, "/api/system-stats?refresh=1");
     assert.equal(slowCall.aborted, true, "recheck aborts the in-flight poll");
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Refreshing"),
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("正在刷新"),
         "manual Recheck still exposes its in-progress state");
     gate2.resolve(makeSample());
     await wait(20);
@@ -132,10 +132,10 @@ test("polling lifecycle", async (t) => {
     monitorUi.recheck();
     await wait(30);
     assert.equal(documentStub.getElementById("monitor-cpu-value").textContent, "99.9%");
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Stale"));
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("数据已过期"));
     behavior = () => Promise.resolve(makeSample());
     await wait(120);
-    assert.equal(documentStub.getElementById("monitor-live-badge").textContent.includes("Live"), true);
+    assert.equal(documentStub.getElementById("monitor-live-badge").textContent.includes("实时"), true);
 
     // Leaving the tab aborts in flight and stops polling.
     const gate3 = deferred();
@@ -148,7 +148,7 @@ test("polling lifecycle", async (t) => {
     gate3.resolve(makeSample());
     await wait(120);
     assert.equal(calls.length, frozen, "no polling while the panel is hidden");
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Paused"));
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("已暂停"));
 
     // Document visibility gates polling the same way.
     monitorUi.onTabChanged("monitor");
@@ -169,10 +169,10 @@ test("polling lifecycle", async (t) => {
     monitorUi.configure({ fetchJson: async () => { if (failing) throw new Error("down"); return makeSample(); } });
     monitorUi.onTabChanged("monitor");
     await wait(20);
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Unavailable"));
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("不可用"));
     failing = false;
     await wait(120);
-    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("Live"));
+    assert.ok(documentStub.getElementById("monitor-live-badge").textContent.includes("实时"));
     monitorUi.onTabChanged("configure");
 
 });
